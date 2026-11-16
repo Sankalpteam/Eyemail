@@ -14,68 +14,40 @@
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen overflow-hidden select-none">
 
-  <!-- ==================== 1. AUTH SCREEN ==================== -->
+  <!-- ==================== 1. CENTRAL SSO SIGN-IN SCREEN ==================== -->
   <div id="auth-screen" class="h-full flex items-center justify-center p-4 bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200/80 p-8">
-      <div class="flex items-center justify-center gap-2.5 mb-6">
-        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-600/20">
-          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200/80 p-8 text-center">
+      <!-- Brand Logo -->
+      <div class="flex items-center justify-center gap-2.5 mb-5">
+        <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/25">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
             <circle cx="12" cy="12" r="3"/>
           </svg>
         </div>
-        <span class="text-2xl font-bold tracking-tight text-slate-900">Eye<span class="text-blue-600">mail</span></span>
+        <span class="text-3xl font-bold tracking-tight text-slate-900">Eye<span class="text-blue-600">mail</span></span>
       </div>
 
-      <div class="grid grid-cols-2 bg-slate-100 p-1 rounded-xl mb-6 text-sm font-medium">
-        <button id="tab-login" class="py-2 rounded-lg bg-white text-blue-600 shadow-sm transition">Sign In</button>
-        <button id="tab-signup" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 transition">Create Account</button>
+      <h1 class="text-lg font-bold text-slate-800 mb-2">Your @eyemail.in Inbox</h1>
+      <p class="text-xs text-slate-500 leading-relaxed mb-6">
+        Sign in with your single Indoworkspace Account to access your Eyemail mailbox across all devices.
+      </p>
+
+      <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium text-left"></div>
+      <div id="auth-loading" class="hidden mb-4 p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium">
+        Connecting to your Indoworkspace Account...
       </div>
 
-      <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium"></div>
+      <button id="sso-login-btn" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-blue-600/20 flex items-center justify-center gap-2.5 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        Continue with Indoworkspace Account
+      </button>
 
-      <!-- Login Form -->
-      <form id="login-form" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Eyemail Address</label>
-          <div class="flex items-center border border-slate-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-            <input id="login-username" type="text" required placeholder="username" class="w-full px-3.5 py-2.5 text-sm outline-none" />
-            <span class="px-3 py-2.5 bg-slate-100 text-slate-500 text-sm font-medium border-l border-slate-200">@eyemail.in</span>
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Password</label>
-          <input id="login-password" type="password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <button id="login-submit" type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-blue-600/20 transition">
-          Sign In to Eyemail
-        </button>
-      </form>
-
-      <!-- Signup Form -->
-      <form id="signup-form" class="space-y-4 hidden">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Full Name</label>
-          <input id="signup-name" type="text" required placeholder="Yashwanth P" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <div>
-          <div class="flex justify-between items-center mb-1.5">
-            <label class="text-xs font-semibold text-slate-600">Choose Eyemail ID</label>
-            <span id="username-status" class="text-xs font-medium text-slate-400"></span>
-          </div>
-          <div class="flex items-center border border-slate-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-            <input id="signup-username" type="text" required placeholder="yourname" class="w-full px-3.5 py-2.5 text-sm outline-none" />
-            <span class="px-3 py-2.5 bg-slate-100 text-slate-500 text-sm font-medium border-l border-slate-200">@eyemail.in</span>
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Create Password (min 6 chars)</label>
-          <input id="signup-password" type="password" minlength="6" required placeholder="••••••••" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <button id="signup-submit" type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-blue-600/20 transition">
-          Create Free @eyemail.in Account
-        </button>
-      </form>
+      <p class="mt-5 text-[11px] text-slate-400">
+        Don't have an account yet? Click above to create your free <span class="font-semibold text-slate-600">@eyemail.in</span> ID.
+      </p>
     </div>
   </div>
 
@@ -101,11 +73,14 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2.5">
         <div class="text-right hidden sm:block">
           <div id="user-display-name" class="text-xs font-bold text-slate-800">User</div>
           <div id="user-display-email" class="text-xs text-slate-500">user@eyemail.in</div>
         </div>
+        <button id="manage-account-btn" title="Manage Indoworkspace Account" class="px-3 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-50 border border-blue-200 rounded-lg transition">
+          Account
+        </button>
         <button id="logout-btn" class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-red-600 bg-slate-100 hover:bg-red-50 rounded-lg transition">
           Logout
         </button>
@@ -138,8 +113,8 @@
         </div>
 
         <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-500">
-          <div class="font-semibold text-slate-700 mb-0.5">Eyemail Cloud</div>
-          <div>@eyemail.in Free Tier</div>
+          <div class="font-semibold text-slate-700 mb-0.5">Indoworkspace ID</div>
+          <div>Unified @eyemail.in</div>
         </div>
       </aside>
 
@@ -221,13 +196,11 @@
 
   <div id="toast" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-medium px-4 py-3 rounded-xl shadow-lg z-50"></div>
 
-  <!-- ==================== 4. FIREBASE + APP LOGIC ==================== -->
+  <!-- ==================== 4. FIREBASE + CENTRAL SSO LOGIC ==================== -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
       getAuth,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
       signInWithCustomToken,
       onAuthStateChanged,
       signOut
@@ -236,19 +209,16 @@
       getFirestore,
       doc,
       getDoc,
-      setDoc,
-      addDoc,
       updateDoc,
       deleteDoc,
       collection,
       query,
       orderBy,
-      onSnapshot,
-      serverTimestamp
+      onSnapshot
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // =========================================================================
-    // REPLACE THESE SETTINGS WITH YOUR FIREBASE & RENDER KEYS
+    // REPLACE THESE SETTINGS WITH YOUR FIREBASE, RENDER & LAMBDA URLs
     // =========================================================================
     const CONFIG = {
       firebaseConfig: {
@@ -260,21 +230,15 @@
         appId: "YOUR_APP_ID"
       },
       BACKEND_URL: "https://your-eyemail-backend.onrender.com",
+      INDO_ACCOUNT_API_URL: "https://YOUR_LAMBDA_ID.lambda-url.ap-southeast-2.on.aws",
+      CENTRAL_SIGNIN_URL: "https://indoworkspace.github.io/Indo-Account/Sign%20in/index.html",
+      CENTRAL_PANEL_URL: "https://indoworkspace.github.io/Indo-Account/management/home/index.html",
       DOMAIN: "eyemail.in"
     };
 
     const app = initializeApp(CONFIG.firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-
-    // Handle automatic SSO login from DynamoDB dashboard if ?sso_token= is present
-    const urlParams = new URLSearchParams(window.location.search);
-    const ssoToken = urlParams.get("sso_token");
-    if (ssoToken) {
-      signInWithCustomToken(auth, ssoToken)
-        .then(() => window.history.replaceState({}, document.title, window.location.pathname))
-        .catch((err) => console.error("SSO login error:", err));
-    }
 
     let currentUser = null;
     let currentFolder = "inbox";
@@ -297,118 +261,97 @@
       box.classList.remove("hidden");
     }
 
-    $("tab-login").onclick = () => {
-      $("login-form").classList.remove("hidden");
-      $("signup-form").classList.add("hidden");
-      $("tab-login").className = "py-2 rounded-lg bg-white text-blue-600 shadow-sm transition";
-      $("tab-signup").className = "py-2 rounded-lg text-slate-600 hover:text-slate-900 transition";
+    // ==================== PKCE HELPERS (Flow A) ====================
+    function base64UrlEncode(bytes) {
+      return btoa(String.fromCharCode(...new Uint8Array(bytes)))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+    }
+
+    async function generatePkcePair() {
+      const randomBytes = new Uint8Array(32);
+      crypto.getRandomValues(randomBytes);
+      const verifier = base64UrlEncode(randomBytes);
+      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
+      const challenge = base64UrlEncode(digest);
+      return { verifier, challenge };
+    }
+
+    // Step 1: Redirect to Indoworkspace Central Sign-In Page
+    $("sso-login-btn").onclick = async () => {
       $("auth-error").classList.add("hidden");
+      const { verifier, challenge } = await generatePkcePair();
+      const stateBytes = new Uint8Array(16);
+      crypto.getRandomValues(stateBytes);
+      const state = base64UrlEncode(stateBytes);
+
+      sessionStorage.setItem("eyemail_pkce_verifier", verifier);
+      sessionStorage.setItem("eyemail_pkce_state", state);
+
+      const redirectUri = window.location.origin + window.location.pathname;
+      const params = new URLSearchParams({
+        app: "EYEMAIL",
+        redirect: redirectUri,
+        state: state,
+        code_challenge: challenge,
+        code_challenge_method: "S256"
+      });
+
+      window.location.href = `${CONFIG.CENTRAL_SIGNIN_URL}?${params.toString()}`;
     };
 
-    $("tab-signup").onclick = () => {
-      $("signup-form").classList.remove("hidden");
-      $("login-form").classList.add("hidden");
-      $("tab-signup").className = "py-2 rounded-lg bg-white text-blue-600 shadow-sm transition";
-      $("tab-login").className = "py-2 rounded-lg text-slate-600 hover:text-slate-900 transition";
-      $("auth-error").classList.add("hidden");
-    };
+    // Step 2: Handle PKCE ?code=... callback from Central Sign-In Page
+    async function handleSsoCallback() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+      const returnedState = urlParams.get("state");
 
-    let checkTimer = null;
-    $("signup-username").addEventListener("input", (e) => {
-      clearTimeout(checkTimer);
-      const raw = e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, "");
-      e.target.value = raw;
-      const status = $("username-status");
+      if (!code) return;
 
-      if (raw.length < 3) {
-        status.textContent = "Min 3 characters";
-        status.className = "text-xs font-medium text-slate-400";
+      const savedVerifier = sessionStorage.getItem("eyemail_pkce_verifier");
+      const savedState = sessionStorage.getItem("eyemail_pkce_state");
+
+      // Clean URL immediately
+      window.history.replaceState({}, document.title, window.location.pathname);
+      sessionStorage.removeItem("eyemail_pkce_verifier");
+      sessionStorage.removeItem("eyemail_pkce_state");
+
+      if (!savedVerifier || (savedState && returnedState !== savedState)) {
+        showAuthError("Security state mismatch. Please click Continue with Indoworkspace Account again.");
         return;
       }
 
-      status.textContent = "Checking...";
-      checkTimer = setTimeout(async () => {
-        try {
-          const snap = await getDoc(doc(db, "usernames", raw));
-          if (snap.exists()) {
-            status.textContent = "Taken ✕";
-            status.className = "text-xs font-semibold text-red-600";
-          } else {
-            status.textContent = "Available ✓";
-            status.className = "text-xs font-semibold text-emerald-600";
-          }
-        } catch {
-          status.textContent = "";
-        }
-      }, 400);
-    });
-
-    $("login-form").onsubmit = async (e) => {
-      e.preventDefault();
-      $("auth-error").classList.add("hidden");
-      const username = $("login-username").value.trim().toLowerCase();
-      const email = username.includes("@") ? username : `${username}@${CONFIG.DOMAIN}`;
-      const password = $("login-password").value;
-
       try {
-        $("login-submit").textContent = "Signing in...";
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (err) {
-        showAuthError(err.message.replace("Firebase:", "").trim());
-      } finally {
-        $("login-submit").textContent = "Sign In to Eyemail";
-      }
-    };
+        $("auth-loading").classList.remove("hidden");
+        $("sso-login-btn").disabled = true;
 
-    $("signup-form").onsubmit = async (e) => {
-      e.preventDefault();
-      $("auth-error").classList.add("hidden");
-      const name = $("signup-name").value.trim();
-      const username = $("signup-username").value.trim().toLowerCase();
-      const password = $("signup-password").value;
-
-      if (username.length < 3) return showAuthError("Username must be at least 3 characters.");
-
-      try {
-        $("signup-submit").textContent = "Creating account...";
-        const existing = await getDoc(doc(db, "usernames", username));
-        if (existing.exists()) {
-          throw new Error("This @eyemail.in address is already taken.");
-        }
-
-        const email = `${username}@${CONFIG.DOMAIN}`;
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = cred.user.uid;
-
-        await setDoc(doc(db, "usernames", username), { uid, email });
-        await setDoc(doc(db, "users", uid), {
-          uid,
-          name,
-          username,
-          email,
-          createdAt: new Date().toISOString()
+        const resp = await fetch(`${CONFIG.BACKEND_URL}/api/auth/sso-exchange`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code,
+            code_verifier: savedVerifier,
+            device: navigator.userAgent.slice(0, 60)
+          })
         });
 
-        await addDoc(collection(db, "users", uid, "emails"), {
-          from: `welcome@${CONFIG.DOMAIN}`,
-          fromName: "Eyemail Team",
-          to: email,
-          subject: `Welcome to Eyemail, ${name}!`,
-          body: `Hi ${name},\n\nYour new ${email} mailbox is active and ready.\n\nYou can send and receive emails with Gmail, Yahoo, and other Eyemail users instantly.\n\n— Team Eyemail`,
-          snippet: `Hi ${name}, your new ${email} mailbox is active and ready.`,
-          folder: "inbox",
-          read: false,
-          starred: true,
-          timestamp: serverTimestamp(),
-          createdAt: new Date().toISOString()
-        });
-      } catch (err) {
-        showAuthError(err.message.replace("Firebase:", "").trim());
-      } finally {
-        $("signup-submit").textContent = "Create Free @eyemail.in Account";
-      }
-    };
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "SSO exchange failed");
 
+        localStorage.setItem("eyemail_app_token", data.appToken);
+        await signInWithCustomToken(auth, data.firebaseCustomToken);
+      } catch (err) {
+        showAuthError(err.message);
+      } finally {
+        $("auth-loading").classList.add("hidden");
+        $("sso-login-btn").disabled = false;
+      }
+    }
+
+    handleSsoCallback();
+
+    // ==================== AUTH STATE OBSERVER ====================
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       if (unsubscribeEmails) unsubscribeEmails();
@@ -423,7 +366,10 @@
       $("app-screen").classList.remove("hidden");
 
       const profileSnap = await getDoc(doc(db, "users", user.uid));
-      const profile = profileSnap.exists() ? profileSnap.data() : { name: user.email.split("@")[0], email: user.email };
+      const profile = profileSnap.exists()
+        ? profileSnap.data()
+        : { name: user.uid, email: `${user.uid}@${CONFIG.DOMAIN}` };
+
       $("user-display-name").textContent = profile.name;
       $("user-display-email").textContent = profile.email;
 
@@ -434,8 +380,47 @@
       });
     });
 
-    $("logout-btn").onclick = () => signOut(auth);
+    // Open Central Account Management Panel (Flow B)
+    $("manage-account-btn").onclick = async () => {
+      const appToken = localStorage.getItem("eyemail_app_token");
+      if (!appToken) {
+        window.open(CONFIG.CENTRAL_PANEL_URL, "_blank");
+        return;
+      }
+      try {
+        const resp = await fetch(`${CONFIG.INDO_ACCOUNT_API_URL}/api/v1/app/panel-session`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${appToken}`
+          },
+          body: JSON.stringify({ device: "Web Browser" })
+        });
+        const data = await resp.json();
+        if (resp.ok && data.panel_token) {
+          window.open(`${CONFIG.CENTRAL_PANEL_URL}#panel_token=${data.panel_token}`, "_blank");
+          return;
+        }
+      } catch {}
+      window.open(CONFIG.CENTRAL_PANEL_URL, "_blank");
+    };
 
+    // Logout from Eyemail App Session + Firebase
+    $("logout-btn").onclick = async () => {
+      const appToken = localStorage.getItem("eyemail_app_token");
+      if (appToken) {
+        try {
+          await fetch(`${CONFIG.INDO_ACCOUNT_API_URL}/api/v1/app/logout`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${appToken}` }
+          });
+        } catch {}
+        localStorage.removeItem("eyemail_app_token");
+      }
+      await signOut(auth);
+    };
+
+    // ==================== MAILBOX UI & ACTIONS ====================
     document.querySelectorAll(".folder-btn").forEach((btn) => {
       btn.onclick = () => {
         currentFolder = btn.dataset.folder;
