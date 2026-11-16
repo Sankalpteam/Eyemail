@@ -877,7 +877,7 @@
         e.stopPropagation();
         const m = allEmails.find((x) => x.id === b.dataset.star);
         if (!m) return;
-        await updateDoc(doc(db, "users", currentUser.uid, "emails", m.id), { starred: !m.starred });
+        await writeMail(m.id, { starred: !m.starred }, "Could not star this message.");
       });
     });
     emailListEl.querySelectorAll("[data-act]").forEach((b) => {
@@ -886,9 +886,9 @@
         const m = allEmails.find((x) => x.id === b.dataset.id);
         if (!m) return;
         if (b.dataset.act === "read") {
-          await updateDoc(doc(db, "users", currentUser.uid, "emails", m.id), { read: !m.read });
+          await writeMail(m.id, { read: !m.read }, "Could not mark this message.");
         } else {
-          moveToTrash([m]);
+          await moveToTrash([m]);
         }
       });
     });
@@ -913,18 +913,25 @@
     if (action === "clear") { selected.clear(); renderList(); return; }
     const ids = [...selected];
     if (!ids.length) return;
-    const batch = writeBatch(db);
-    ids.forEach((id) => {
-      const ref = doc(db, "users", currentUser.uid, "emails", id);
-      if (action === "read") batch.update(ref, { read: true });
-      if (action === "unread") batch.update(ref, { read: false });
-      if (action === "star") batch.update(ref, { starred: true });
-      if (action === "trash") batch.update(ref, { folder: "trash" });
-    });
-    await batch.commit();
-    const n = ids.length;
+    const picked = allEmails.filter((m) => ids.includes(m.id));
+
+    if (action === "trash") {
+      selected.clear();
+      await moveToTrash(picked);
+      return;
+    }
+
+    const patch = action === "read" ? { read: true } : action === "unread" ? { read: false } : { starred: true };
+    try {
+      const batch = writeBatch(db);
+      ids.forEach((id) => batch.update(doc(db, "users", currentUser.uid, "emails", id), patch));
+      await batch.commit();
+      toast(`${ids.length} message${ids.length === 1 ? "" : "s"} updated`);
+    } catch (err) {
+      toast("Could not update the selected messages.");
+    }
     selected.clear();
-    toast(`${n} message${n === 1 ? "" : "s"} updated`);
+    renderList();
   }
 
   document.querySelectorAll("[data-bulk]").forEach((b) => b.addEventListener("click", () => bulk(b.dataset.bulk)));
@@ -979,33 +986,104 @@
   }
 
   /* ---------- actions ---------- */
-  async function moveToTrash(mails) {
-    const prev = mails.map((m) => ({ id: m.id, folder: m.folder }));
-    for (const m of mails) {
-      await updateDoc(doc(db, "users", currentUser.uid, "emails", m.id), { folder: "trash" });
+  // One place for every Firestore write, so a rejected rule shows a message
+  // instead of failing silently.
+  async function writeMail(id, patch, errMsg) {
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid, "emails", id), patch);
+      return true;
+    } catch (err) {
+      toast(errMsg || "Could not update this message. Check your connection.");
+      return false;
     }
+  }
+
+  function dropFromList(id) {
+    allEmails = allEmails.filter((m) => m.id !== id);
+    selected.delete(id);
+    renderList();
+  }
+
+  async function moveToTrash(mails) {
+    if (!mails.length) return;
+    const prev = mails.map((m) => ({ id: m.id, folder: m.folder || "inbox", snapshot: m }));
+
+    // Optimistic: take them out of the current view straight away
+    mails.forEach((m) => { m.folder = "trash"; });
+    if (selectedEmailId && mails.some((m) => m.id === selectedEmailId)) closeReader();
+    else renderList();
+
+    let failed = 0;
+    for (const m of mails) {
+      const ok = await writeMail(m.id, { folder: "trash" }, "Could not move to Trash.");
+      if (!ok) failed += 1;
+    }
+    if (failed) {
+      // put the failed ones back
+      for (const p of prev) { const live = allEmails.find((x) => x.id === p.id); if (live) live.folder = p.folder; }
+      renderList();
+      return;
+    }
+
     toast(`Moved ${mails.length} to Trash`, async () => {
-      for (const p of prev) await updateDoc(doc(db, "users", currentUser.uid, "emails", p.id), { folder: p.folder || "inbox" });
+      for (const p of prev) {
+        const live = allEmails.find((x) => x.id === p.id);
+        if (live) live.folder = p.folder;          // instant, then the snapshot confirms
+        await writeMail(p.id, { folder: p.folder }, "Could not undo.");
+      }
+      renderList();
       toast("Restored");
     });
+  }
+
+  async function deleteForever(mails) {
+    if (!mails.length) return;
+    const ok = window.confirm(
+      mails.length === 1
+        ? "Delete this message permanently? This cannot be undone."
+        : `Delete ${mails.length} messages permanently? This cannot be undone.`
+    );
+    if (!ok) return;
+
+    const removed = mails.map((m) => ({ ...m }));
+    mails.forEach((m) => dropFromList(m.id));
     closeReader();
+
+    let failed = 0;
+    for (const m of mails) {
+      try {
+        await deleteDoc(doc(db, "users", currentUser.uid, "emails", m.id));
+      } catch (err) {
+        failed += 1;
+      }
+    }
+    if (failed) {
+      allEmails = allEmails.concat(removed);
+      allEmails.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+      renderList();
+      toast(`Could not delete ${failed} message${failed === 1 ? "" : "s"}.`);
+    } else {
+      toast("Deleted permanently");
+    }
   }
 
   document.getElementById("starBtn").addEventListener("click", async () => {
     const m = allEmails.find((x) => x.id === selectedEmailId);
     if (!m) return;
-    await updateDoc(doc(db, "users", currentUser.uid, "emails", m.id), { starred: !m.starred });
+    await writeMail(m.id, { starred: !m.starred }, "Could not star this message.");
   });
 
   document.getElementById("deleteBtn").addEventListener("click", async () => {
     const m = allEmails.find((x) => x.id === selectedEmailId);
     if (!m) return;
-    if (m.folder === "trash") {
-      await deleteDoc(doc(db, "users", currentUser.uid, "emails", m.id));
-      toast("Deleted permanently");
-      closeReader();
-    } else {
-      moveToTrash([m]);
+    const btn = document.getElementById("deleteBtn");
+    if (btn.disabled) return;
+    btn.disabled = true;
+    try {
+      if (m.folder === "trash") await deleteForever([m]);
+      else await moveToTrash([m]);
+    } finally {
+      btn.disabled = false;
     }
   });
 
