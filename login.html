@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in — Eyemail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white w-full max-w-md rounded-2xl shadow-lg border border-slate-200 p-8">
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600 text-white font-bold text-xl mb-3">E</div>
+      <h1 class="text-2xl font-bold text-slate-900">Sign in to Eyemail</h1>
+      <p id="subTitle" class="text-sm text-slate-500 mt-1">Enter your <span class="font-semibold text-slate-700">@eyemail.in</span> credentials</p>
+    </div>
+
+    <div id="alertBox" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+
+    <!-- Step 1: Email & Password -->
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Eyemail Address</label>
+        <input id="emailInput" type="text" required placeholder="yourname@eyemail.in"
+          class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 lowercase" />
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-sm font-medium text-slate-700">Password</label>
+          <a href="forgot-password.html" class="text-xs font-semibold text-blue-600 hover:underline">Forgot password?</a>
+        </div>
+        <input id="passwordInput" type="password" required placeholder="Enter your password"
+          class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <button id="loginBtn" type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition shadow-sm">
+        Continue & Send OTP
+      </button>
+    </form>
+
+    <!-- Step 2: 6-Digit OTP Verification -->
+    <form id="otpForm" class="hidden space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">6-Digit Verification OTP</label>
+        <input id="otpInput" type="text" inputmode="numeric" maxlength="6" required placeholder="123456"
+          class="w-full px-3.5 py-3 text-center tracking-[0.4em] text-xl font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <button id="verifyOtpBtn" type="submit"
+        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl transition shadow-sm">
+        Verify OTP & Open Inbox
+      </button>
+
+      <div class="flex items-center justify-between text-xs pt-1">
+        <button type="button" id="resendOtpBtn" class="text-blue-600 font-semibold hover:underline">Resend OTP</button>
+        <button type="button" id="cancelOtpBtn" class="text-slate-500 hover:underline">Use another account</button>
+      </div>
+    </form>
+
+    <p class="text-center text-sm text-slate-600 mt-6">
+      Don't have an account?
+      <a href="signup.html" class="text-blue-600 font-semibold hover:underline">Create Eyemail</a>
+    </p>
+  </div>
+
+  <script type="module">
+    import { auth, BACKEND_URL, DOMAIN_NAME } from "./firebase-config.js";
+    import { signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const loginForm = document.getElementById("loginForm");
+    const otpForm = document.getElementById("otpForm");
+    const alertBox = document.getElementById("alertBox");
+    const subTitle = document.getElementById("subTitle");
+    const loginBtn = document.getElementById("loginBtn");
+    const verifyOtpBtn = document.getElementById("verifyOtpBtn");
+
+    let activeUser = null;
+
+    function showAlert(msg, isError = true) {
+      alertBox.textContent = msg;
+      alertBox.className = `mb-4 p-3 rounded-lg text-sm ${
+        isError ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+      }`;
+      alertBox.classList.remove("hidden");
+    }
+
+    async function triggerOtp(user) {
+      const token = await user.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/auth/send-login-otp`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Could not send login OTP.");
+      return data.maskedRecoveryEmail;
+    }
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      alertBox.classList.add("hidden");
+
+      let raw = document.getElementById("emailInput").value.trim().toLowerCase();
+      if (!raw.includes("@")) raw = `${raw}@${DOMAIN_NAME}`;
+      const password = document.getElementById("passwordInput").value;
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Verifying password & sending OTP...";
+
+      try {
+        const cred = await signInWithEmailAndPassword(auth, raw, password);
+        activeUser = cred.user;
+        const masked = await triggerOtp(activeUser);
+
+        loginForm.classList.add("hidden");
+        otpForm.classList.remove("hidden");
+        subTitle.textContent = `Enter the 6-digit OTP sent to ${masked}`;
+        showAlert(`OTP sent to ${masked} (valid for 5 minutes).`, false);
+      } catch (err) {
+        if (activeUser) {
+          await signOut(auth);
+          activeUser = null;
+        }
+        showAlert(err.message && !err.code ? err.message : "Invalid Eyemail address or password.", true);
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Continue & Send OTP";
+      }
+    });
+
+    otpForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      alertBox.classList.add("hidden");
+      if (!activeUser) return;
+
+      const otp = document.getElementById("otpInput").value.trim();
+      verifyOtpBtn.disabled = true;
+      verifyOtpBtn.textContent = "Verifying OTP...";
+
+      try {
+        const token = await activeUser.getIdToken();
+        const res = await fetch(`${BACKEND_URL}/api/auth/verify-login-otp`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ otp })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Invalid OTP");
+
+        sessionStorage.setItem(`eyemail_2fa_${activeUser.uid}`, "verified");
+        window.location.href = "index.html";
+      } catch (err) {
+        showAlert(err.message, true);
+        verifyOtpBtn.disabled = false;
+        verifyOtpBtn.textContent = "Verify OTP & Open Inbox";
+      }
+    });
+
+    document.getElementById("resendOtpBtn").addEventListener("click", async () => {
+      if (!activeUser) return;
+      try {
+        const masked = await triggerOtp(activeUser);
+        showAlert(`New OTP sent to ${masked}.`, false);
+      } catch (err) {
+        showAlert(err.message, true);
+      }
+    });
+
+    document.getElementById("cancelOtpBtn").addEventListener("click", async () => {
+      await signOut(auth);
+      activeUser = null;
+      otpForm.classList.add("hidden");
+      loginForm.classList.remove("hidden");
+      alertBox.classList.add("hidden");
+      subTitle.innerHTML = 'Enter your <span class="font-semibold text-slate-700">@eyemail.in</span> credentials';
+    });
+  </script>
+</body>
+</html>
