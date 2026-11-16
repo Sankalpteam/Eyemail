@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eyemail — Secure @eyemail.in Webmail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen overflow-hidden select-none">
+
+  <!-- ==================== 1. AUTH SCREEN ==================== -->
+  <div id="auth-screen" class="h-full flex items-center justify-center p-4 bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200/80 p-8">
+      <div class="flex items-center justify-center gap-2.5 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-600/20">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <span class="text-2xl font-bold tracking-tight text-slate-900">Eye<span class="text-blue-600">mail</span></span>
+      </div>
+
+      <div class="grid grid-cols-2 bg-slate-100 p-1 rounded-xl mb-6 text-sm font-medium">
+        <button id="tab-login" class="py-2 rounded-lg bg-white text-blue-600 shadow-sm transition">Sign In</button>
+        <button id="tab-signup" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 transition">Create Account</button>
+      </div>
+
+      <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium"></div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Eyemail Address</label>
+          <div class="flex items-center border border-slate-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+            <input id="login-username" type="text" required placeholder="username" class="w-full px-3.5 py-2.5 text-sm outline-none" />
+            <span class="px-3 py-2.5 bg-slate-100 text-slate-500 text-sm font-medium border-l border-slate-200">@eyemail.in</span>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Password</label>
+          <input id="login-password" type="password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <button id="login-submit" type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-blue-600/20 transition">
+          Sign In to Eyemail
+        </button>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signup-form" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Full Name</label>
+          <input id="signup-name" type="text" required placeholder="Yashwanth P" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="text-xs font-semibold text-slate-600">Choose Eyemail ID</label>
+            <span id="username-status" class="text-xs font-medium text-slate-400"></span>
+          </div>
+          <div class="flex items-center border border-slate-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+            <input id="signup-username" type="text" required placeholder="yourname" class="w-full px-3.5 py-2.5 text-sm outline-none" />
+            <span class="px-3 py-2.5 bg-slate-100 text-slate-500 text-sm font-medium border-l border-slate-200">@eyemail.in</span>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Create Password (min 6 chars)</label>
+          <input id="signup-password" type="password" minlength="6" required placeholder="••••••••" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <button id="signup-submit" type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-blue-600/20 transition">
+          Create Free @eyemail.in Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== 2. WEBMAIL APP SCREEN ==================== -->
+  <div id="app-screen" class="hidden h-full flex flex-col">
+    <header class="h-16 bg-white border-b border-slate-200 px-4 flex items-center justify-between gap-4 shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <span class="text-xl font-bold text-slate-900">Eye<span class="text-blue-600">mail</span></span>
+      </div>
+
+      <div class="flex-1 max-w-xl">
+        <div class="relative">
+          <input id="search-input" type="text" placeholder="Search mail by sender, subject, or content..." class="w-full bg-slate-100 focus:bg-white border border-transparent focus:border-blue-400 rounded-xl pl-10 pr-4 py-2 text-sm outline-none transition" />
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="text-right hidden sm:block">
+          <div id="user-display-name" class="text-xs font-bold text-slate-800">User</div>
+          <div id="user-display-email" class="text-xs text-slate-500">user@eyemail.in</div>
+        </div>
+        <button id="logout-btn" class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-red-600 bg-slate-100 hover:bg-red-50 rounded-lg transition">
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden">
+      <aside class="w-56 bg-slate-50 border-r border-slate-200 p-3 flex flex-col justify-between shrink-0">
+        <div>
+          <button id="compose-btn" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 text-sm mb-5 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Compose
+          </button>
+
+          <nav class="space-y-1 text-sm font-medium">
+            <button data-folder="inbox" class="folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-blue-100/80 text-blue-700 font-semibold">
+              <span>Inbox</span>
+              <span id="unread-badge" class="hidden text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">0</span>
+            </button>
+            <button data-folder="starred" class="folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-200/60">
+              <span>Starred</span>
+            </button>
+            <button data-folder="sent" class="folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-200/60">
+              <span>Sent</span>
+            </button>
+            <button data-folder="trash" class="folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-200/60">
+              <span>Trash</span>
+            </button>
+          </nav>
+        </div>
+
+        <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-500">
+          <div class="font-semibold text-slate-700 mb-0.5">Eyemail Cloud</div>
+          <div>@eyemail.in Free Tier</div>
+        </div>
+      </aside>
+
+      <section id="list-pane" class="w-full md:w-96 bg-white border-r border-slate-200 flex flex-col overflow-hidden shrink-0">
+        <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+          <h2 id="folder-title" class="text-sm font-bold uppercase tracking-wider text-slate-500">Inbox</h2>
+          <span id="mail-count" class="text-xs text-slate-400">0 messages</span>
+        </div>
+        <div id="email-list" class="flex-1 overflow-y-auto divide-y divide-slate-100"></div>
+      </section>
+
+      <main id="reading-pane" class="hidden md:flex flex-1 bg-white flex-col overflow-hidden">
+        <div id="empty-reader" class="flex-1 flex flex-col items-center justify-center text-slate-400 p-6">
+          <svg class="w-12 h-12 mb-3 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          <p class="text-sm font-medium">Select an email to read</p>
+        </div>
+
+        <div id="mail-viewer" class="hidden flex-1 flex flex-col overflow-hidden">
+          <div class="px-6 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/60">
+            <button id="back-to-list" class="md:hidden text-xs font-semibold text-blue-600">← Back</button>
+            <div class="flex items-center gap-2 ml-auto">
+              <button id="star-toggle-btn" class="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100">★ Star</button>
+              <button id="trash-toggle-btn" class="px-3 py-1.5 text-xs font-medium border border-slate-200 text-red-600 rounded-lg hover:bg-red-50">Delete</button>
+            </div>
+          </div>
+
+          <div class="flex-1 overflow-y-auto p-6 select-text">
+            <h1 id="view-subject" class="text-xl font-bold text-slate-900 mb-4">Subject</h1>
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+              <div>
+                <div id="view-from" class="text-sm font-semibold text-slate-800">Sender</div>
+                <div id="view-to" class="text-xs text-slate-500">to me</div>
+              </div>
+              <div id="view-date" class="text-xs text-slate-400">Date</div>
+            </div>
+            <div id="view-body" class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed"></div>
+
+            <div class="mt-8 pt-6 border-t border-slate-200">
+              <div class="text-xs font-semibold text-slate-500 mb-2">Quick Reply</div>
+              <textarea id="quick-reply-text" rows="3" placeholder="Write your reply here..." class="w-full p-3 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+              <button id="quick-reply-send" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition">
+                Send Reply
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ==================== 3. COMPOSE MODAL ==================== -->
+  <div id="compose-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between">
+        <span class="text-sm font-semibold">New Message</span>
+        <button id="close-compose" class="text-slate-400 hover:text-white text-lg leading-none">×</button>
+      </div>
+      <form id="compose-form" class="p-5 space-y-3.5">
+        <div>
+          <input id="compose-to" type="email" required placeholder="To (e.g. friend@gmail.com or rahul@eyemail.in)" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <input id="compose-subject" type="text" required placeholder="Subject" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <textarea id="compose-body" rows="7" required placeholder="Write your email..." class="w-full p-3.5 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" id="cancel-compose" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Cancel</button>
+          <button id="compose-send-btn" type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-blue-600/20">
+            Send Email
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-medium px-4 py-3 rounded-xl shadow-lg z-50"></div>
+
+  <!-- ==================== 4. FIREBASE + APP LOGIC ==================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signInWithCustomToken,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      collection,
+      query,
+      orderBy,
+      onSnapshot,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // =========================================================================
+    // REPLACE THESE SETTINGS WITH YOUR FIREBASE & RENDER KEYS
+    // =========================================================================
+    const CONFIG = {
+      firebaseConfig: {
+        apiKey: "YOUR_FIREBASE_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+      },
+      BACKEND_URL: "https://your-eyemail-backend.onrender.com",
+      DOMAIN: "eyemail.in"
+    };
+
+    const app = initializeApp(CONFIG.firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Handle automatic SSO login from DynamoDB dashboard if ?sso_token= is present
+    const urlParams = new URLSearchParams(window.location.search);
+    const ssoToken = urlParams.get("sso_token");
+    if (ssoToken) {
+      signInWithCustomToken(auth, ssoToken)
+        .then(() => window.history.replaceState({}, document.title, window.location.pathname))
+        .catch((err) => console.error("SSO login error:", err));
+    }
+
+    let currentUser = null;
+    let currentFolder = "inbox";
+    let allEmails = [];
+    let selectedEmailId = null;
+    let unsubscribeEmails = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.remove("hidden");
+      setTimeout(() => t.classList.add("hidden"), 3500);
+    }
+
+    function showAuthError(msg) {
+      const box = $("auth-error");
+      box.textContent = msg;
+      box.classList.remove("hidden");
+    }
+
+    $("tab-login").onclick = () => {
+      $("login-form").classList.remove("hidden");
+      $("signup-form").classList.add("hidden");
+      $("tab-login").className = "py-2 rounded-lg bg-white text-blue-600 shadow-sm transition";
+      $("tab-signup").className = "py-2 rounded-lg text-slate-600 hover:text-slate-900 transition";
+      $("auth-error").classList.add("hidden");
+    };
+
+    $("tab-signup").onclick = () => {
+      $("signup-form").classList.remove("hidden");
+      $("login-form").classList.add("hidden");
+      $("tab-signup").className = "py-2 rounded-lg bg-white text-blue-600 shadow-sm transition";
+      $("tab-login").className = "py-2 rounded-lg text-slate-600 hover:text-slate-900 transition";
+      $("auth-error").classList.add("hidden");
+    };
+
+    let checkTimer = null;
+    $("signup-username").addEventListener("input", (e) => {
+      clearTimeout(checkTimer);
+      const raw = e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, "");
+      e.target.value = raw;
+      const status = $("username-status");
+
+      if (raw.length < 3) {
+        status.textContent = "Min 3 characters";
+        status.className = "text-xs font-medium text-slate-400";
+        return;
+      }
+
+      status.textContent = "Checking...";
+      checkTimer = setTimeout(async () => {
+        try {
+          const snap = await getDoc(doc(db, "usernames", raw));
+          if (snap.exists()) {
+            status.textContent = "Taken ✕";
+            status.className = "text-xs font-semibold text-red-600";
+          } else {
+            status.textContent = "Available ✓";
+            status.className = "text-xs font-semibold text-emerald-600";
+          }
+        } catch {
+          status.textContent = "";
+        }
+      }, 400);
+    });
+
+    $("login-form").onsubmit = async (e) => {
+      e.preventDefault();
+      $("auth-error").classList.add("hidden");
+      const username = $("login-username").value.trim().toLowerCase();
+      const email = username.includes("@") ? username : `${username}@${CONFIG.DOMAIN}`;
+      const password = $("login-password").value;
+
+      try {
+        $("login-submit").textContent = "Signing in...";
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        showAuthError(err.message.replace("Firebase:", "").trim());
+      } finally {
+        $("login-submit").textContent = "Sign In to Eyemail";
+      }
+    };
+
+    $("signup-form").onsubmit = async (e) => {
+      e.preventDefault();
+      $("auth-error").classList.add("hidden");
+      const name = $("signup-name").value.trim();
+      const username = $("signup-username").value.trim().toLowerCase();
+      const password = $("signup-password").value;
+
+      if (username.length < 3) return showAuthError("Username must be at least 3 characters.");
+
+      try {
+        $("signup-submit").textContent = "Creating account...";
+        const existing = await getDoc(doc(db, "usernames", username));
+        if (existing.exists()) {
+          throw new Error("This @eyemail.in address is already taken.");
+        }
+
+        const email = `${username}@${CONFIG.DOMAIN}`;
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = cred.user.uid;
+
+        await setDoc(doc(db, "usernames", username), { uid, email });
+        await setDoc(doc(db, "users", uid), {
+          uid,
+          name,
+          username,
+          email,
+          createdAt: new Date().toISOString()
+        });
+
+        await addDoc(collection(db, "users", uid, "emails"), {
+          from: `welcome@${CONFIG.DOMAIN}`,
+          fromName: "Eyemail Team",
+          to: email,
+          subject: `Welcome to Eyemail, ${name}!`,
+          body: `Hi ${name},\n\nYour new ${email} mailbox is active and ready.\n\nYou can send and receive emails with Gmail, Yahoo, and other Eyemail users instantly.\n\n— Team Eyemail`,
+          snippet: `Hi ${name}, your new ${email} mailbox is active and ready.`,
+          folder: "inbox",
+          read: false,
+          starred: true,
+          timestamp: serverTimestamp(),
+          createdAt: new Date().toISOString()
+        });
+      } catch (err) {
+        showAuthError(err.message.replace("Firebase:", "").trim());
+      } finally {
+        $("signup-submit").textContent = "Create Free @eyemail.in Account";
+      }
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (unsubscribeEmails) unsubscribeEmails();
+
+      if (!user) {
+        $("auth-screen").classList.remove("hidden");
+        $("app-screen").classList.add("hidden");
+        return;
+      }
+
+      $("auth-screen").classList.add("hidden");
+      $("app-screen").classList.remove("hidden");
+
+      const profileSnap = await getDoc(doc(db, "users", user.uid));
+      const profile = profileSnap.exists() ? profileSnap.data() : { name: user.email.split("@")[0], email: user.email };
+      $("user-display-name").textContent = profile.name;
+      $("user-display-email").textContent = profile.email;
+
+      const q = query(collection(db, "users", user.uid, "emails"), orderBy("createdAt", "desc"));
+      unsubscribeEmails = onSnapshot(q, (snapshot) => {
+        allEmails = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        renderEmailList();
+      });
+    });
+
+    $("logout-btn").onclick = () => signOut(auth);
+
+    document.querySelectorAll(".folder-btn").forEach((btn) => {
+      btn.onclick = () => {
+        currentFolder = btn.dataset.folder;
+        selectedEmailId = null;
+        $("mail-viewer").classList.add("hidden");
+        $("empty-reader").classList.remove("hidden");
+        $("folder-title").textContent = currentFolder;
+
+        document.querySelectorAll(".folder-btn").forEach((b) => {
+          b.className = "folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-200/60";
+        });
+        btn.className = "folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-blue-100/80 text-blue-700 font-semibold";
+        renderEmailList();
+      };
+    });
+
+    $("search-input").addEventListener("input", renderEmailList);
+
+    function renderEmailList() {
+      const search = $("search-input").value.trim().toLowerCase();
+      const unreadCount = allEmails.filter((m) => m.folder === "inbox" && !m.read).length;
+
+      const badge = $("unread-badge");
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.classList.remove("hidden");
+      } else {
+        badge.classList.add("hidden");
+      }
+
+      const filtered = allEmails.filter((m) => {
+        const matchesFolder =
+          currentFolder === "starred" ? m.starred && m.folder !== "trash" : m.folder === currentFolder;
+        if (!matchesFolder) return false;
+        if (!search) return true;
+        return (
+          (m.subject || "").toLowerCase().includes(search) ||
+          (m.from || "").toLowerCase().includes(search) ||
+          (m.body || "").toLowerCase().includes(search)
+        );
+      });
+
+      $("mail-count").textContent = `${filtered.length} messages`;
+      const listEl = $("email-list");
+      listEl.innerHTML = "";
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">No emails in ${currentFolder}</div>`;
+        return;
+      }
+
+      filtered.forEach((mail) => {
+        const div = document.createElement("div");
+        const isSelected = mail.id === selectedEmailId;
+        div.className = `p-4 cursor-pointer transition ${
+          isSelected ? "bg-blue-50/90" : mail.read ? "bg-white hover:bg-slate-50" : "bg-blue-50/30 hover:bg-slate-50"
+        }`;
+        div.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="text-xs truncate ${mail.read ? "font-medium text-slate-700" : "font-bold text-slate-900"}">
+              ${currentFolder === "sent" ? "To: " + mail.to : mail.fromName || mail.from}
+            </span>
+            <span class="text-[11px] text-slate-400 shrink-0">${new Date(mail.createdAt).toLocaleDateString()}</span>
+          </div>
+          <div class="text-xs truncate mb-1 ${mail.read ? "text-slate-600" : "font-bold text-slate-900"}">${mail.subject}</div>
+          <div class="text-xs text-slate-400 truncate">${mail.snippet || ""}</div>
+        `;
+        div.onclick = () => openEmail(mail);
+        listEl.appendChild(div);
+      });
+    }
+
+    async function openEmail(mail) {
+      selectedEmailId = mail.id;
+      $("empty-reader").classList.add("hidden");
+      $("mail-viewer").classList.remove("hidden");
+      $("reading-pane").classList.remove("hidden");
+
+      $("view-subject").textContent = mail.subject;
+      $("view-from").textContent = `${mail.fromName || ""} <${mail.from}>`;
+      $("view-to").textContent = `to ${mail.to}`;
+      $("view-date").textContent = new Date(mail.createdAt).toLocaleString();
+      $("view-body").textContent = mail.body;
+      $("star-toggle-btn").textContent = mail.starred ? "★ Starred" : "☆ Star";
+      $("trash-toggle-btn").textContent = mail.folder === "trash" ? "Delete Forever" : "Move to Trash";
+
+      if (!mail.read && currentUser) {
+        await updateDoc(doc(db, "users", currentUser.uid, "emails", mail.id), { read: true });
+      }
+      renderEmailList();
+    }
+
+    $("star-toggle-btn").onclick = async () => {
+      if (!selectedEmailId || !currentUser) return;
+      const mail = allEmails.find((m) => m.id === selectedEmailId);
+      if (!mail) return;
+      await updateDoc(doc(db, "users", currentUser.uid, "emails", mail.id), { starred: !mail.starred });
+    };
+
+    $("trash-toggle-btn").onclick = async () => {
+      if (!selectedEmailId || !currentUser) return;
+      const mail = allEmails.find((m) => m.id === selectedEmailId);
+      if (!mail) return;
+
+      if (mail.folder === "trash") {
+        await deleteDoc(doc(db, "users", currentUser.uid, "emails", mail.id));
+        showToast("Deleted permanently");
+      } else {
+        await updateDoc(doc(db, "users", currentUser.uid, "emails", mail.id), { folder: "trash" });
+        showToast("Moved to Trash");
+      }
+      selectedEmailId = null;
+      $("mail-viewer").classList.add("hidden");
+      $("empty-reader").classList.remove("hidden");
+    };
+
+    async function dispatchEmail(to, subject, body) {
+      const token = await currentUser.getIdToken();
+      const resp = await fetch(`${CONFIG.BACKEND_URL}/api/send-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ to, subject, body })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || "Failed to send email");
+      return data;
+    }
+
+    $("compose-btn").onclick = () => $("compose-modal").classList.remove("hidden");
+    $("close-compose").onclick = () => $("compose-modal").classList.add("hidden");
+    $("cancel-compose").onclick = () => $("compose-modal").classList.add("hidden");
+
+    $("compose-form").onsubmit = async (e) => {
+      e.preventDefault();
+      const to = $("compose-to").value.trim();
+      const subject = $("compose-subject").value.trim();
+      const body = $("compose-body").value.trim();
+
+      try {
+        $("compose-send-btn").textContent = "Sending...";
+        $("compose-send-btn").disabled = true;
+        await dispatchEmail(to, subject, body);
+        $("compose-form").reset();
+        $("compose-modal").classList.add("hidden");
+        showToast("Email sent successfully ✓");
+      } catch (err) {
+        showToast("Error: " + err.message);
+      } finally {
+        $("compose-send-btn").textContent = "Send Email";
+        $("compose-send-btn").disabled = false;
+      }
+    };
+
+    $("quick-reply-send").onclick = async () => {
+      const mail = allEmails.find((m) => m.id === selectedEmailId);
+      const replyBody = $("quick-reply-text").value.trim();
+      if (!mail || !replyBody) return;
+
+      const replyTo = mail.folder === "sent" ? mail.to : mail.from;
+      const replySubject = mail.subject.startsWith("Re:") ? mail.subject : `Re: ${mail.subject}`;
+
+      try {
+        $("quick-reply-send").textContent = "Sending...";
+        await dispatchEmail(replyTo, replySubject, replyBody);
+        $("quick-reply-text").value = "";
+        showToast("Reply sent ✓");
+      } catch (err) {
+        showToast("Error: " + err.message);
+      } finally {
+        $("quick-reply-send").textContent = "Send Reply";
+      }
+    };
+  </script>
+</body>
+</html>
