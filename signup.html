@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Eyemail Account — @eyemail.in</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white w-full max-w-md rounded-2xl shadow-lg border border-slate-200 p-8">
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600 text-white font-bold text-xl mb-3">E</div>
+      <h1 class="text-2xl font-bold text-slate-900">Create your Eyemail</h1>
+      <p class="text-sm text-slate-500 mt-1">Protected with 2FA OTP & 1 GB free storage</p>
+    </div>
+
+    <div id="alertBox" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+
+    <form id="signupForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+        <input id="fullName" type="text" required placeholder="e.g. Yashwanth P"
+          class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Choose Eyemail Address</label>
+        <div class="flex rounded-xl border border-slate-300 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+          <input id="username" type="text" required placeholder="yourname" autocomplete="off"
+            class="w-full px-3.5 py-2.5 focus:outline-none lowercase" />
+          <span class="bg-slate-100 px-3.5 py-2.5 text-slate-600 font-medium border-l border-slate-300 select-none">@eyemail.in</span>
+        </div>
+        <p id="usernameHint" class="text-xs text-slate-500 mt-1">3–30 characters: letters, numbers, dots, underscores.</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Recovery Email (Used for Login OTP & Reset)</label>
+        <input id="recoveryEmail" type="email" required placeholder="you@gmail.com"
+          class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+        <input id="password" type="password" required minlength="6" placeholder="Minimum 6 characters"
+          class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <button id="submitBtn" type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition shadow-sm">
+        Create Eyemail Account
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-slate-600 mt-6">
+      Already have an Eyemail?
+      <a href="login.html" class="text-blue-600 font-semibold hover:underline">Sign in</a>
+    </p>
+  </div>
+
+  <script type="module">
+    import { auth, BACKEND_URL, DOMAIN_NAME } from "./firebase-config.js";
+    import { createUserWithEmailAndPassword, updateProfile, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const form = document.getElementById("signupForm");
+    const alertBox = document.getElementById("alertBox");
+    const submitBtn = document.getElementById("submitBtn");
+    const usernameInput = document.getElementById("username");
+    const usernameHint = document.getElementById("usernameHint");
+
+    function showAlert(msg, isError = true) {
+      alertBox.textContent = msg;
+      alertBox.className = `mb-4 p-3 rounded-lg text-sm ${
+        isError ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+      }`;
+      alertBox.classList.remove("hidden");
+    }
+
+    let checkTimer;
+    usernameInput.addEventListener("input", () => {
+      clearTimeout(checkTimer);
+      const val = usernameInput.value.trim().toLowerCase().split("@")[0];
+      if (val.length < 3) {
+        usernameHint.textContent = "3–30 characters: letters, numbers, dots, underscores.";
+        usernameHint.className = "text-xs text-slate-500 mt-1";
+        return;
+      }
+      checkTimer = setTimeout(async () => {
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/check-username/${encodeURIComponent(val)}`);
+          const data = await res.json();
+          if (res.ok && data.available) {
+            usernameHint.textContent = `✓ ${data.email} is available!`;
+            usernameHint.className = "text-xs text-emerald-600 font-medium mt-1";
+          } else {
+            usernameHint.textContent = `✕ ${data.detail || (val + "@eyemail.in is already taken")}`;
+            usernameHint.className = "text-xs text-red-600 font-medium mt-1";
+          }
+        } catch (_) {}
+      }, 450);
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      alertBox.classList.add("hidden");
+
+      const name = document.getElementById("fullName").value.trim();
+      const rawUser = usernameInput.value.trim().toLowerCase().split("@")[0];
+      const recoveryEmail = document.getElementById("recoveryEmail").value.trim().toLowerCase();
+      const password = document.getElementById("password").value;
+      const eyemail = `${rawUser}@${DOMAIN_NAME}`;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating mailbox...";
+
+      let createdUser = null;
+      try {
+        const chk = await fetch(`${BACKEND_URL}/api/check-username/${encodeURIComponent(rawUser)}`);
+        const chkData = await chk.json();
+        if (!chk.ok) throw new Error(chkData.detail || "Invalid username");
+        if (!chkData.available) throw new Error(`${eyemail} is already taken. Try another.`);
+
+        const cred = await createUserWithEmailAndPassword(auth, eyemail, password);
+        createdUser = cred.user;
+        await updateProfile(createdUser, { displayName: name });
+        const token = await createdUser.getIdToken();
+
+        const regRes = await fetch(`${BACKEND_URL}/api/auth/register-mailbox`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            username: rawUser,
+            name: name,
+            recovery_email: recoveryEmail
+          })
+        });
+
+        const regData = await regRes.json();
+        if (!regRes.ok) {
+          throw new Error(regData.detail || "Failed to initialize mailbox.");
+        }
+
+        sessionStorage.setItem(`eyemail_2fa_${createdUser.uid}`, "verified");
+        window.location.href = "index.html";
+      } catch (err) {
+        if (createdUser) {
+          try { await deleteUser(createdUser); } catch (_) {}
+        }
+        let message = err.message || "Signup failed";
+        if (err.code === "auth/email-already-in-use") {
+          message = `${eyemail} is already registered. Please sign in.`;
+        }
+        showAlert(message, true);
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Create Eyemail Account";
+      }
+    });
+  </script>
+</body>
+</html>
