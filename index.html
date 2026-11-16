@@ -418,6 +418,7 @@
         <button class="tb" data-bulk="unread">Unread</button>
         <button class="tb" data-bulk="star">Star</button>
         <button class="tb" data-bulk="trash">Trash</button>
+        <button class="tb danger" data-bulk="forever">Delete forever</button>
         <button class="tb" data-bulk="clear">Clear</button>
       </div>
 
@@ -917,6 +918,12 @@
       return;
     }
 
+    if (action === "forever") {
+      selected.clear();
+      await deleteForever(picked);
+      return;
+    }
+
     const patch = action === "read" ? { read: true } : action === "unread" ? { read: false } : { starred: true };
     try {
       const batch = writeBatch(db);
@@ -1042,24 +1049,31 @@
     if (!ok) return;
 
     const removed = mails.map((m) => ({ ...m }));
+    const ids = removed.map((m) => m.id);
+
     mails.forEach((m) => dropFromList(m.id));
     closeReader();
 
-    let failed = 0;
-    for (const m of mails) {
-      try {
-        await deleteDoc(doc(db, "users", currentUser.uid, "emails", m.id));
-      } catch (err) {
-        failed += 1;
-      }
-    }
-    if (failed) {
+    try {
+      // The server owns the delete, so a browser rule cannot half-do it,
+      // and it gives us the storage back.
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/messages/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ ids })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Delete failed.");
+
+      toast(data.deleted === 1 ? "Deleted permanently" : `${data.deleted} messages deleted`);
+      if (currentUser) loadProfile(currentUser);
+    } catch (err) {
+      // Put them back so nothing disappears silently
       allEmails = allEmails.concat(removed);
       allEmails.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
       renderList();
-      toast(`Could not delete ${failed} message${failed === 1 ? "" : "s"}.`);
-    } else {
-      toast("Deleted permanently");
+      toast(err.message || "Could not delete. Nothing was removed.");
     }
   }
 
