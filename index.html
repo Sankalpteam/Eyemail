@@ -193,6 +193,12 @@
   .thread-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--surface-2);cursor:pointer}
   .thread-item b{font-size:12px}
   .thread-item span{display:block;font-size:11.3px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .reader-back, .reader-menu{display:none}
+  @media (max-width:1080px){ .reader-back{display:inline-flex} }
+  @media (max-width:860px){ .reader-menu{display:grid} }
+  .scrim{position:fixed;inset:0;background:rgba(10,16,24,.45);z-index:45;display:none}
+  .app.rail-open .scrim{display:block}
+  @media (min-width:861px){ .scrim{display:none !important} }
   .reader-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-3);
     font-size:12.5px;padding:24px;text-align:center}
   .reader-empty .glyph{width:46px;height:46px;border-radius:14px;background:var(--surface-3);display:grid;place-items:center}
@@ -377,6 +383,8 @@
     </div>
   </aside>
 
+  <div class="scrim" id="scrim"></div>
+
   <!-- ================= shell ================= -->
   <div class="shell">
     <section class="panel list" id="listPane">
@@ -453,6 +461,9 @@
         </div>
 
         <div class="toolbar">
+          <button class="iconbtn reader-menu" id="readerMenuBtn" title="Menu" style="width:30px;height:30px;flex:0 0 30px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
           <button class="tb primary" id="replyBtn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17 4 12l5-5"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
             Reply
@@ -463,7 +474,7 @@
           <button class="tb" id="labelBtn">Label</button>
           <div class="spacer"></div>
           <button class="tb danger" id="deleteBtn">Trash</button>
-          <button class="tb" id="backToListBtn" style="display:none">Back</button>
+          <button class="tb reader-back" id="backToListBtn">Back</button>
         </div>
 
         <div class="body-scroll">
@@ -946,8 +957,8 @@
     if (!m) return;
     renderList();
     renderDetail(m);
+    appEl.classList.remove("rail-open");
     appEl.classList.add("reader-open");
-    document.getElementById("backToListBtn").style.display = window.matchMedia("(max-width:1080px)").matches ? "inline-flex" : "none";
     if (!m.read) updateDoc(doc(db, "users", currentUser.uid, "emails", id), { read: true }).catch(() => {});
   }
 
@@ -1097,7 +1108,12 @@
     }
   });
 
-  document.getElementById("backToListBtn").addEventListener("click", () => appEl.classList.remove("reader-open"));
+  document.getElementById("backToListBtn").addEventListener("click", () => {
+    appEl.classList.remove("reader-open");
+  });
+
+  document.getElementById("readerMenuBtn").addEventListener("click", () => appEl.classList.add("rail-open"));
+  document.getElementById("scrim").addEventListener("click", () => appEl.classList.remove("rail-open"));
 
   /* ---------- compose ---------- */
   const composeModal = document.getElementById("composeModal");
