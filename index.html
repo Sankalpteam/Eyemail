@@ -102,7 +102,12 @@
   [data-rail="collapsed"] .brand{padding:4px 0 14px}
   [data-rail="collapsed"] .compose{padding:11px;width:44px;height:44px;border-radius:13px}
   [data-rail="collapsed"] .nav{width:100%}
-  [data-rail="collapsed"] .nav-item{justify-content:center;padding:11px 0}
+  [data-rail="collapsed"] .nav-item{justify-content:center;padding:11px 0;width:44px;height:42px;margin:0 auto}
+  [data-rail="collapsed"] .nav-item.active{border-radius:12px}
+  [data-rail="collapsed"] #labelNav,
+  [data-rail="collapsed"] #addLabelBtn,
+  [data-rail="collapsed"] #logoutBtn{display:none}
+  [data-rail="collapsed"] .nav-item .labeldot{display:none}
   [data-rail="collapsed"] .user{justify-content:center}
 
   /* ---------- shell ---------- */
@@ -274,11 +279,29 @@
     .app.reader-open .reader{display:flex}
   }
   @media (max-width:860px){
-    .app{grid-template-columns:1fr;padding:0;height:100dvh}
+    .app,
+    [data-rail="collapsed"] .app{grid-template-columns:1fr;padding:0;height:100dvh}
     .rail{position:fixed;inset:0 auto 0 0;width:270px;border-radius:0;z-index:50;transform:translateX(-100%);
       transition:transform .25s ease;box-shadow:var(--shadow-lg)}
     .app.rail-open .rail{transform:none}
     [data-rail="collapsed"] .rail{width:270px}
+    /* inside the mobile drawer the rail is always fully expanded */
+    .app.rail-open .rail .brand-txt,
+    .app.rail-open .rail .compose span,
+    .app.rail-open .rail .nav-item span,
+    .app.rail-open .rail .rail-label,
+    .app.rail-open .rail .storage,
+    .app.rail-open .rail .user-txt,
+    .app.rail-open .rail #logoutBtn{display:revert}
+    .app.rail-open .rail #labelNav{display:block}
+    .app.rail-open .rail #addLabelBtn{display:inline-block}
+    .app.rail-open .rail{padding:14px 12px 12px;align-items:stretch}
+    .app.rail-open .rail .brand{padding:4px 6px 14px}
+    .app.rail-open .rail .compose{width:auto;height:auto;padding:11px 14px;border-radius:var(--r-md)}
+    .app.rail-open .rail .nav{width:100%}
+    .app.rail-open .rail .nav-item{justify-content:flex-start;padding:9px 10px;width:100%;height:auto;margin:0}
+    .app.rail-open .rail .nav-item.active{border-radius:10px}
+    .app.rail-open .rail .user{justify-content:flex-start}
     .shell{padding:10px}
     .composer{right:10px;left:10px;width:auto;bottom:10px}
   }
@@ -1322,8 +1345,16 @@
   });
 
   document.getElementById("menuToggle").addEventListener("click", () => {
-    if (window.matchMedia("(max-width:860px)").matches) appEl.classList.toggle("rail-open");
-    else document.documentElement.dataset.rail = document.documentElement.dataset.rail === "expanded" ? "collapsed" : "expanded";
+    if (window.matchMedia("(max-width:860px)").matches) {
+      appEl.classList.toggle("rail-open");
+    } else {
+      document.documentElement.dataset.rail =
+        document.documentElement.dataset.rail === "expanded" ? "collapsed" : "expanded";
+    }
+  });
+  // leaving the mobile drawer open while rotating to desktop must not leave a stuck rail
+  window.addEventListener("resize", () => {
+    if (!window.matchMedia("(max-width:860px)").matches) appEl.classList.remove("rail-open");
   });
 
   document.getElementById("themeBtn").addEventListener("click", () => {
