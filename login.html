@@ -125,9 +125,9 @@
     </i> Eyemail</div>
     <div>
       <h2>Your business mail, without the bill.</h2>
-      <p>Unlimited @eyemail.in addresses on your own domain, 1 GB free storage, and an OTP on every login.</p>
+      <p>Unlimited @eyemail.in addresses on your own domain, 1 GB free storage, and a recovery mail verified at signup.</p>
       <div class="facts">
-        <div class="fact"><span class="tick">&#10003;</span><span><b>2FA on every sign-in</b> - a 6-digit code to your recovery mail</span></div>
+        <div class="fact"><span class="tick">&#10003;</span><span><b>Recovery mail verified</b> - a 6-digit code at signup, so password reset always reaches you</span></div>
         <div class="fact"><span class="tick">&#10003;</span><span><b>Real inbox</b> - send to Gmail, Yahoo and other Eyemail users</span></div>
         <div class="fact"><span class="tick">&#10003;</span><span><b>Custom domain</b> - MX and SPF records generated for you</span></div>
       </div>
@@ -135,14 +135,12 @@
     <div class="brandfoot">EYEMAIL.IN &middot; SECURE WEBMAIL</div>
   </section>
 
+
+
   <section class="formpane">
     <div class="card">
-      <div class="step">
-        <i id="step1Dot" class="on">1</i><b></b><i id="step2Dot">2</i>
-        <span id="stepLabel">Password</span>
-      </div>
       <h1>Sign in</h1>
-      <p class="sub" id="subTitle">Enter your <b>@eyemail.in</b> address and password.</p>
+      <p class="sub">Enter your <b>@eyemail.in</b> address and password.</p>
 
       <div id="alertBox" class="alert err hidden"></div>
 
@@ -158,19 +156,7 @@
           </div>
           <input id="passwordInput" type="password" required placeholder="Enter your password" autocomplete="current-password" />
         </div>
-        <button id="loginBtn" type="submit" class="btn">Continue &amp; send OTP</button>
-      </form>
-
-      <form id="otpForm" class="hidden">
-        <div class="field">
-          <label for="otpInput">6-digit verification code</label>
-          <input id="otpInput" class="otp" type="text" inputmode="numeric" maxlength="6" required placeholder="000000" />
-        </div>
-        <button id="verifyOtpBtn" type="submit" class="btn">Verify &amp; open inbox</button>
-        <div class="links">
-          <button type="button" id="resendOtpBtn">Resend code</button>
-          <button type="button" id="cancelOtpBtn" class="muted">Use another account</button>
-        </div>
+        <button id="loginBtn" type="submit" class="btn">Sign in</button>
       </form>
 
       <p class="foot">New here? <a href="signup.html">Create your Eyemail</a></p>
@@ -179,35 +165,16 @@
 </div>
 
 <script type="module">
-  import { auth, BACKEND_URL, DOMAIN_NAME } from "./firebase-config.js";
-  import { signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { auth, DOMAIN_NAME } from "./firebase-config.js";
+  import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const loginForm = document.getElementById("loginForm");
-  const otpForm = document.getElementById("otpForm");
   const alertBox = document.getElementById("alertBox");
-  const subTitle = document.getElementById("subTitle");
   const loginBtn = document.getElementById("loginBtn");
-  const verifyOtpBtn = document.getElementById("verifyOtpBtn");
-  const step1Dot = document.getElementById("step1Dot");
-  const step2Dot = document.getElementById("step2Dot");
-  const stepLabel = document.getElementById("stepLabel");
 
-  let activeUser = null;
-
-  function showAlert(msg, isError = true) {
+  function showAlert(msg) {
     alertBox.textContent = msg;
-    alertBox.className = `alert ${isError ? "err" : "ok"}`;
-  }
-
-  async function triggerOtp(user) {
-    const token = await user.getIdToken();
-    const res = await fetch(`${BACKEND_URL}/api/auth/send-login-otp`, {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Could not send login OTP.");
-    return data.maskedRecoveryEmail;
+    alertBox.className = "alert err";
   }
 
   loginForm.addEventListener("submit", async (e) => {
@@ -219,84 +186,18 @@
     const password = document.getElementById("passwordInput").value;
 
     loginBtn.disabled = true;
-    loginBtn.textContent = "Checking password...";
+    loginBtn.textContent = "Signing in...";
 
     try {
-      const cred = await signInWithEmailAndPassword(auth, raw, password);
-      activeUser = cred.user;
-      const masked = await triggerOtp(activeUser);
-
-      loginForm.classList.add("hidden");
-      otpForm.classList.remove("hidden");
-      step1Dot.classList.remove("on");
-      step2Dot.classList.add("on");
-      stepLabel.textContent = "Verification";
-      subTitle.innerHTML = `Code sent to <b>${masked}</b>. It expires in 5 minutes.`;
-      showAlert(`Code sent to ${masked}.`, false);
-      document.getElementById("otpInput").focus();
-    } catch (err) {
-      if (activeUser) {
-        await signOut(auth);
-        activeUser = null;
-      }
-      showAlert(err.message && !err.code ? err.message : "Invalid Eyemail address or password.", true);
-    } finally {
-      loginBtn.disabled = false;
-      loginBtn.textContent = "Continue & send OTP";
-    }
-  });
-
-  otpForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    alertBox.className = "alert err hidden";
-    if (!activeUser) return;
-
-    const otp = document.getElementById("otpInput").value.trim();
-    verifyOtpBtn.disabled = true;
-    verifyOtpBtn.textContent = "Verifying...";
-
-    try {
-      const token = await activeUser.getIdToken();
-      const res = await fetch(`${BACKEND_URL}/api/auth/verify-login-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ otp })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Invalid OTP");
-
-      sessionStorage.setItem(`eyemail_2fa_${activeUser.uid}`, "verified");
+      await signInWithEmailAndPassword(auth, raw, password);
       window.location.href = "index.html";
     } catch (err) {
-      showAlert(err.message, true);
-      verifyOtpBtn.disabled = false;
-      verifyOtpBtn.textContent = "Verify & open inbox";
+      showAlert(err.code === "auth/too-many-requests"
+        ? "Too many attempts. Please wait a minute and try again."
+        : "Invalid Eyemail address or password.");
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Sign in";
     }
-  });
-
-  document.getElementById("resendOtpBtn").addEventListener("click", async () => {
-    if (!activeUser) return;
-    try {
-      const masked = await triggerOtp(activeUser);
-      showAlert(`New code sent to ${masked}.`, false);
-    } catch (err) {
-      showAlert(err.message, true);
-    }
-  });
-
-  document.getElementById("cancelOtpBtn").addEventListener("click", async () => {
-    await signOut(auth);
-    activeUser = null;
-    otpForm.classList.add("hidden");
-    loginForm.classList.remove("hidden");
-    step2Dot.classList.remove("on");
-    step1Dot.classList.add("on");
-    stepLabel.textContent = "Password";
-    alertBox.className = "alert err hidden";
-    subTitle.innerHTML = 'Enter your <b>@eyemail.in</b> address and password.';
   });
 </script>
 </body>
