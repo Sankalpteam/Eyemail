@@ -124,11 +124,11 @@
     </i> Eyemail</div>
     <div>
       <h2>One inbox for your whole team.</h2>
-      <p>Create as many @eyemail.in addresses as you need. 1 GB storage free, OTP protection on every login.</p>
+      <p>Create as many @eyemail.in addresses as you need. 1 GB storage free, and your recovery mail verified with a code.</p>
       <div class="facts">
         <div class="fact"><span class="tick">&#10003;</span><span><b>No card, no cost</b> - unlimited addresses on the free plan</span></div>
         <div class="fact"><span class="tick">&#10003;</span><span><b>Your name, your address</b> - checked live before you sign up</span></div>
-        <div class="fact"><span class="tick">&#10003;</span><span><b>Recovery mail</b> - the OTP and reset link go there, never to spam</span></div>
+        <div class="fact"><span class="tick">&#10003;</span><span><b>Verified recovery mail</b> - a code proves it at signup, so a password reset always reaches you</span></div>
       </div>
     </div>
     <div class="brandfoot">EYEMAIL.IN &middot; SECURE WEBMAIL</div>
@@ -137,11 +137,11 @@
   <section class="formpane">
     <div class="card">
       <div class="step">
-        <i class="on">1</i><b></b><i>2</i><b></b><i>3</i>
-        <span>New mailbox</span>
+        <i class="on">1</i><b></b><i>2</i>
+        <span>Details &rarr; verify</span>
       </div>
-      <h1>Create your Eyemail</h1>
-      <p class="sub">Pick your address, add a recovery mail, and you are in.</p>
+      <h1 id="signupTitle">Create your Eyemail</h1>
+      <p class="sub" id="signupSub">Pick your address, add a recovery mail, and you are in.</p>
 
       <div id="alertBox" class="alert err hidden"></div>
 
@@ -173,7 +173,19 @@
         <button id="submitBtn" type="submit" class="btn">Create Eyemail account</button>
       </form>
 
-      <p class="foot">Already have one? <a href="login.html">Sign in</a></p>
+      <form id="otpForm" class="hidden">
+        <div class="field">
+          <label for="otpInput">6-digit verification code</label>
+          <input id="otpInput" class="otp" type="text" inputmode="numeric" maxlength="6" required placeholder="000000" />
+        </div>
+        <button id="verifyBtn" type="submit" class="btn">Verify &amp; create mailbox</button>
+        <div class="links">
+          <button type="button" id="resendBtn">Resend code</button>
+          <button type="button" id="backBtn" class="muted">Change details</button>
+        </div>
+      </form>
+
+      <p class="foot" id="signupFoot">Already have one? <a href="login.html">Sign in</a></p>
     </div>
   </section>
 </div>
@@ -187,6 +199,7 @@
   const submitBtn = document.getElementById("submitBtn");
   const usernameInput = document.getElementById("username");
   const usernameHint = document.getElementById("usernameHint");
+  const otpForm = document.getElementById("otpForm");
 
   function showAlert(msg, isError = true) {
     alertBox.textContent = msg;
@@ -217,6 +230,31 @@
     }, 450);
   });
 
+  let pending = null;   // { user, username, name, recovery }
+
+  function showOtpStep(masked) {
+    form.classList.add("hidden");
+    document.getElementById("signupFoot").classList.add("hidden");
+    otpForm.classList.remove("hidden");
+    document.getElementById("signupTitle").textContent = "Verify your recovery email";
+    document.getElementById("signupSub").textContent =
+      `We mailed a 6-digit code to ${masked}. Enter it to activate the mailbox. It expires in 10 minutes.`;
+    document.querySelectorAll(".step i").forEach((el, i) => el.classList.toggle("on", i === 1));
+    alertBox.className = "alert err hidden";
+    document.getElementById("otpInput").value = "";
+    document.getElementById("otpInput").focus();
+  }
+
+  function showDetailsStep() {
+    otpForm.classList.add("hidden");
+    form.classList.remove("hidden");
+    document.getElementById("signupFoot").classList.remove("hidden");
+    document.getElementById("signupTitle").textContent = "Create your Eyemail";
+    document.getElementById("signupSub").textContent = "Pick your address, add a recovery mail, and you are in.";
+    document.querySelectorAll(".step i").forEach((el, i) => el.classList.toggle("on", i === 0));
+    alertBox.className = "alert err hidden";
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     alertBox.className = "alert err hidden";
@@ -228,9 +266,8 @@
     const eyemail = `${rawUser}@${DOMAIN_NAME}`;
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Creating mailbox...";
+    submitBtn.textContent = "Sending verification code...";
 
-    let createdUser = null;
     try {
       const chk = await fetch(`${BACKEND_URL}/api/check-username/${encodeURIComponent(rawUser)}`);
       const chkData = await chk.json();
@@ -238,40 +275,97 @@
       if (!chkData.available) throw new Error(`${eyemail} is already taken. Try another.`);
 
       const cred = await createUserWithEmailAndPassword(auth, eyemail, password);
-      createdUser = cred.user;
-      await updateProfile(createdUser, { displayName: name });
-      const token = await createdUser.getIdToken();
+      const user = cred.user;
+      await updateProfile(user, { displayName: name });
+      pending = { user, username: rawUser, name, recovery: recoveryEmail };
 
-      const regRes = await fetch(`${BACKEND_URL}/api/auth/register-mailbox`, {
+      const token = await user.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/auth/send-signup-otp`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          username: rawUser,
-          name: name,
-          recovery_email: recoveryEmail
-        })
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ recovery_email: recoveryEmail })
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Could not send the verification code.");
 
-      const regData = await regRes.json();
-      if (!regRes.ok) throw new Error(regData.detail || "Failed to initialize mailbox.");
-
-      sessionStorage.setItem(`eyemail_2fa_${createdUser.uid}`, "verified");
-      window.location.href = "index.html";
+      showOtpStep(data.maskedRecoveryEmail);
     } catch (err) {
-      if (createdUser) {
-        try { await deleteUser(createdUser); } catch (_) {}
+      if (pending && pending.user) {
+        try { await deleteUser(pending.user); } catch (_) {}
+        pending = null;
       }
       let message = err.message || "Signup failed";
-      if (err.code === "auth/email-already-in-use") {
-        message = `${eyemail} is already registered. Please sign in.`;
-      }
+      if (err.code === "auth/email-already-in-use") message = `${eyemail} is already registered. Please sign in.`;
       showAlert(message, true);
+    } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Create Eyemail account";
     }
+  });
+
+  otpForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!pending) return;
+    const btn = document.getElementById("verifyBtn");
+    btn.disabled = true;
+    btn.textContent = "Checking code...";
+
+    try {
+      const otp = document.getElementById("otpInput").value.trim();
+      const token = await pending.user.getIdToken();
+
+      const v = await fetch(`${BACKEND_URL}/api/auth/verify-signup-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ otp })
+      });
+      const vData = await v.json();
+      if (!v.ok) throw new Error(vData.detail || "That code is not correct.");
+
+      const regRes = await fetch(`${BACKEND_URL}/api/auth/register-mailbox`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({
+          username: pending.username,
+          name: pending.name,
+          recovery_email: pending.recovery
+        })
+      });
+      const regData = await regRes.json();
+      if (!regRes.ok) throw new Error(regData.detail || "Could not create the mailbox.");
+
+      window.location.href = "index.html";
+    } catch (err) {
+      showAlert(err.message, true);
+      btn.disabled = false;
+      btn.textContent = "Verify & create mailbox";
+    }
+  });
+
+  document.getElementById("resendBtn").addEventListener("click", async () => {
+    if (!pending) return;
+    try {
+      const token = await pending.user.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/auth/send-signup-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ recovery_email: pending.recovery })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Could not resend the code.");
+      showAlert(`New code sent to ${data.maskedRecoveryEmail}.`, false);
+    } catch (err) {
+      showAlert(err.message, true);
+    }
+  });
+
+  document.getElementById("backBtn").addEventListener("click", async () => {
+    if (pending && pending.user) {
+      try { await deleteUser(pending.user); } catch (_) {}
+      pending = null;
+    }
+    alertBox.className = "alert err hidden";
+    showDetailsStep();
   });
 </script>
 </body>
