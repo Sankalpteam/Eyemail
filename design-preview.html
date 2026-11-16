@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-rail="expanded">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Eyemail — New Webmail Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Azeret+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#eef1f4;
+    --surface:#ffffff;
+    --surface-2:#f7f9fa;
+    --surface-3:#eff3f5;
+    --border:rgba(16,26,43,.09);
+    --border-strong:rgba(16,26,43,.16);
+    --text:#101a2b;
+    --text-2:#4a5a6a;
+    --text-3:#8494a3;
+    --accent:#1857b8;
+    --accent-2:#0f3d86;
+    --accent-soft:#e8effb;
+    --gold:#b7791f;
+    --gold-soft:#fbf1dd;
+    --danger:#b23b3b;
+    --shadow-sm:0 1px 2px rgba(16,26,43,.05);
+    --shadow-md:0 8px 24px -12px rgba(16,26,43,.24);
+    --shadow-lg:0 24px 60px -28px rgba(16,26,43,.45);
+    --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:22px;
+    --rail:268px; --rail-min:76px;
+  }
+  [data-theme="dark"]{
+    --bg:#0b1118;
+    --surface:#111a24;
+    --surface-2:#16212c;
+    --surface-3:#1c2833;
+    --border:rgba(255,255,255,.08);
+    --border-strong:rgba(255,255,255,.16);
+    --text:#eaf0f5;
+    --text-2:#a4b4c2;
+    --text-3:#6f8290;
+    --accent:#5b9bff;
+    --accent-2:#8fc0ff;
+    --accent-soft:rgba(91,155,255,.16);
+    --gold:#e0b155;
+    --gold-soft:rgba(224,177,85,.14);
+    --danger:#e07777;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+    --shadow-md:0 10px 30px -14px rgba(0,0,0,.7);
+    --shadow-lg:0 30px 70px -30px rgba(0,0,0,.85);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Plus Jakarta Sans",-apple-system,"Segoe UI",sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(900px 520px at 12% -8%, rgba(24,87,184,.13), transparent 60%),
+      radial-gradient(760px 480px at 96% 4%, rgba(183,121,31,.09), transparent 62%),
+      var(--bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"Azeret Mono",ui-monospace,monospace}
+
+  .app{
+    height:100vh; display:grid; grid-template-columns:var(--rail) 1fr; gap:14px;
+    padding:14px; transition:grid-template-columns .28s cubic-bezier(.4,0,.2,1);
+  }
+  [data-rail="collapsed"] .app{grid-template-columns:var(--rail-min) 1fr}
+
+  /* ---------------- rail ---------------- */
+  .rail{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--r-xl);
+    box-shadow:var(--shadow-md); display:flex; flex-direction:column; overflow:hidden;
+    padding:14px 12px 12px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; padding:4px 6px 14px}
+  .mark{
+    width:34px;height:34px;border-radius:11px;flex:0 0 34px;
+    background:linear-gradient(150deg,var(--accent),var(--accent-2));
+    display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm);
+  }
+  .brand-txt{min-width:0}
+  .brand-txt b{display:block;font-size:14.5px;letter-spacing:-.01em;line-height:1.15}
+  .brand-txt span{font-size:10.5px;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase}
+
+  .compose{
+    display:flex;align-items:center;gap:10px;justify-content:center;
+    background:linear-gradient(150deg,var(--accent),var(--accent-2)); color:#fff;
+    border:0;border-radius:var(--r-md);padding:11px 14px;font:600 13.5px/1 inherit;
+    cursor:pointer;box-shadow:0 10px 22px -14px rgba(24,87,184,.9);
+    transition:transform .15s ease, filter .15s ease; margin-bottom:14px;
+  }
+  .compose:hover{transform:translateY(-1px);filter:brightness(1.05)}
+  .compose svg{flex:0 0 16px}
+
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav-item{
+    display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;
+    color:var(--text-2);font-size:13.5px;font-weight:500;cursor:pointer;border:0;background:none;
+    width:100%;text-align:left;transition:background .15s ease,color .15s ease;position:relative;
+  }
+  .nav-item svg{flex:0 0 18px;opacity:.85}
+  .nav-item:hover{background:var(--surface-3);color:var(--text)}
+  .nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .nav-item.active svg{opacity:1}
+  .nav-item .count{
+    margin-left:auto;font:500 11px/1 "Azeret Mono",monospace;color:var(--text-3);
+    background:var(--surface-3);border-radius:999px;padding:3px 6px;
+  }
+  .nav-item.active .count{background:rgba(255,255,255,.55);color:var(--accent)}
+  [data-theme="dark"] .nav-item.active .count{background:rgba(0,0,0,.25)}
+
+  .rail-label{
+    font:500 10px/1 "Azeret Mono",monospace;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--text-3);padding:16px 10px 8px;
+  }
+  .divider{height:1px;background:var(--border);margin:14px 4px 4px}
+
+  .storage{margin-top:auto;padding:12px;border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--border)}
+  .storage-top{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;color:var(--text-2)}
+  .storage-top b{font:600 12px/1 "Azeret Mono",monospace;color:var(--text)}
+  .bar{height:6px;border-radius:99px;background:var(--surface-3);margin:9px 0 8px;overflow:hidden}
+  .bar i{display:block;height:100%;width:38%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+  .plan{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-2)}
+  .pill{font:500 10px/1 "Azeret Mono",monospace;background:var(--gold-soft);color:var(--gold);
+    border:1px solid rgba(183,121,31,.28);padding:3px 7px;border-radius:99px}
+
+  .user{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 6px;border-radius:10px;cursor:pointer}
+  .user:hover{background:var(--surface-3)}
+  .avatar{
+    width:32px;height:32px;flex:0 0 32px;border-radius:10px;display:grid;place-items:center;
+    font:700 12px/1 "Plus Jakarta Sans",sans-serif;color:#fff;
+    background:linear-gradient(140deg,#3a4d63,#1d2a3a);
+  }
+  .user-txt{min-width:0}
+  .user-txt b{display:block;font-size:12.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .user-txt span{font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+
+  [data-rail="collapsed"] .brand-txt,
+  [data-rail="collapsed"] .compose span,
+  [data-rail="collapsed"] .nav-item span:not(.count),
+  [data-rail="collapsed"] .rail-label,
+  [data-rail="collapsed"] .storage,
+  [data-rail="collapsed"] .user-txt,
+  [data-rail="collapsed"] .nav-item .count{display:none}
+  [data-rail="collapsed"] .rail{padding:14px 10px 12px;align-items:center}
+  [data-rail="collapsed"] .brand{padding:4px 0 14px}
+  [data-rail="collapsed"] .compose{padding:11px;width:44px;height:44px;border-radius:13px;margin-bottom:12px}
+  [data-rail="collapsed"] .nav{width:100%}
+  [data-rail="collapsed"] .nav-item{justify-content:center;padding:11px 0}
+  [data-rail="collapsed"] .user{justify-content:center;padding:6px 0}
+  [data-rail="collapsed"] .divider{width:36px}
+
+  /* ---------------- main shell ---------------- */
+  .shell{
+    display:grid; grid-template-columns:minmax(340px,404px) 1fr; gap:14px; min-width:0;
+  }
+  .panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--r-xl);
+    box-shadow:var(--shadow-md); min-width:0; display:flex; flex-direction:column; overflow:hidden;
+  }
+
+  /* ---------------- list ---------------- */
+  .list-head{padding:16px 16px 0}
+  .topline{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .hamb{
+    width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);
+    display:grid;place-items:center;color:var(--text-2);cursor:pointer;flex:0 0 34px;
+  }
+  .hamb:hover{background:var(--surface-3);color:var(--text)}
+  .title-wrap{min-width:0}
+  .title-wrap h1{margin:0;font-size:19px;letter-spacing:-.02em;line-height:1.15}
+  .title-wrap p{margin:2px 0 0;font-size:11.5px;color:var(--text-3)}
+  .ghost{
+    width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:transparent;
+    display:grid;place-items:center;color:var(--text-2);cursor:pointer;
+  }
+  .ghost:hover{background:var(--surface-3);color:var(--text)}
+  .topline .spacer{margin-left:auto}
+
+  .search{
+    display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:var(--r-md);padding:9px 11px;margin-bottom:11px;
+  }
+  .search input{
+    border:0;background:none;outline:none;flex:1;min-width:0;font:500 13px/1.3 inherit;color:var(--text);
+  }
+  .search input::placeholder{color:var(--text-3)}
+  .kbd{font:500 10px/1 "Azeret Mono",monospace;color:var(--text-3);border:1px solid var(--border-strong);
+    border-radius:5px;padding:3px 5px;background:var(--surface)}
+
+  .chips{display:flex;gap:6px;padding-bottom:12px;overflow:hidden}
+  .chip{
+    font:500 11.5px/1 inherit;color:var(--text-2);background:transparent;border:1px solid var(--border);
+    border-radius:99px;padding:6px 11px;cursor:pointer;white-space:nowrap;
+  }
+  .chip:hover{background:var(--surface-3)}
+  .chip.on{background:var(--text);color:var(--surface);border-color:var(--text)}
+
+  .rows{flex:1;overflow-y:auto;border-top:1px solid var(--border)}
+  .row{
+    display:grid;grid-template-columns:34px 1fr auto;gap:11px;padding:12px 16px;
+    border-bottom:1px solid var(--border);cursor:pointer;position:relative;
+    transition:background .12s ease;
+  }
+  .row:hover{background:var(--surface-2)}
+  .row.on{background:var(--accent-soft)}
+  .row.on:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+  .row .avatar{border-radius:11px;font-size:11.5px}
+  .a1{background:linear-gradient(140deg,#1d5fc4,#123f85)}
+  .a2{background:linear-gradient(140deg,#7b5ea7,#5b4382)}
+  .a3{background:linear-gradient(140deg,#b7791f,#8a5a13)}
+  .a4{background:linear-gradient(140deg,#2f6f4f,#1d4a35)}
+  .a5{background:linear-gradient(140deg,#a63f4a,#7d2b34)}
+  .a6{background:linear-gradient(140deg,#3a5a7a,#26394f)}
+  .row-main{min-width:0}
+  .row-top{display:flex;align-items:baseline;gap:8px}
+  .from{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row.unread .from{font-weight:700}
+  .row.unread .subj{font-weight:700;color:var(--text)}
+  .time{margin-left:auto;font:500 10.5px/1 "Azeret Mono",monospace;color:var(--text-3);white-space:nowrap}
+  .subj{font-size:12.5px;color:var(--text);margin:3px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+  .snip{font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+  .row-side{display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:2px}
+  .dot{width:7px;height:7px;border-radius:99px;background:var(--accent)}
+  .dot.hide{visibility:hidden}
+  .star{color:var(--text-3);opacity:.55}
+  .star.on{color:var(--gold);opacity:1}
+  .tag{
+    font:500 9.5px/1 "Azeret Mono",monospace;text-transform:uppercase;letter-spacing:.08em;
+    padding:3px 6px;border-radius:5px;background:var(--surface-3);color:var(--text-2);
+  }
+  .tag.gold{background:var(--gold-soft);color:var(--gold)}
+
+  /* ---------------- reader ---------------- */
+  .reader-head{padding:16px 20px 14px;border-bottom:1px solid var(--border)}
+  .reader-meta{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .reader-meta .tag{font-size:9.5px}
+  .reader-head h2{margin:0 0 12px;font-size:22px;line-height:1.28;letter-spacing:-.025em;max-width:56ch}
+  .sender{display:flex;align-items:center;gap:11px}
+  .sender .avatar{width:38px;height:38px;flex:0 0 38px;border-radius:12px;font-size:13px}
+  .sender-txt{min-width:0}
+  .sender-txt b{display:block;font-size:13.5px;line-height:1.25}
+  .sender-txt span{font-size:11.5px;color:var(--text-3)}
+  .sender .when{margin-left:auto;font:500 11px/1.5 "Azeret Mono",monospace;color:var(--text-3);text-align:right}
+
+  .toolbar{display:flex;align-items:center;gap:6px;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+  .tb{
+    display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--surface);
+    border-radius:9px;padding:7px 11px;font:600 12px/1 inherit;color:var(--text-2);cursor:pointer;
+  }
+  .tb:hover{border-color:var(--border-strong);color:var(--text)}
+  .tb.primary{background:var(--text);color:var(--surface);border-color:var(--text)}
+  .tb.danger:hover{color:var(--danger);border-color:rgba(178,59,59,.4)}
+  .toolbar .spacer{margin-left:auto}
+
+  .body-scroll{flex:1;overflow-y:auto;padding:22px 24px 26px}
+  .prose{max-width:70ch;font-size:13.6px;line-height:1.72;color:var(--text-2)}
+  .prose p{margin:0 0 14px}
+  .prose strong{color:var(--text);font-weight:600}
+  .prose .lead{font-size:14.5px;color:var(--text)}
+
+  .kv{
+    margin:18px 0;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;max-width:70ch;
+  }
+  .kv .r{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;padding:9px 13px;font-size:12px;border-bottom:1px solid var(--border)}
+  .kv .r:last-child{border-bottom:0}
+  .kv .r.h{background:var(--surface-2);font:500 10px/1 "Azeret Mono",monospace;text-transform:uppercase;
+    letter-spacing:.1em;color:var(--text-3)}
+  .kv .r span:last-child{text-align:right;font-family:"Azeret Mono",monospace;font-size:11.5px}
+  .ok{color:#1d7a52}
+  [data-theme="dark"] .ok{color:#57c99a}
+
+  .attach{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:var(--r-md);
+    padding:10px 12px;margin-top:18px;max-width:70ch;background:var(--surface-2)}
+  .attach .ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);flex:0 0 34px}
+  .attach b{display:block;font-size:12.5px}
+  .attach span{font-size:11px;color:var(--text-3);font-family:"Azeret Mono",monospace}
+
+  .thread-note{display:flex;align-items:center;gap:8px;margin-top:22px;font-size:11.5px;color:var(--text-3)}
+
+  /* compose sheet */
+  .composer{
+    position:fixed;right:26px;bottom:26px;width:min(520px,calc(100vw - 60px));
+    background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--r-lg);
+    box-shadow:var(--shadow-lg);overflow:hidden;z-index:40;
+  }
+  .composer .ch{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface-3);
+    font-size:12.5px;font-weight:600}
+  .composer .ch .x{margin-left:auto;color:var(--text-3);cursor:pointer;background:none;border:0;font-size:15px}
+  .composer .f{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border);font-size:12.5px;color:var(--text-2)}
+  .composer .f .lbl{width:52px;color:var(--text-3);font:500 10.5px/1 "Azeret Mono",monospace;text-transform:uppercase;letter-spacing:.1em}
+  .composer .f input{border:0;outline:none;background:none;flex:1;font:500 12.5px/1.4 inherit;color:var(--text)}
+  .composer .area{padding:12px 14px 16px;min-height:104px;font-size:12.8px;line-height:1.65;color:var(--text-3);border-top:1px solid var(--border)}
+  .composer .cf{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--surface-2)}
+  .send{background:linear-gradient(150deg,var(--accent),var(--accent-2));color:#fff;border:0;border-radius:9px;
+    padding:9px 16px;font:600 12.5px/1 inherit;cursor:pointer}
+  .cf .hint{margin-left:auto;font:500 10px/1 "Azeret Mono",monospace;color:var(--text-3)}
+
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px;border:3px solid transparent;background-clip:content-box}
+  ::-webkit-scrollbar-track{background:transparent}
+  svg{display:block}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ rail ============ -->
+  <aside class="rail">
+    <div class="brand">
+      <div class="mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 8 7.1 4.7a2 2 0 0 0 2.2 0L20 8"/></svg>
+      </div>
+      <div class="brand-txt"><b>Eyemail</b><span>eyemail.in</span></div>
+    </div>
+
+    <button class="compose">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      <span>Compose</span>
+    </button>
+
+    <nav class="nav">
+      <button class="nav-item active">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.1Z"/></svg>
+        <span>Inbox</span><span class="count">12</span>
+      </button>
+      <button class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.8l6.5-.9Z"/></svg>
+        <span>Starred</span>
+      </button>
+      <button class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        <span>Sent</span><span class="count">48</span>
+      </button>
+      <button class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+        <span>Drafts</span><span class="count">2</span>
+      </button>
+      <button class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        <span>Trash</span>
+      </button>
+    </nav>
+
+    <div class="rail-label">Workspace</div>
+    <nav class="nav">
+      <button class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg>
+        <span>Domains</span>
+      </button>
+      <button class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span>Security</span>
+      </button>
+    </nav>
+
+    <div class="divider"></div>
+
+    <div class="storage">
+      <div class="storage-top"><span>Storage</span><b>388 MB / 1 GB</b></div>
+      <div class="bar"><i></i></div>
+      <div class="plan"><span class="pill">FREE</span><span>Extra storage Rs.29/GB</span></div>
+    </div>
+
+    <div class="user">
+      <div class="avatar">YP</div>
+      <div class="user-txt"><b>Yashwanth P</b><span>yashwanth@eyemail.in</span></div>
+    </div>
+  </aside>
+
+  <!-- ============ shell ============ -->
+  <div class="shell">
+    <!-- ---------- list ---------- -->
+    <section class="panel">
+      <div class="list-head">
+        <div class="topline">
+          <button class="hamb" id="railBtn" title="Collapse menu">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div class="title-wrap"><h1>Inbox</h1><p>12 unread &middot; updated just now</p></div>
+          <div class="spacer"></div>
+          <button class="ghost" id="themeBtn" title="Toggle theme">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+          </button>
+          <button class="ghost" title="Filter">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+          </button>
+        </div>
+
+        <div class="search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input placeholder="Search mail, people, attachments" />
+          <span class="kbd">&#8984;K</span>
+        </div>
+
+        <div class="chips">
+          <button class="chip on">All</button>
+          <button class="chip">Unread</button>
+          <button class="chip">Starred</button>
+          <button class="chip">Attachments</button>
+          <button class="chip">Team</button>
+        </div>
+      </div>
+
+      <div class="rows">
+        <div class="row on unread">
+          <div class="avatar a1">RS</div>
+          <div class="row-main">
+            <div class="row-top"><span class="from">Razorpay Settlements</span><span class="time">09:41</span></div>
+            <div class="subj">Settlement of Rs.1,42,850 credited to HDFC ****4412</div>
+            <div class="snip">Your settlement for 14-16 Nov has been processed and will reflect within 2 hours.</div>
+          </div>
+          <div class="row-side"><span class="star on">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.8l6.5-.9Z"/></svg>
+          </span></div>
+        </div>
+
+        <div class="row unread">
+          <div class="avatar a2">AK</div>
+          <div class="row-main">
+            <div class="row-top"><span class="from">Ananya Kulkarni</span><span class="time">08:12</span></div>
+            <div class="subj">Re: Domain verification for indoworkspace.in</div>
+            <div class="snip">MX and SPF records are live at Cloudflare now. Can you re-run the check?</div>
+          </div>
+          <div class="row-side"><span class="dot"></span></div>
+        </div>
+
+        <div class="row">
+          <div class="avatar a3">IN</div>
+          <div class="row-main">
+            <div class="row-top"><span class="from">Infosys Vendor Desk</span><span class="time">Yesterday</span></div>
+            <div class="subj">Purchase order PO-2291 attached for signature</div>
+            <div class="snip">Please find the PO for Q3 staffing. Kindly sign and return by Friday.</div>
+          </div>
+          <div class="row-side"><span class="tag">PDF</span></div>
+        </div>
+
+        <div class="row unread">
+          <div class="avatar a4">EY</div>
+          <div class="row-main">
+            <div class="row-top"><span class="from">Eyemail Security</span><span class="time">Yesterday</span></div>
+            <div class="subj">New sign-in to your mailbox from Bengaluru</div>
+            <div class="snip">We noticed a sign-in on Chrome, Windows. If this was you, no action is needed.</div>
+          </div>
+          <div class="row-side"><span class="dot"></span></div>
+        </div>
+
+        <div class="row">
+          <div class="avatar a5">MG</div>
+          <div class="row-main">
+            <div class="row-top"><span class="from">Meghana Gowda</span><span class="time">Mon</span></div>
+            <div class="subj">Design review notes &mdash; inbox density</div>
+            <div class="snip">Loved the collapsible rail. Two notes on row height and the unread dot contrast.</div>
+          </div>
+          <div class="row-side"><span class="star">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.8l6.5-.9Z"/></svg>
+          </span></div>
+        </div>
+
+        <div class="row">
+          <div class="avatar a6">BL</div>
+          <div class="row-main">
+            <div class="row-top"><span class="from">Brevo</span><span class="time">Mon</span></div>
+            <div class="subj">Monthly sending report: 1,284 emails, 99.1% delivered</div>
+            <div class="snip">Your transactional sending for October is inside. Bounce rate stayed under 1%.</div>
+          </div>
+          <div class="row-side"><span class="tag gold">Report</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- reader ---------- -->
+    <section class="panel">
+      <div class="reader-head">
+        <div class="reader-meta">
+          <span class="tag">Inbox</span>
+          <span class="tag gold">Settlement</span>
+          <span class="tag">HDFC</span>
+        </div>
+        <h2>Settlement of Rs.1,42,850 credited to HDFC ****4412</h2>
+        <div class="sender">
+          <div class="avatar a1">RS</div>
+          <div class="sender-txt"><b>Razorpay Settlements</b><span>settlements@razorpay.com &middot; to yashwanth@eyemail.in</span></div>
+          <div class="when">17 Nov 2026<br/>09:41 IST</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="tb primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17 4 12l5-5"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+          Reply
+        </button>
+        <button class="tb">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 17 5-5-5-5"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>
+          Forward
+        </button>
+        <button class="tb">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/></svg>
+          Archive
+        </button>
+        <div class="spacer"></div>
+        <button class="tb danger">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Trash
+        </button>
+      </div>
+
+      <div class="body-scroll">
+        <div class="prose">
+          <p class="lead">Hi Yashwanth,</p>
+          <p>Your settlement for the period <strong>14 to 16 November 2026</strong> has been processed successfully. The amount will reflect in your registered bank account within 2 working hours.</p>
+
+          <div class="kv">
+            <div class="r h"><span>Settlement</span><span>Amount</span><span>Status</span></div>
+            <div class="r"><span>UTR 4412998213</span><span>Rs.1,42,850</span><span class="ok">Credited</span></div>
+            <div class="r"><span>Fees &amp; GST</span><span>Rs.2,861</span><span class="ok">Deducted</span></div>
+            <div class="r"><span>Net payout</span><span>Rs.1,39,989</span><span class="ok">Cleared</span></div>
+          </div>
+
+          <p>If the credit does not appear by 18 November, reply to this email with your UTR and our settlements team will trace it.</p>
+          <p>&mdash; Team Razorpay</p>
+        </div>
+
+        <div class="attach">
+          <div class="ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+          </div>
+          <div><b>Settlement_Statement_Nov_2026.pdf</b><span>148 KB &middot; PDF</span></div>
+        </div>
+
+        <div class="thread-note">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
+          2 earlier messages in this thread
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- compose sheet -->
+<div class="composer">
+  <div class="ch">
+    New message
+    <button class="x">&times;</button>
+  </div>
+  <div class="f"><span class="lbl">To</span><input value="ananya@indoworkspace.in" /></div>
+  <div class="f"><span class="lbl">Subject</span><input value="Domain verification re-run" /></div>
+  <div class="area">Hi Ananya,<br/>MX and SPF look correct now &mdash; I am re-running the check and will confirm once the domain flips to verified.</div>
+  <div class="cf">
+    <button class="send">Send</button>
+    <button class="tb" style="padding:7px 10px">Save draft</button>
+    <span class="hint">&#8984; &#8629; to send</span>
+  </div>
+</div>
+
+<script>
+  const root = document.documentElement;
+  document.getElementById('railBtn').addEventListener('click', () => {
+    root.dataset.rail = root.dataset.rail === 'expanded' ? 'collapsed' : 'expanded';
+  });
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+  });
+  document.querySelectorAll('.row').forEach(r => r.addEventListener('click', () => {
+    document.querySelectorAll('.row').forEach(x => x.classList.remove('on'));
+    r.classList.add('on');
+  }));
+  document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+  }));
+  // state for screenshots: #dark #collapsed
+  if (location.hash.includes('dark')) root.dataset.theme = 'dark';
+  if (location.hash.includes('collapsed')) root.dataset.rail = 'collapsed';
+</script>
+</body>
+</html>
