@@ -71,7 +71,7 @@ fun SignUpScreen(
                     "Check your recovery mail"
                 },
                 subtitle = if (state.step == SignUpState.Step.Form) {
-                    "One address that looks like a business, free on the free plan."
+                    "Pick your address, add a recovery mail, and you are in."
                 } else {
                     "We sent a 6-digit code to ${state.pendingMasked}. It expires in 10 minutes."
                 },
@@ -98,11 +98,11 @@ fun SignUpScreen(
                 )
                 Spacer(Modifier.height(14.dp))
                 EyField(
-                    label = "Recovery email",
+                    label = "Recovery email (code at signup, password reset later)",
                     value = state.recovery,
                     onValueChange = viewModel::onRecovery,
                     placeholder = "you@gmail.com",
-                    hint = "A code at signup, and where a password reset goes later.",
+                    hint = null,
                     keyboardType = KeyboardType.Email,
                     enabled = !state.busy,
                 )
@@ -177,9 +177,8 @@ fun SignUpScreen(
                 }
             }
 
-            Spacer(Modifier.height(28.dp))
-            Text("Powered by Indo Workspace", fontSize = 11.sp, color = Ey.Text3)
-            FooterCredit(Modifier.padding(top = 6.dp))
+            Spacer(Modifier.height(18.dp))
+            FooterCredit()
         }
     }
 }
