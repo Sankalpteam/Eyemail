@@ -157,14 +157,26 @@ internal fun initials(name: String): String {
     }
 }
 
+/**
+ * java.time is API 26 and up, and this app runs from API 24, so the formatting is
+ * done with SimpleDateFormat. The web shows HH:mm today and dd/MM otherwise.
+ */
 internal fun shortTime(iso: String): String {
     if (iso.isBlank()) return ""
-    val date = runCatching { java.time.Instant.parse(iso) }.getOrNull() ?: return ""
-    val local = java.time.LocalDateTime.ofInstant(date, java.time.ZoneId.systemDefault())
-    val today = java.time.LocalDate.now()
-    return if (local.toLocalDate() == today) {
-        String.format("%02d:%02d", local.hour, local.minute)
-    } else {
-        "${local.dayOfMonth}/${local.monthValue}"
-    }
+    val parsed = parseIso(iso) ?: return ""
+    val now = java.util.Calendar.getInstance()
+    val then = java.util.Calendar.getInstance().apply { time = parsed }
+    val sameDay = now.get(java.util.Calendar.YEAR) == then.get(java.util.Calendar.YEAR) &&
+        now.get(java.util.Calendar.DAY_OF_YEAR) == then.get(java.util.Calendar.DAY_OF_YEAR)
+    val pattern = if (sameDay) "HH:mm" else "dd/MM"
+    return java.text.SimpleDateFormat(pattern, java.util.Locale.getDefault()).format(parsed)
 }
+
+/** The dates are stored as ISO 8601 with a Z; SimpleDateFormat cannot read that directly. */
+internal fun parseIso(iso: String): java.util.Date? = runCatching {
+    val clean = iso.replace("Z", "+0000").let { text ->
+        // 2026-11-17T09:00:00.000+0000 -> 2026-11-17T09:00:00+0000
+        if (text.contains(".")) text.substringBefore(".") + text.substringAfter(".").substringAfter("+").let { "+$it" } else text
+    }
+    java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", java.util.Locale.US).parse(clean)
+}.getOrNull()
