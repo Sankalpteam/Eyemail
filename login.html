@@ -166,7 +166,8 @@
 
 <script type="module">
   import { auth, DOMAIN_NAME } from "./firebase-config.js";
-  import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { signInWithEmailAndPassword, signInWithCustomToken }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const loginForm = document.getElementById("loginForm");
   const alertBox = document.getElementById("alertBox");
@@ -176,6 +177,38 @@
     alertBox.textContent = msg;
     alertBox.className = "alert err";
   }
+
+  // The panel opens this page with #t=<custom token>. The hash never leaves the
+  // browser, so the token is not written to any server log.
+  function readToken() {
+    const hashMatch = (location.hash || "").match(/[#&]t=([^&]+)/);
+    if (hashMatch) return decodeURIComponent(hashMatch[1]);
+    const queryMatch = (location.search || "").match(/[?&]t=([^&]+)/);
+    if (queryMatch) return decodeURIComponent(queryMatch[1]);
+    return null;
+  }
+
+  function scrubToken() {
+    try { history.replaceState(null, "", location.pathname); } catch (_) {}
+  }
+
+  (async function consumeToken() {
+    const token = readToken();
+    if (!token) return;
+    scrubToken();
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Opening your mailbox...";
+    try {
+      await signInWithCustomToken(auth, token);
+      window.location.href = "index.html";
+    } catch (err) {
+      showAlert(err.code === "auth/invalid-custom-token"
+        ? "That sign-in link has expired. Ask for a new one."
+        : "Could not open the mailbox with that link.");
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Sign in";
+    }
+  })();
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
