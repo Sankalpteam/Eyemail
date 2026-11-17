@@ -225,10 +225,10 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFFFEE4E2))
+                        .background(Ey.DangerSoft)
                         .padding(horizontal = 14.dp, vertical = 8.dp),
                 ) {
-                    Text(state.error, fontSize = 11.5.sp, color = Color(0xFF991B1B))
+                    Text(state.error, fontSize = 11.5.sp, color = Ey.Danger)
                 }
             }
 
