@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,7 +28,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,21 +68,21 @@ import app.eyemail.home.storage.StorageMeter
 import app.eyemail.home.trash.TrashScreen
 import kotlinx.coroutines.launch
 
-private data class Row(val key: String, val label: String)
+private data class Row(val key: String, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
 
 /** The same rows, in the same order, as the panel on the web. */
 private val MAIL_ROWS = listOf(
-    Row("inbox", "Inbox"),
-    Row("starred", "Starred"),
-    Row("sent", "Sent"),
-    Row("drafts", "Drafts"),
-    Row("spam", "Spam"),
-    Row("trash", "Trash"),
+    Row("inbox", "Inbox", Icons.Filled.Email),
+    Row("starred", "Starred", Icons.Filled.Star),
+    Row("sent", "Sent", Icons.Filled.Send),
+    Row("drafts", "Drafts", Icons.Filled.Edit),
+    Row("spam", "Spam", Icons.Filled.Warning),
+    Row("trash", "Trash", Icons.Filled.Delete),
 )
 
 private val WORKSPACE_ROWS = listOf(
-    Row("domain", "Custom domain"),
-    Row("settings", "Settings"),
+    Row("domain", "Custom domain", Icons.Filled.Info),
+    Row("settings", "Settings", Icons.Filled.Settings),
 )
 
 /**
@@ -174,7 +184,12 @@ fun HomeScreen(
                 }
             },
         ) {
-            Column(modifier = Modifier.fillMaxSize().background(Ey.Bg)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Ey.Bg)
+                    .statusBarsPadding(),
+            ) {
                 Header(
                     title = titleFor(state.folder),
                     address = AuthSessionStore.email().orEmpty(),
@@ -264,26 +279,6 @@ fun HomeScreen(
                     }
                 }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Ey.Surface2)
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    StorageMeter(
-                        usedBytes = state.storageUsed,
-                        limitBytes = state.storageLimit,
-                        modifier = Modifier.width(190.dp),
-                    )
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        "Powered by Indo Workspace",
-                        fontSize = 8.5.sp,
-                        letterSpacing = 0.8.sp,
-                        color = Ey.Text3,
-                    )
-                }
             }
         }
     }
@@ -331,6 +326,13 @@ private fun MenuPanel(
                 .clickable(onClick = onCompose),
             contentAlignment = Alignment.Center,
         ) {
+            Icon(
+                Icons.Filled.Create,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.width(18.dp),
+            )
+            Spacer(Modifier.width(8.dp))
             Text("Compose", color = Color.White, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
         }
 
@@ -339,6 +341,7 @@ private fun MenuPanel(
         MAIL_ROWS.forEach { row ->
             MenuRow(
                 label = row.label,
+                icon = row.icon,
                 count = if (row.key == "inbox") state.unreadCount else 0,
                 selected = state.folder == row.key,
                 onClick = { onFolder(row.key) },
@@ -364,6 +367,7 @@ private fun MenuPanel(
             state.labels.forEach { name ->
                 MenuRow(
                     label = name,
+                    icon = Icons.Filled.Edit,
                     count = 0,
                     selected = state.folder == "labels" && state.selectedLabel == name,
                     onClick = { onLabel(name) },
@@ -382,9 +386,20 @@ private fun MenuPanel(
         WORKSPACE_ROWS.forEach { row ->
             MenuRow(
                 label = row.label,
+                icon = row.icon,
                 count = 0,
                 selected = state.folder == row.key,
                 onClick = { onFolder(row.key) },
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // The web keeps the meter in the panel, under the workspace rows.
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+            StorageMeter(
+                usedBytes = state.storageUsed,
+                limitBytes = state.storageLimit,
             )
         }
 
@@ -415,7 +430,13 @@ private fun MenuPanel(
 }
 
 @Composable
-private fun MenuRow(label: String, count: Int, selected: Boolean, onClick: () -> Unit) {
+private fun MenuRow(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    count: Int,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -426,6 +447,13 @@ private fun MenuRow(label: String, count: Int, selected: Boolean, onClick: () ->
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,
     ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = if (selected) Ey.Accent else Ey.Text3,
+            modifier = Modifier.width(18.dp),
+        )
+        Spacer(Modifier.width(10.dp))
         Text(
             label,
             fontSize = 13.sp,
