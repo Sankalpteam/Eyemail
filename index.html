@@ -661,6 +661,7 @@
         <button type="button" data-sec="account" class="on">Account</button>
         <button type="button" data-sec="appearance">Appearance</button>
         <button type="button" data-sec="mail">Mail</button>
+        <button type="button" data-sec="notifications">Notifications</button>
         <button type="button" data-sec="storage">Storage</button>
         <button type="button" data-sec="about">About</button>
       </nav>
@@ -722,6 +723,17 @@
             <div><b>Sending limit</b><span>Outside Eyemail, per day, free plan</span></div>
             <span class="tag blue">50 a day</span>
           </div>
+        </section>
+
+        <section class="setpane hidden" data-pane="notifications">
+          <h3>Notifications</h3>
+          <div class="setting">
+            <div><b>Desktop and mobile alerts</b><span>Tell me when a new mail arrives in the inbox</span></div>
+            <button type="button" class="tb" id="notifyBtn">Enable notifications</button>
+          </div>
+          <p class="setnote" id="notifyStatus">Checking this browser...</p>
+          <p class="setnote">This works while Eyemail is open in a tab, on a laptop or a phone browser. Alerts when the
+          browser is fully closed need a service worker, which is not in yet.</p>
         </section>
 
         <section class="setpane hidden" data-pane="storage">
@@ -805,6 +817,9 @@
   let mailUnsub = null;
   let pageIsFull = false;     // the last page came back full, so more may exist
   let autoExtends = 0;        // guard against looping when a folder looks thin
+  // Remember which mails we have already announced, so a refresh is quiet.
+  const announced = new Set();
+  let firstLoad = true;
 
   const emailListEl = document.getElementById("emailList");
   const emptyReader = document.getElementById("emptyReader");
@@ -901,6 +916,7 @@
 
   /* ---------- prefs ---------- */
   function applyPrefs() {
+    if (typeof renderNotifyState === "function") renderNotifyState();
     document.documentElement.dataset.theme = prefs.theme;
     document.documentElement.dataset.density = prefs.density;
     document.querySelectorAll("#themeSeg button").forEach((b) => b.classList.toggle("on", b.dataset.themeVal === prefs.theme));
@@ -960,6 +976,7 @@
     mailUnsub = onSnapshot(q, (snap) => {
       pageIsFull = snap.size >= pageLimit;
       allEmails = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      announceNewMail(allEmails);
       collectLabels();
       updateUnreadBadge();
       renderList();
@@ -1714,7 +1731,10 @@
 
   /* ---------- settings ---------- */
   const settingsModal = document.getElementById("settingsModal");
-  document.getElementById("openSettingsBtn").addEventListener("click", () => settingsModal.classList.remove("hidden"));
+  document.getElementById("openSettingsBtn").addEventListener("click", () => {
+    renderNotifyState();
+    settingsModal.classList.remove("hidden");
+  });
   document.getElementById("closeSettingsBtn").addEventListener("click", () => settingsModal.classList.add("hidden"));
   document.getElementById("userChip").addEventListener("click", (e) => {
     if (e.target.closest("#logoutBtn")) return;
@@ -1734,6 +1754,82 @@
   }));
 
   // password reset from inside settings
+  /* ---------- notifications ---------- */
+  function notifySupported() {
+    return "Notification" in window;
+  }
+
+  function renderNotifyState() {
+    const btn = document.getElementById("notifyBtn");
+    const status = document.getElementById("notifyStatus");
+    if (!btn || !status) return;
+
+    if (!notifySupported()) {
+      btn.classList.add("hidden");
+      status.textContent = "This browser does not support notifications.";
+      return;
+    }
+    const permission = Notification.permission;
+    if (permission === "granted" && prefs.notifications) {
+      btn.textContent = "Turn off";
+      status.textContent = "On. You will be told about new mail while Eyemail is open.";
+    } else if (permission === "granted") {
+      btn.textContent = "Enable notifications";
+      status.textContent = "Allowed by the browser, but switched off here.";
+    } else if (permission === "denied") {
+      btn.textContent = "Blocked by the browser";
+      btn.disabled = true;
+      status.textContent = "The browser is blocking alerts for this site. Allow them in the site settings, then reload.";
+    } else {
+      btn.textContent = "Enable notifications";
+      status.textContent = "Not asked yet.";
+    }
+  }
+
+  document.getElementById("notifyBtn").addEventListener("click", async () => {
+    if (!notifySupported()) return;
+    if (prefs.notifications && Notification.permission === "granted") {
+      prefs.notifications = false;
+      savePrefs();
+      renderNotifyState();
+      return;
+    }
+    try {
+      const permission = await Notification.requestPermission();
+      prefs.notifications = permission === "granted";
+      savePrefs();
+      if (permission === "granted") {
+        new Notification("Eyemail notifications are on", {
+          body: "You will be told here when a new mail arrives.",
+          tag: "eyemail-test",
+        });
+      }
+    } catch (_) {
+      prefs.notifications = false;
+      savePrefs();
+    }
+    renderNotifyState();
+  });
+
+  function announceNewMail(mails) {
+    const fresh = mails.filter((m) => m.folder === "inbox" && !m.read && !announced.has(m.id));
+    mails.forEach((m) => announced.add(m.id));
+    if (firstLoad) { firstLoad = false; return; }
+    if (!prefs.notifications || !notifySupported() || Notification.permission !== "granted") return;
+    if (!document.hidden) return;                  // the person is looking at the list already
+    fresh.slice(0, 3).forEach((m) => {
+      const note = new Notification(m.fromName || m.from || "New mail", {
+        body: `${m.subject || "(No Subject)"}\n${m.snippet || ""}`,
+        tag: `eyemail-${m.id}`,
+      });
+      note.onclick = () => {
+        window.focus();
+        openEmail(m.id);
+        note.close();
+      };
+    });
+  }
+
   document.getElementById("changePasswordBtn").addEventListener("click", async () => {
     const status = document.getElementById("pwStatus");
     const btn = document.getElementById("changePasswordBtn");
