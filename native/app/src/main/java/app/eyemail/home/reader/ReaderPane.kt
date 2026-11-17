@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.eyemail.Ey
 import app.eyemail.home.Mail
+import app.eyemail.home.parseIso
 
 /** One mail, read the way the web reader shows it: who, when, then the body. */
 @Composable
@@ -77,7 +78,7 @@ fun ReaderPane(
             Text(mail.to, fontSize = 11.5.sp, color = Ey.Text2)
             Spacer(Modifier.height(8.dp))
             Text("RECEIVED", fontSize = 9.5.sp, letterSpacing = 1.sp, color = Ey.Text3)
-            Text(mail.createdAt, fontSize = 11.5.sp, color = Ey.Text2)
+            Text(longDate(mail.createdAt), fontSize = 11.5.sp, color = Ey.Text2)
             Spacer(Modifier.height(16.dp))
             Box(Modifier.fillMaxWidth().height(1.dp).background(Ey.Border))
             Spacer(Modifier.height(16.dp))
@@ -85,6 +86,12 @@ fun ReaderPane(
             Spacer(Modifier.height(40.dp))
         }
     }
+}
+
+/** The web writes a full readable date in the reader, so the app does the same. */
+private fun longDate(iso: String): String {
+    val parsed = parseIso(iso) ?: return iso
+    return java.text.SimpleDateFormat("d MMM yyyy, HH:mm", java.util.Locale.getDefault()).format(parsed)
 }
 
 @Composable
