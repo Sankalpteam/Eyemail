@@ -25,18 +25,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import in.eyemail.app.data.AuthRepository.Session
-import in.eyemail.app.ui.components.BrandHeader
-import in.eyemail.app.ui.components.EyemailMark
-import in.eyemail.app.ui.screens.ForgotPasswordScreen
-import in.eyemail.app.ui.screens.LoginScreen
-import in.eyemail.app.ui.screens.SignupScreen
-import in.eyemail.app.ui.theme.Ey
-import in.eyemail.app.ui.theme.EyemailTheme
+import in.eyemail.app.authentication.AuthSessionStore
+import in.eyemail.app.authentication.EyemailMark
+import in.eyemail.app.authentication.forgot.ForgotPasswordScreen
+import in.eyemail.app.authentication.login.LoginScreen
+import in.eyemail.app.authentication.signup.SignUpScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AuthSessionStore.init(this)
         enableEdgeToEdge()
         setContent {
             EyemailTheme {
@@ -48,7 +46,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Screen { Login, Signup, Forgot, SignedIn }
+private enum class Screen { Login, SignUp, Forgot, SignedIn }
 
 @Composable
 private fun EyemailApp() {
@@ -56,24 +54,24 @@ private fun EyemailApp() {
     var sessionEmail by rememberSaveable { mutableStateOf("") }
 
     // The back gesture steps inside the app and never drops the person out of it.
-    BackHandler(enabled = screen != Screen.Login && screen != Screen.SignedIn) {
+    BackHandler(enabled = screen == Screen.SignUp || screen == Screen.Forgot) {
         screen = Screen.Login
     }
 
     when (screen) {
         Screen.Login -> LoginScreen(
-            onSignup = { screen = Screen.Signup },
+            onSignup = { screen = Screen.SignUp },
             onForgot = { screen = Screen.Forgot },
-            onSignedIn = { session: Session ->
-                sessionEmail = session.email
+            onSignedIn = {
+                sessionEmail = AuthSessionStore.email().orEmpty()
                 screen = Screen.SignedIn
             },
         )
 
-        Screen.Signup -> SignupScreen(
+        Screen.SignUp -> SignUpScreen(
             onSignIn = { screen = Screen.Login },
-            onSignedIn = { session: Session ->
-                sessionEmail = session.email
+            onSignedIn = {
+                sessionEmail = AuthSessionStore.email().orEmpty()
                 screen = Screen.SignedIn
             },
         )
@@ -83,6 +81,7 @@ private fun EyemailApp() {
         Screen.SignedIn -> SignedInPlaceholder(
             email = sessionEmail,
             onSignOut = {
+                AuthSessionStore.clear()
                 sessionEmail = ""
                 screen = Screen.Login
             },
