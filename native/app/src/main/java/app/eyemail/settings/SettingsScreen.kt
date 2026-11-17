@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -90,10 +89,10 @@ fun SettingsScreen(
             Text(
                 state.error,
                 fontSize = 11.5.sp,
-                color = Color(0xFF991B1B),
+                color = Ey.Danger,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFFEE4E2))
+                    .background(Ey.DangerSoft)
                     .padding(horizontal = 14.dp, vertical = 8.dp),
             )
         }
