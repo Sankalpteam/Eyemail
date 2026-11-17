@@ -41,6 +41,18 @@ object SettingsStore {
         prefs?.edit()?.clear()?.apply()
     }
 
+    /** Labels are a small list of names; a comma is enough and keeps the store simple. */
+    fun labels(): List<String> =
+        prefs?.getString("labels", "")?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
+
+    fun addLabel(name: String) {
+        val current = labels().toMutableList()
+        if (!current.contains(name)) {
+            current.add(name)
+            prefs?.edit()?.putString("labels", current.joinToString(","))?.apply()
+        }
+    }
+
     fun notifications(): Boolean = prefs?.getBoolean("notifications", false) ?: false
     fun setNotifications(value: Boolean) = prefs?.edit()?.putBoolean("notifications", value)?.apply()
 }
