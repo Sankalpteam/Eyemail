@@ -7,6 +7,7 @@ import app.eyemail.authentication.AuthSessionStore
 import app.eyemail.authentication.EyemailAuthService
 import app.eyemail.home.MailRepository
 import app.eyemail.settings.about.AboutState
+import app.eyemail.settings.notifications.NotificationPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
