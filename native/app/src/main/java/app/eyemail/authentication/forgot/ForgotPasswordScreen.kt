@@ -62,7 +62,7 @@ fun ForgotPasswordScreen(
             Spacer(Modifier.height(24.dp))
 
             EyField(
-                label = "Eyemail address",
+                label = "Your Eyemail address",
                 value = state.email,
                 onValueChange = viewModel::onEmail,
                 placeholder = "yourname@eyemail.in",
@@ -95,9 +95,8 @@ fun ForgotPasswordScreen(
                 )
             }
 
-            Spacer(Modifier.height(28.dp))
-            Text("Powered by Indo Workspace", fontSize = 11.sp, color = Ey.Text3)
-            FooterCredit(Modifier.padding(top = 6.dp))
+            Spacer(Modifier.height(18.dp))
+            FooterCredit()
         }
     }
 }
