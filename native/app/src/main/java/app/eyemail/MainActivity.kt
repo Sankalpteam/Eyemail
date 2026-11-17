@@ -82,7 +82,13 @@ private fun EyemailApp() {
 
         Screen.Forgot -> ForgotPasswordScreen(onBack = { screen = Screen.Login })
 
-        Screen.Settings -> SettingsScreen(onBack = { screen = Screen.SignedIn })
+        Screen.Settings -> SettingsScreen(
+            onBack = { screen = Screen.SignedIn },
+            onAccountDeleted = {
+                sessionEmail = ""
+                screen = Screen.Login
+            },
+        )
 
         Screen.SignedIn -> HomeScreen(
             onSignOut = {
