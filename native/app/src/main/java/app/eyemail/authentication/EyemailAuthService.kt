@@ -73,6 +73,14 @@ object EyemailAuthService {
         detail.contains("TOO_MANY_ATTEMPTS_TRY_LATER") -> "Too many tries. Wait a minute and try again."
         detail.contains("INVALID_LOGIN_CREDENTIALS") -> "That address or password is not right."
         detail.contains("INVALID_EMAIL") -> "That address does not look right."
+        detail.contains("unregistered callers") ->
+            "This build is not allowed to talk to Firebase. The FIREBASE_API_KEY secret is missing or wrong."
+        detail.contains("API key not valid") || detail.contains("API_KEY_INVALID") ->
+            "The Firebase key in this build is not valid. Check the FIREBASE_API_KEY secret."
+        detail.contains("PERMISSION_DENIED") || detail.contains("API has not been used") ->
+            "Firebase refused the call. The Identity Toolkit API may be off for this project."
+        detail.contains("service account") || detail.contains("Could not load the default credentials") ->
+            "The server has no Firebase credentials. Check FIREBASE_SERVICE_ACCOUNT_JSON on Render."
         else -> detail
     }
 
