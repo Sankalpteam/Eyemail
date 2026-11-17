@@ -18,7 +18,6 @@ import app.eyemail.authentication.Alert
 import app.eyemail.settings.SectionTitle
 import app.eyemail.settings.SettingRow
 import app.eyemail.settings.SmallButton
-import app.eyemail.settings.Tag
 
 @Composable
 fun AccountSection(
@@ -89,10 +88,6 @@ fun AccountSection(
 
         Alert(state.actionError, isError = true)
         Alert(state.actionNote, isError = false)
-
-        SettingRow("Free plan", "1 GB storage, 50 outside mails a day, 20 recipients a message") {
-            Tag("NO CARD")
-        }
 
         Spacer(Modifier.height(4.dp))
     }
