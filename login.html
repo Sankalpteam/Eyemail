@@ -204,7 +204,7 @@
     loginBtn.textContent = "Opening your mailbox...";
     try {
       await signInWithCustomToken(auth, token);
-      window.location.href = "index.html";
+      window.location.href = "app.html";
     } catch (err) {
       showAlert(err.code === "auth/invalid-custom-token"
         ? "That sign-in link has expired. Sign in with your password instead."
@@ -227,7 +227,7 @@
 
     try {
       await signInWithEmailAndPassword(auth, raw, password);
-      window.location.href = "index.html";
+      window.location.href = "app.html";
     } catch (err) {
       showAlert(err.code === "auth/too-many-requests"
         ? "Too many attempts. Please wait a minute and try again."
