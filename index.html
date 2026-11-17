@@ -445,6 +445,10 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
         <span>Drafts</span>
       </button>
+      <button class="nav-item folder-btn" data-folder="spam">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v5"/><path d="M12 17.5h.01"/></svg>
+        <span>Spam</span>
+      </button>
       <button class="nav-item folder-btn" data-folder="trash">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
         <span>Trash</span>
@@ -540,6 +544,8 @@
           <button class="tb" data-bulk="read">Mark read</button>
           <button class="tb" data-bulk="unread">Unread</button>
           <button class="tb" data-bulk="star">Star</button>
+          <button class="tb" data-bulk="spam" data-only="normal">Spam</button>
+          <button class="tb" data-bulk="notspam" data-only="spam">Not spam</button>
           <button class="tb" data-bulk="trash" data-only="normal">Trash</button>
           <button class="tb" data-bulk="restore" data-only="trash">Restore</button>
           <button class="tb danger" data-bulk="forever" data-only="trash">Delete forever</button>
@@ -1269,10 +1275,15 @@
     const bar = document.getElementById("bulkBar");
     bar.classList.toggle("hidden", selected.size === 0);
 
-    // In Trash a "Trash" button is meaningless - offer Restore and Delete forever instead
+    // Each folder gets the actions that make sense there.
     const inTrash = currentFolder === "trash";
+    const inSpam = currentFolder === "spam";
     bar.querySelectorAll("[data-only]").forEach((btn) => {
-      const wanted = btn.dataset.only === "trash" ? inTrash : !inTrash;
+      let wanted;
+      if (btn.dataset.only === "trash") wanted = inTrash;
+      else if (btn.dataset.only === "spam") wanted = inSpam;
+      else wanted = !inTrash;                 // normal: Spam and Trash are offered
+      if (btn.dataset.bulk === "spam") wanted = !inTrash && !inSpam;
       btn.classList.toggle("hidden", !wanted);
     });
   }
@@ -1282,6 +1293,27 @@
     const ids = [...selected];
     if (!ids.length) return;
     const picked = allEmails.filter((m) => ids.includes(m.id));
+
+    if (action === "spam" || action === "notspam") {
+      const folder = action === "spam" ? "spam" : "inbox";
+      const previous = picked.map((m) => ({ id: m.id, folder: m.folder }));
+      picked.forEach((m) => {
+        const live = allEmails.find((x) => x.id === m.id);
+        if (live) live.folder = folder;
+      });
+      selected.clear();
+      renderList();
+      toast(folder === "spam" ? "Marked as spam" : "Moved back to Inbox", async () => {
+        for (const p of previous) {
+          const live = allEmails.find((x) => x.id === p.id);
+          if (live) live.folder = p.folder;
+          await writeMail(p.id, { folder: p.folder }, "Could not undo.");
+        }
+        renderList();
+      });
+      for (const m of picked) await writeMail(m.id, { folder }, "Could not move the mail.");
+      return;
+    }
 
     if (action === "trash") {
       selected.clear();
