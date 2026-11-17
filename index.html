@@ -141,6 +141,8 @@
   .selrow input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
   .selrow label{cursor:pointer;font-weight:600;color:var(--text-2)}
   .selrow label:hover{color:var(--accent)}
+  .selrow .linkbtn{border:0;background:none;padding:0;color:var(--accent);font:600 11.5px/1 inherit;cursor:pointer}
+  .selrow .linkbtn:hover{text-decoration:underline}
   .selrow .clear{margin-left:auto;border:0;background:none;color:var(--accent);font:600 11.5px/1 inherit;cursor:pointer;padding:4px}
   .rows{flex:1;overflow-y:auto}
   .row{display:grid;grid-template-columns:16px 32px 1fr auto;gap:10px;padding:var(--row-pad) 14px;
@@ -483,6 +485,7 @@
       <div class="selrow" id="selRow">
         <input type="checkbox" id="selectAll" />
         <label for="selectAll" id="selectAllText">Select all</label>
+        <button type="button" class="linkbtn hidden" id="selectAllBtn">Select all</button>
         <button class="clear hidden" id="clearSel">Clear selection</button>
       </div>
 
@@ -1028,14 +1031,18 @@
     const clear = document.getElementById("clearSel");
     const chosen = ids.filter((id) => selected.has(id)).length;
 
-    document.getElementById("selRow").classList.toggle("hidden", ids.length === 0);
+    // Hidden until the person ticks something, as asked.
+    document.getElementById("selRow").classList.toggle("hidden", chosen === 0);
     master.checked = ids.length > 0 && chosen === ids.length;
     master.indeterminate = chosen > 0 && chosen < ids.length;
 
-    if (ids.length === 0) text.textContent = "Select all";
-    else if (chosen === 0) text.textContent = `Select all ${ids.length}`;
-    else if (chosen === ids.length) text.textContent = `All ${ids.length} selected`;
-    else text.textContent = `${chosen} of ${ids.length} selected`;
+    text.textContent = chosen === ids.length
+      ? `All ${ids.length} selected`
+      : `${chosen} of ${ids.length} selected`;
+
+    const allBtn = document.getElementById("selectAllBtn");
+    allBtn.textContent = `Select all ${ids.length}`;
+    allBtn.classList.toggle("hidden", !(chosen > 0 && chosen < ids.length));
 
     clear.classList.toggle("hidden", chosen === 0);
   }
@@ -1094,6 +1101,11 @@
   document.getElementById("selectAll").addEventListener("change", (e) => {
     if (e.target.checked) visibleIds.forEach((id) => selected.add(id));
     else selected.clear();
+    renderList();
+  });
+
+  document.getElementById("selectAllBtn").addEventListener("click", () => {
+    visibleIds.forEach((id) => selected.add(id));
     renderList();
   });
 
