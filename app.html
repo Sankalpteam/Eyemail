@@ -433,7 +433,13 @@
     .setnav button{white-space:nowrap;flex:0 0 auto;align-self:center;padding:8px 9px;font-size:11.6px;
       scroll-snap-align:start}
     .setpanes{padding:14px 14px 18px}
-    .setting{flex-direction:column;align-items:stretch;gap:9px;padding:12px 0}
+    /* Each option is its own card, so nobody reads the list as one long paragraph. */
+    .setting{flex-direction:column;align-items:stretch;gap:9px;padding:14px;margin:0 0 10px;
+      background:var(--surface);border:1px solid var(--border);border-bottom:1px solid var(--border);
+      border-radius:12px;box-shadow:0 1px 2px rgba(15,26,43,.04)}
+    .setting:last-child{margin-bottom:0}
+    .setting b{font-size:13px}
+    .setting span{font-size:11.6px}
     .setting > div:first-child{min-width:0}
     .setting span{display:block;line-height:1.5}
     .setting .tb,.setting .seg{align-self:flex-start}
