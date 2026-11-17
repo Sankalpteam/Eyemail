@@ -1979,6 +1979,16 @@
     settingsModal.classList.remove("hidden");
   });
   document.getElementById("closeSettingsBtn").addEventListener("click", () => settingsModal.classList.add("hidden"));
+
+  // Clicking the empty space around a window closes it, like the x button.
+  // mousedown, not click, so a drag that starts inside does not close it.
+  [settingsModal, domainModal, labelModal, document.getElementById("shortcutModal")]
+    .filter(Boolean)
+    .forEach((overlay) => {
+      overlay.addEventListener("mousedown", (e) => {
+        if (e.target === overlay) overlay.classList.add("hidden");
+      });
+    });
   document.getElementById("userChip").addEventListener("click", (e) => {
     if (e.target.closest("#logoutBtn")) return;
     settingsModal.classList.remove("hidden");
