@@ -15,6 +15,11 @@ class ForgotPasswordViewModel : ViewModel() {
     private val _state = MutableStateFlow(ForgotPasswordState())
     val state: StateFlow<ForgotPasswordState> = _state.asStateFlow()
 
+    /** Coming back always starts clean. */
+    fun reset() {
+        _state.value = ForgotPasswordState()
+    }
+
     fun onEmail(value: String) = _state.update { it.copy(email = value, error = "", done = "") }
 
     fun send() {
