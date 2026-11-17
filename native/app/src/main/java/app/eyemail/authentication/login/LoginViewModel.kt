@@ -23,6 +23,16 @@ class LoginViewModel : ViewModel() {
 
     fun onPassword(value: String) = _state.update { it.copy(password = value, error = "") }
 
+    /** The screen calls this once it has navigated, so the event is used only once. */
+    fun consumeSignedIn() {
+        _signedIn.value = false
+    }
+
+    /** Coming back to this screen always starts from a clean form. */
+    fun reset() {
+        _state.update { it.copy(password = "", busy = false, error = "") }
+    }
+
     fun signIn() {
         val current = _state.value
         if (!current.canSubmit) return
