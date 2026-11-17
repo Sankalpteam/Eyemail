@@ -85,25 +85,22 @@ fun BrandHeader(
     subtitle: String,
     modifier: Modifier = Modifier,
 ) {
+    // The web hides the logo block on a phone and starts with the heading,
+    // so the app starts the same way.
     Column(modifier = modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            EyemailMark(size = 40)
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Text("Eyemail", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Ey.Text)
-                Text(
-                    "EYEMAIL.IN",
-                    fontSize = 9.5.sp,
-                    letterSpacing = 1.4.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Ey.Text3,
-                )
-            }
-        }
-        Spacer(Modifier.height(26.dp))
-        Text(title, style = MaterialTheme.typography.displaySmall, color = Ey.Text)
-        Spacer(Modifier.height(8.dp))
-        Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Ey.Text2)
+        Text(
+            title,
+            style = MaterialTheme.typography.displaySmall,
+            color = Ey.Text,
+            modifier = Modifier.padding(bottom = 6.dp),
+        )
+        Text(
+            subtitle,
+            fontSize = 13.sp,
+            lineHeight = 20.sp,
+            color = Ey.Text3,
+            modifier = Modifier.padding(bottom = 22.dp),
+        )
     }
 }
 
@@ -119,16 +116,23 @@ fun EyField(
     imeAction: ImeAction = ImeAction.Next,
     isPassword: Boolean = false,
     enabled: Boolean = true,
+    labelAction: (@Composable () -> Unit)? = null,
 ) {
     var revealed by remember { mutableStateOf(false) }
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Ey.Text2,
-            modifier = Modifier.padding(bottom = 6.dp),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                label,
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Ey.Text2,
+                modifier = Modifier.weight(1f),
+            )
+            if (labelAction != null) labelAction()
+        }
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -150,7 +154,7 @@ fun EyField(
             } else {
                 null
             },
-            shape = RoundedCornerShape(11.dp),
+            shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Ey.Accent,
                 unfocusedBorderColor = Ey.BorderStrong,
@@ -184,7 +188,7 @@ fun PrimaryButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(44.dp)
             .background(
                 if (active) Brush.linearGradient(listOf(Ey.Accent, Ey.Accent2))
                 else Brush.linearGradient(listOf(Ey.BorderStrong, Ey.BorderStrong)),
@@ -203,7 +207,7 @@ fun PrimaryButton(
             Text(
                 text,
                 color = Color.White,
-                fontSize = 14.sp,
+                fontSize = 13.5.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -222,7 +226,7 @@ fun SecondaryButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(44.dp)
             .background(Ey.Surface, RoundedCornerShape(12.dp))
             .border(1.dp, Ey.BorderStrong, RoundedCornerShape(12.dp))
             .clickableNoRipple(onClick),
@@ -277,10 +281,12 @@ fun LinkRow(
 fun FooterCredit(modifier: Modifier = Modifier) {
     Text(
         "POWERED BY INDO WORKSPACE",
-        fontSize = 10.sp,
-        letterSpacing = 1.2.sp,
+        fontSize = 10.5.sp,
+        letterSpacing = 1.26.sp,
         fontWeight = FontWeight.Medium,
+        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
         color = Ey.Text3,
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         modifier = modifier.fillMaxWidth(),
     )
 }
