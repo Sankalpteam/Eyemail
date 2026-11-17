@@ -49,7 +49,7 @@ fun MailList(
                     .fillMaxWidth()
                     .clickable { onOpen(mail) }
                     .background(if (mail.read) Ey.Surface else Ey.AccentSoft.copy(alpha = 0.45f))
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                    .padding(horizontal = 14.dp, vertical = Ey.RowPad.dp),
                 verticalAlignment = Alignment.Top,
             ) {
                 Box(
@@ -65,7 +65,7 @@ fun MailList(
                         fontWeight = FontWeight.Bold,
                     )
                 }
-                Spacer(Modifier.width(11.dp))
+                Spacer(Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
@@ -83,7 +83,7 @@ fun MailList(
                     Spacer(Modifier.height(2.dp))
                     Text(
                         mail.subject,
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         color = Ey.Text2,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -92,7 +92,7 @@ fun MailList(
                         Spacer(Modifier.height(2.dp))
                         Text(
                             mail.snippet,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             color = Ey.Text3,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
