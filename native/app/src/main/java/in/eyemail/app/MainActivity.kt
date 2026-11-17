@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import in.eyemail.app.authentication.AuthSessionStore
 import in.eyemail.app.home.HomeScreen
+import in.eyemail.app.settings.SettingsScreen
+import in.eyemail.app.settings.SettingsStore
 import in.eyemail.app.authentication.EyemailMark
 import in.eyemail.app.authentication.forgot.ForgotPasswordScreen
 import in.eyemail.app.authentication.login.LoginScreen
@@ -36,6 +38,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AuthSessionStore.init(this)
+        SettingsStore.init(this)
         enableEdgeToEdge()
         setContent {
             EyemailTheme {
@@ -47,7 +50,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Screen { Login, SignUp, Forgot, SignedIn }
+private enum class Screen { Login, SignUp, Forgot, SignedIn, Settings }
 
 @Composable
 private fun EyemailApp() {
@@ -55,8 +58,8 @@ private fun EyemailApp() {
     var sessionEmail by rememberSaveable { mutableStateOf("") }
 
     // The back gesture steps inside the app and never drops the person out of it.
-    BackHandler(enabled = screen == Screen.SignUp || screen == Screen.Forgot) {
-        screen = Screen.Login
+    BackHandler(enabled = screen == Screen.SignUp || screen == Screen.Forgot || screen == Screen.Settings) {
+        screen = if (screen == Screen.Settings) Screen.SignedIn else Screen.Login
     }
 
     when (screen) {
@@ -79,13 +82,15 @@ private fun EyemailApp() {
 
         Screen.Forgot -> ForgotPasswordScreen(onBack = { screen = Screen.Login })
 
+        Screen.Settings -> SettingsScreen(onBack = { screen = Screen.SignedIn })
+
         Screen.SignedIn -> HomeScreen(
             onSignOut = {
                 AuthSessionStore.clear()
                 sessionEmail = ""
                 screen = Screen.Login
             },
-            onSettings = { /* settings/ is the next folder */ },
+            onSettings = { screen = Screen.Settings },
         )
     }
 }
