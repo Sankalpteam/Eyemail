@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.eyemail.Ey
+import app.eyemail.settings.SettingsStore
 import app.eyemail.home.Mail
 
 /** The rows of a folder: sender, subject, snippet, time, and the unread dot. */
@@ -49,7 +50,11 @@ fun MailList(
                     .fillMaxWidth()
                     .clickable { onOpen(mail) }
                     .background(if (mail.read) Ey.Surface else Ey.AccentSoft.copy(alpha = 0.45f))
-                    .padding(horizontal = 14.dp, vertical = Ey.RowPad.dp),
+                    .padding(
+                        horizontal = 14.dp,
+                        // Density is a real setting: compact rows lose four points of height.
+                        vertical = (if (SettingsStore.density() == "compact") 8 else Ey.RowPad).dp,
+                    ),
                 verticalAlignment = Alignment.Top,
             ) {
                 Box(
