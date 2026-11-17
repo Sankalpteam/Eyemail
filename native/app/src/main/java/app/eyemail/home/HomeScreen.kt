@@ -78,6 +78,16 @@ fun HomeScreen(
 
     val openMail = state.openMail
 
+    // Back closes what is open before it leaves the app.
+    androidx.activity.compose.BackHandler(enabled = composing || openMail != null) {
+        if (composing) {
+            composing = false
+            composeError = ""
+        } else {
+            viewModel.close()
+        }
+    }
+
     when {
         composing -> ComposePane(
             initialTo = composeTo,
