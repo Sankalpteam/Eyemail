@@ -781,8 +781,9 @@
             </div>
           </div>
           <div class="setting" style="border-bottom:0">
-            <div><b>Sending limit</b><span>Outside Eyemail, per day, free plan</span></div>
-            <span class="tag blue">50 a day</span>
+            <div><b>Free plan sending limit</b>
+              <span>50 mails a day to addresses outside eyemail.in. It is there to keep spam out, not because mail is short.</span></div>
+            <span class="tag blue">50 / day</span>
           </div>
         </section>
 
@@ -802,8 +803,8 @@
           <div class="setting" style="display:block">
             <div style="margin-bottom:10px"><b>Used</b><span id="settingStorageText">0 MB / 1 GB</span></div>
             <div class="meter"><div id="settingStorageBar" style="width:2%"></div></div>
-            <p class="setnote">Mail only. Deleting a mail frees its space; emptying Trash is what actually gives it back.
-            Trash is cleared automatically after 30 days.</p>
+            <p class="setnote">Free plan storage: 1 GB of mail. Deleting a mail frees its space; emptying Trash is what
+            actually gives it back, and Trash is cleared automatically after 30 days.</p>
           </div>
         </section>
 
@@ -811,6 +812,7 @@
           <h3>About</h3>
           <div class="setting"><div><b>Eyemail</b><span>Business mail on your own domain</span></div><span class="mono" style="font-size:11.5px">v1.0</span></div>
           <div class="setting"><div><b>Domain</b><span>All addresses live here</span></div><span class="mono" style="font-size:11.5px">@eyemail.in</span></div>
+          <div class="setting"><div><b>Free plan</b><span>1 GB storage, 50 outside mails a day, 20 recipients a message</span></div><span class="tag blue">no card</span></div>
           <div class="setting" style="border-bottom:0"><div><b>Not supported yet</b><span>Attachments, and sending as a customer domain</span></div><span class="tag">later</span></div>
         </section>
       </div>
@@ -1258,8 +1260,8 @@
     const usedMb = (storageUsed / (1024 * 1024)).toFixed(0);
     const limitGb = (storageLimit / (1024 * 1024 * 1024)).toFixed(0);
     text.textContent = pct >= 100
-      ? `Mailbox full - ${usedMb} MB of ${limitGb} GB. New mail will bounce until you free space.`
-      : `Mailbox ${Math.round(pct)}% full - ${usedMb} MB of ${limitGb} GB.`;
+      ? `Free plan storage full - ${usedMb} MB of ${limitGb} GB. New mail will bounce until you free space.`
+      : `Free plan storage ${Math.round(pct)}% full - ${usedMb} MB of ${limitGb} GB.`;
   }
 
   function updateFolderExtras() {
