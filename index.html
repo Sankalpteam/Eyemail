@@ -99,7 +99,10 @@
   [data-rail="collapsed"] .rail-label,[data-rail="collapsed"] .storage,[data-rail="collapsed"] .user-txt,
   [data-rail="collapsed"] .nav-item .count{display:none}
   [data-rail="collapsed"] .rail{padding:14px 10px 12px;align-items:center}
-  [data-rail="collapsed"] .brand{padding:4px 0 14px}
+  [data-rail="collapsed"] .brand{padding:4px 0 14px;justify-content:center}
+  [data-rail="collapsed"] .brand .mark,
+  [data-rail="collapsed"] .brand .brand-txt{display:none}
+  [data-rail="collapsed"] .brand .rail-menu{margin-left:0;width:34px;height:34px;flex:0 0 34px}
   [data-rail="collapsed"] .compose{padding:11px;width:44px;height:44px;border-radius:13px}
   [data-rail="collapsed"] .nav{width:100%}
   [data-rail="collapsed"] .nav-item{justify-content:center;padding:11px 0;width:44px;height:42px;margin:0 auto}
@@ -136,6 +139,7 @@
   .bulkbar .acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
   .bulkbar .tb{border-color:rgba(24,87,184,.25);background:var(--surface);color:var(--text-2);
     padding:6px 9px;font-size:11.3px;white-space:nowrap}
+  @media (min-width:861px){ .list-menu{display:none} }
   .selrow{display:flex;align-items:center;gap:9px;padding:9px 14px;border-bottom:1px solid var(--border);
     background:var(--surface-2);font-size:12px;color:var(--text-2)}
   .selrow input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
@@ -385,6 +389,9 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 8 7.1 4.7a2 2 0 0 0 2.2 0L20 8"/></svg>
       </div>
       <div class="brand-txt"><b>Eyemail</b><span>eyemail.in</span></div>
+      <button class="iconbtn rail-menu" id="railMenuBtn" title="Collapse menu" style="width:28px;height:28px;flex:0 0 28px;margin-left:auto">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
     </div>
 
     <button class="compose" id="composeBtn">
@@ -453,7 +460,7 @@
     <section class="panel list" id="listPane">
       <div class="list-head">
         <div class="topline">
-          <button class="iconbtn" id="menuToggle" title="Menu">
+          <button class="iconbtn list-menu" id="menuToggle" title="Menu">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
           </button>
           <div class="title-wrap">
@@ -1670,14 +1677,16 @@
     renderList();
   });
 
-  document.getElementById("menuToggle").addEventListener("click", () => {
+  function toggleRail() {
     if (window.matchMedia("(max-width:860px)").matches) {
       appEl.classList.toggle("rail-open");
     } else {
       document.documentElement.dataset.rail =
         document.documentElement.dataset.rail === "expanded" ? "collapsed" : "expanded";
     }
-  });
+  }
+  document.getElementById("menuToggle").addEventListener("click", toggleRail);
+  document.getElementById("railMenuBtn").addEventListener("click", toggleRail);
   // leaving the mobile drawer open while rotating to desktop must not leave a stuck rail
   window.addEventListener("resize", () => {
     if (!window.matchMedia("(max-width:860px)").matches) appEl.classList.remove("rail-open");
