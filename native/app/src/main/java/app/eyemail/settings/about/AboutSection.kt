@@ -23,6 +23,5 @@ fun AboutSection(
         SettingRow("Built by", "Powered by Indo Workspace") { Tag("INDO") }
         SettingRow("Free plan", "1 GB storage, 50 outside mails a day, 20 recipients a message") { Tag("NO CARD") }
         SettingRow("Not supported yet", "Attachments, and sending as a customer domain") { Tag("LATER") }
-        SettingRow("Package", "The app id on the Play Store") { Text(state.packageName) }
     }
 }
