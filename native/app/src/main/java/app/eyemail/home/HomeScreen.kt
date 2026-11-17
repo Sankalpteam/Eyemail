@@ -449,7 +449,7 @@ private fun MenuPanel(
             Spacer(Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    AuthSessionStore.email().substringBefore("@").ifBlank { "You" },
+                    AuthSessionStore.email().orEmpty().substringBefore("@").ifBlank { "You" },
                     fontSize = 12.5.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Ey.Text,
@@ -522,12 +522,6 @@ private fun MenuRow(
             )
         }
     }
-}
-
-/** The two letters on the account chip, the same rule the list rows use. */
-private fun initials(address: String): String {
-    val name = address.substringBefore("@").ifBlank { "E" }
-    return name.take(1).uppercase()
 }
 
 private fun titleFor(folder: String): String = when (folder) {
