@@ -3,6 +3,7 @@ package app.eyemail.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.eyemail.authentication.AuthSessionStore
+import app.eyemail.settings.SettingsStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,18 +24,40 @@ class HomeViewModel : ViewModel() {
 
     private fun uid(): String = AuthSessionStore.uid().orEmpty()
 
+    /**
+     * Loads the folder that is open. The folder is part of the query, so Trash and
+     * Spam are real lists and not whatever was left over from the inbox.
+     */
     fun load() {
         if (token().isBlank() || uid().isBlank()) {
             _state.update { it.copy(error = "Sign in again.", loading = false) }
             return
         }
+        val folder = _state.value.folder
         _state.update { it.copy(loading = true, error = "") }
         viewModelScope.launch {
             try {
-                val mails = MailRepository.list(uid(), token())
+                val mails = if (folder == "starred") {
+                    MailRepository.listStarred(uid(), token())
+                } else {
+                    MailRepository.list(uid(), token(), folder)
+                }
                 _state.update { it.copy(mails = mails, loading = false) }
             } catch (e: Exception) {
                 _state.update { it.copy(loading = false, error = e.message ?: "Could not load the mailbox.") }
+            }
+        }
+    }
+
+    /** Empty Trash for real, through the endpoint the web uses. */
+    fun emptyTrash() {
+        viewModelScope.launch {
+            try {
+                MailRepository.emptyTrash(token())
+                load()
+                loadProfile()
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Could not empty Trash.") }
             }
         }
     }
@@ -55,8 +78,10 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun openFolder(folder: String) = _state.update {
-        it.copy(folder = folder, openMailId = null, query = "")
+    fun openFolder(folder: String) {
+        _state.update { it.copy(folder = folder, openMailId = null, query = "", mails = emptyList()) }
+        // Labels and the domain screen are not mail lists, so they do not fetch.
+        if (folder != "labels" && folder != "domain") load()
     }
 
     fun search(query: String) = _state.update { it.copy(query = query) }
@@ -103,19 +128,18 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    /** A label is stored on the mail, so creating one writes it to every picked mail. */
+    /**
+     * A label is a name the person keeps, not a property of one mail. It is stored on
+     * this phone and shown in the panel; picking one filters the mail that carries it.
+     */
     fun createLabel(name: String) {
         if (name.isBlank()) return
-        viewModelScope.launch {
-            try {
-                val target = _state.value.mails.firstOrNull { it.folder == "inbox" } ?: return@launch
-                val labels = (target.labels + name).distinct()
-                MailRepository.setLabels(uid(), token(), target.id, labels)
-                load()
-            } catch (_: Exception) {
-                // A label that failed to save must not look saved.
-            }
-        }
+        SettingsStore.addLabel(name.trim())
+        _state.update { it.copy(labels = SettingsStore.labels()) }
+    }
+
+    fun selectLabel(name: String?) {
+        _state.update { it.copy(selectedLabel = name) }
     }
 
     fun send(to: String, subject: String, body: String, onDone: (String?) -> Unit) {
