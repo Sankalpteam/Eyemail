@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import app.eyemail.Ey
 import app.eyemail.authentication.Alert
 import app.eyemail.authentication.PrimaryButton
+import app.eyemail.settings.SettingsStore
 
 /** New mail. Send goes through the backend, the same call the web composer makes. */
 @Composable
@@ -44,7 +45,17 @@ fun ComposePane(
 ) {
     var to by remember { mutableStateOf(initialTo) }
     var subject by remember { mutableStateOf(initialSubject) }
-    var body by remember { mutableStateOf(initialBody) }
+    // The web appends the saved signature to a new mail; the app does the same.
+    var body by remember {
+        mutableStateOf(
+            if (initialBody.isBlank()) {
+                val sig = SettingsStore.signature()
+                if (sig.isBlank()) "" else "\n\n$sig"
+            } else {
+                initialBody
+            },
+        )
+    }
 
     Column(
         modifier = modifier
