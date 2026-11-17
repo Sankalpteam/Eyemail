@@ -7,4 +7,8 @@ data class AccountState(
     val sendingReset: Boolean = false,
     val resetNote: String = "",
     val resetError: String = "",
+    val signingOutAll: Boolean = false,
+    val deleting: Boolean = false,
+    val actionNote: String = "",
+    val actionError: String = "",
 )
