@@ -10,6 +10,8 @@ data class HomeState(
     val error: String = "",
     val storageUsed: Long = 0,
     val storageLimit: Long = 1L shl 30,
+    val labels: List<String> = emptyList(),
+    val selectedLabel: String? = null,
 ) {
     val visible: List<Mail>
         get() {
