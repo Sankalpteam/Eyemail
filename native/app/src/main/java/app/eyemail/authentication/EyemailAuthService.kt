@@ -47,11 +47,21 @@ object EyemailAuthService {
             val raw = response.body?.string().orEmpty()
             val json = if (raw.isBlank()) JSONObject() else runCatching { JSONObject(raw) }.getOrElse { JSONObject() }
             if (!response.isSuccessful) {
-                val detail = json.optString("detail").ifBlank { json.optString("error").ifBlank { "Something went wrong." } }
-                throw ApiError(friendly(detail))
+                throw ApiError(friendly(readError(json)))
             }
             json
         }
+    }
+
+    /** Reads the message out of either shape: {"detail":"..."} or {"error":{"message":"..."}}. */
+    private fun readError(json: JSONObject): String {
+        json.optString("detail").takeIf { it.isNotBlank() }?.let { return it }
+        val nested = json.optJSONObject("error")
+        if (nested != null) {
+            nested.optString("message").takeIf { it.isNotBlank() }?.let { return it }
+            return "Something went wrong."
+        }
+        return json.optString("error").ifBlank { "Something went wrong." }
     }
 
     /** The server speaks in sentences already; this only softens the raw Firebase codes. */
