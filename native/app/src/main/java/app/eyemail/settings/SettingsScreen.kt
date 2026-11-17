@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +44,12 @@ import app.eyemail.settings.storage.StorageSection
 fun SettingsScreen(
     onBack: () -> Unit,
     onAccountDeleted: () -> Unit,
-    viewModel: SettingsViewModel = viewModel(),
+    onSignedOutEverywhere: () -> Unit,
+    viewModel: SettingsViewModel = viewModel(
+        factory = androidx.lifecycle.viewmodel.initializer {
+            SettingsViewModel(onSignedOutEverywhere)
+        },
+    ),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -97,11 +103,15 @@ fun SettingsScreen(
             )
         }
 
+        // Each section keeps its own scroll position, and opening a section starts at the top.
+        val scroll = rememberScrollState()
+        LaunchedEffect(state.section) { scroll.scrollTo(0) }
+
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(scroll),
         ) {
             when (state.section) {
                 SettingsState.Section.Account -> AccountSection(
