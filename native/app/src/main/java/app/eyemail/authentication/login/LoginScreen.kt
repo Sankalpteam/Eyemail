@@ -48,7 +48,14 @@ fun LoginScreen(
     val signedIn by viewModel.signedIn.collectAsStateWithLifecycle()
 
     LaunchedEffect(signedIn) {
-        if (signedIn) onSignedIn()
+        if (signedIn) {
+            viewModel.consumeSignedIn()
+            onSignedIn()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.reset()
     }
 
     Column(
@@ -90,6 +97,7 @@ fun LoginScreen(
                 placeholder = "Enter your password",
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done,
+                onImeAction = viewModel::signIn,
                 isPassword = true,
                 enabled = !state.busy,
                 labelAction = {
