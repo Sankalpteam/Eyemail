@@ -29,6 +29,7 @@ android {
         buildConfigField("String", "BACKEND_URL", "\"${prop("BACKEND_URL", "https://eyemail-backend.onrender.com")}\"")
         buildConfigField("String", "FIREBASE_API_KEY", "\"${prop("FIREBASE_API_KEY", "")}\"")
         buildConfigField("String", "DOMAIN_NAME", "\"eyemail.in\"")
+        buildConfigField("String", "FIRESTORE_PROJECT", "\"${prop("FIRESTORE_PROJECT", "eyemail-c3398")}\"")
     }
 
     buildTypes {
