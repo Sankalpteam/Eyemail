@@ -31,7 +31,7 @@ fun AccountSection(
     Column(modifier = modifier.fillMaxWidth().padding(14.dp)) {
         SectionTitle("Account")
 
-        SettingRow("Display name", "Shown on mail you send") {
+        SettingRow("Display name", "Shown on mail you send", wide = true) {
             OutlinedTextField(
                 value = state.displayName,
                 onValueChange = onName,
