@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.eyemail.Ey
+import app.eyemail.settings.SettingsStore
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -30,6 +31,8 @@ fun TrashScreen(
     onEmptyTrash: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Ask before deleting forever is a setting; when it is off, Empty trash goes at once.
+    val mustAsk = SettingsStore.confirmDelete()
     var asking by remember { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -67,7 +70,7 @@ fun TrashScreen(
                         fontWeight = FontWeight.Bold,
                         color = Ey.Danger,
                         modifier = Modifier
-                            .clickable { asking = true }
+                            .clickable { if (mustAsk) asking = true else onEmptyTrash() }
                             .padding(horizontal = 8.dp, vertical = 6.dp),
                     )
                 }
