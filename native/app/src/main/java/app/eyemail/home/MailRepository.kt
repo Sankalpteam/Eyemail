@@ -142,14 +142,8 @@ object MailRepository {
                             .put("value", JSONObject().put("stringValue", folder)),
                     ),
                 )
-                .put(
-                    "orderBy",
-                    JSONArray().put(
-                        JSONObject()
-                            .put("field", JSONObject().put("fieldPath", "createdAt"))
-                            .put("direction", "DESCENDING"),
-                    ),
-                )
+                // No orderBy here on purpose: folder plus a sort needs a composite
+                // index, which this app cannot create. The list is sorted on the phone.
                 .put("limit", pageSize),
         )
 
@@ -164,7 +158,7 @@ object MailRepository {
             val doc = item.optJSONObject("document") ?: continue   // rows without a document are the end
             out.add(toMail(doc))
         }
-        return out
+        return out.sortedByDescending { it.createdAt }
     }
 
     /** Starred is its own list, because the panel has a Starred row. */
@@ -183,14 +177,6 @@ object MailRepository {
                             .put("value", JSONObject().put("booleanValue", true)),
                     ),
                 )
-                .put(
-                    "orderBy",
-                    JSONArray().put(
-                        JSONObject()
-                            .put("field", JSONObject().put("fieldPath", "createdAt"))
-                            .put("direction", "DESCENDING"),
-                    ),
-                )
                 .put("limit", pageSize),
         )
         val project = BuildConfig.FIRESTORE_PROJECT
@@ -202,7 +188,7 @@ object MailRepository {
             val doc = raw.optJSONObject(i)?.optJSONObject("document") ?: continue
             out.add(toMail(doc))
         }
-        return out
+        return out.sortedByDescending { it.createdAt }
     }
 
     private suspend fun postForArray(url: String, token: String, body: JSONObject): JSONArray =
