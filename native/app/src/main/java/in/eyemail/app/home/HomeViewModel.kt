@@ -103,6 +103,21 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /** A label is stored on the mail, so creating one writes it to every picked mail. */
+    fun createLabel(name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            try {
+                val target = _state.value.mails.firstOrNull { it.folder == "inbox" } ?: return@launch
+                val labels = (target.labels + name).distinct()
+                MailRepository.setLabels(uid(), token(), target.id, labels)
+                load()
+            } catch (_: Exception) {
+                // A label that failed to save must not look saved.
+            }
+        }
+    }
+
     fun send(to: String, subject: String, body: String, onDone: (String?) -> Unit) {
         viewModelScope.launch {
             try {
