@@ -15,6 +15,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +44,9 @@ fun ComposePane(
     busy: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
+    val undoSeconds = SettingsStore.undoSeconds()
+    var waiting by remember { mutableStateOf(0) }
+
     var to by remember { mutableStateOf(initialTo) }
     var subject by remember { mutableStateOf(initialSubject) }
     // The web appends the saved signature to a new mail; the app does the same.
@@ -55,6 +59,13 @@ fun ComposePane(
                 initialBody
             },
         )
+    }
+
+    LaunchedEffect(waiting) {
+        if (waiting <= 0) return@LaunchedEffect
+        kotlinx.coroutines.delay(1000)
+        waiting -= 1
+        if (waiting == 0) onSend(to.trim(), subject.trim(), body)
     }
 
     Column(
@@ -89,12 +100,34 @@ fun ComposePane(
         Alert(error, isError = true)
         Spacer(Modifier.height(12.dp))
 
-        PrimaryButton(
-            text = if (busy) "Sending..." else "Send",
-            loading = busy,
-            enabled = to.contains("@") && subject.isNotBlank() && body.isNotBlank() && !busy,
-            onClick = { onSend(to.trim(), subject.trim(), body) },
-        )
+        if (waiting > 0) {
+            // Undo send, the same wait the web gives: the mail has not left yet.
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Text(
+                    "Sending in ${waiting}s",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Ey.Text2,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = { waiting = 0 }) {
+                    Text("Undo", fontSize = 12.5.sp, fontWeight = FontWeight.Bold, color = Ey.Accent)
+                }
+            }
+        } else {
+            PrimaryButton(
+                text = if (busy) "Sending..." else "Send",
+                loading = busy,
+                enabled = to.contains("@") && subject.isNotBlank() && body.isNotBlank() && !busy,
+                onClick = {
+                    if (undoSeconds <= 0) {
+                        onSend(to.trim(), subject.trim(), body)
+                    } else {
+                        waiting = undoSeconds
+                    }
+                },
+            )
+        }
         Spacer(Modifier.height(6.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             TextButton(onClick = onCancel, enabled = !busy) {
