@@ -1,8 +1,14 @@
 package app.eyemail.home.labels
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,14 +39,15 @@ import app.eyemail.home.MailList
 @Composable
 fun LabelsScreen(
     mails: List<Mail>,
+    labels: List<String>,
     selectedLabel: String?,
     onCreate: (String) -> Unit,
-    onSelect: (String) -> Unit,
+    onSelect: (String?) -> Unit,
     onOpen: (Mail) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var draft by remember { mutableStateOf("") }
-    val names = mails.flatMap { it.labels }.distinct().sorted()
+    val names = labels.sorted()
 
     Column(modifier = modifier.fillMaxSize().padding(horizontal = 14.dp)) {
         Spacer(Modifier.height(12.dp))
@@ -80,25 +87,25 @@ fun LabelsScreen(
         if (names.isEmpty()) {
             Text("No labels yet.", fontSize = 12.sp, color = Ey.Text3)
         } else {
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                names.forEach { name ->
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                items(names) { name ->
                     val on = name == selectedLabel
                     Text(
                         name,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = if (on) Ey.Accent else Ey.Text2,
+                        color = if (on) Ey.Text2 else Ey.Text2,
                         modifier = Modifier
-                            .padding(vertical = 4.dp)
-                            .then(
-                                if (on) Modifier else Modifier,
-                            ),
+                            .background(if (on) Ey.AccentSoft else Ey.Surface2, RoundedCornerShape(99.dp))
+                            .border(1.dp, if (on) Ey.Accent else Ey.Border, RoundedCornerShape(99.dp))
+                            .clickable { onSelect(if (on) null else name) }
+                            .padding(horizontal = 11.dp, vertical = 7.dp),
                     )
                 }
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                "Tap a label in the panel to see its mail.",
+                "Tap a label to see the mail that carries it.",
                 fontSize = 11.sp,
                 color = Ey.Text3,
             )
