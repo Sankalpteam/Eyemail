@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import app.eyemail.Ey
 import app.eyemail.settings.account.AccountSection
 import app.eyemail.settings.about.AboutSection
@@ -46,8 +48,8 @@ fun SettingsScreen(
     onAccountDeleted: () -> Unit,
     onSignedOutEverywhere: () -> Unit,
     viewModel: SettingsViewModel = viewModel(
-        factory = androidx.lifecycle.viewmodel.initializer {
-            SettingsViewModel(onSignedOutEverywhere)
+        factory = viewModelFactory {
+            initializer { SettingsViewModel(onSignedOutEverywhere) }
         },
     ),
 ) {
