@@ -29,6 +29,7 @@ import app.eyemail.authentication.AuthSessionStore
 import app.eyemail.home.HomeScreen
 import app.eyemail.settings.SettingsScreen
 import app.eyemail.settings.SettingsStore
+import app.eyemail.settings.ThemeState
 import app.eyemail.authentication.EyemailMark
 import app.eyemail.authentication.forgot.ForgotPasswordScreen
 import app.eyemail.authentication.login.LoginScreen
@@ -39,6 +40,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         AuthSessionStore.init(this)
         SettingsStore.init(this)
+        ThemeState.load()
+        app.eyemail.settings.notifications.NotificationPermission.init(this)
         enableEdgeToEdge()
         setContent {
             EyemailTheme {
@@ -88,6 +91,10 @@ private fun EyemailApp() {
         Screen.Settings -> SettingsScreen(
             onBack = { screen = Screen.SignedIn },
             onAccountDeleted = {
+                sessionEmail = ""
+                screen = Screen.Login
+            },
+            onSignedOutEverywhere = {
                 sessionEmail = ""
                 screen = Screen.Login
             },
