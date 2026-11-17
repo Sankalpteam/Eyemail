@@ -242,16 +242,23 @@ fun Alert(text: String, isError: Boolean, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .padding(bottom = 8.dp)
             .background(
-                if (isError) Color(0xFFFEE4E2) else Color(0xFFE7F6EC),
-                RoundedCornerShape(10.dp),
+                if (isError) Ey.DangerSoft else Ey.OkSoft,
+                RoundedCornerShape(8.dp),
             )
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .border(
+                1.dp,
+                if (isError) Ey.Danger.copy(alpha = 0.22f) else Ey.Ok.copy(alpha = 0.22f),
+                RoundedCornerShape(8.dp),
+            )
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Text(
             text,
-            fontSize = 12.5.sp,
+            fontSize = 11.8.sp,
+            lineHeight = 17.sp,
             color = if (isError) Ey.Danger else Ey.Ok,
             modifier = Modifier.weight(1f),
         )
