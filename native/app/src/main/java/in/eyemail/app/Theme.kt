@@ -72,7 +72,7 @@ private val EyTypography = Typography(
 
 @Composable
 fun EyemailTheme(
-    dark: Boolean = isSystemInDarkTheme(),
+    dark: Boolean = in.eyemail.app.settings.SettingsStore.theme() == "dark",
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(
