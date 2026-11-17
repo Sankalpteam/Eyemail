@@ -37,12 +37,15 @@ class HomeViewModel : ViewModel() {
         _state.update { it.copy(loading = true, error = "") }
         viewModelScope.launch {
             try {
-                val mails = if (folder == "starred") {
-                    MailRepository.listStarred(uid(), token())
-                } else {
-                    MailRepository.list(uid(), token(), folder)
+                val mails = when (folder) {
+                    "starred" -> MailRepository.listStarred(uid(), token())
+                    // Labels is not a folder in the database: it filters the inbox.
+                    "labels" -> MailRepository.list(uid(), token(), "inbox")
+                    "domain" -> emptyList()
+                    else -> MailRepository.list(uid(), token(), folder)
                 }
                 _state.update { it.copy(mails = mails, loading = false) }
+                if (folder == "inbox") Notifier.announce(mails)
             } catch (e: Exception) {
                 _state.update { it.copy(loading = false, error = e.message ?: "Could not load the mailbox.") }
             }
@@ -80,8 +83,8 @@ class HomeViewModel : ViewModel() {
 
     fun openFolder(folder: String) {
         _state.update { it.copy(folder = folder, openMailId = null, query = "", mails = emptyList()) }
-        // Labels and the domain screen are not mail lists, so they do not fetch.
-        if (folder != "labels" && folder != "domain") load()
+        // The domain screen has no mail; every other row does.
+        if (folder != "domain") load()
     }
 
     fun search(query: String) = _state.update { it.copy(query = query) }
@@ -147,6 +150,7 @@ class HomeViewModel : ViewModel() {
             try {
                 MailRepository.send(token(), to, subject, body)
                 load()
+                loadProfile()
                 onDone(null)
             } catch (e: Exception) {
                 onDone(e.message ?: "Could not send the mail.")
