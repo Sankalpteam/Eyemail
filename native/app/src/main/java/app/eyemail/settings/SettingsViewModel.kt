@@ -105,6 +105,39 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    fun signOutEverywhere() {
+        _state.update { it.copy(account = it.account.copy(signingOutAll = true, actionNote = "", actionError = "")) }
+        viewModelScope.launch {
+            try {
+                EyemailAuthService.signOutAll(AuthSessionStore.token().orEmpty())
+                _state.update {
+                    it.copy(account = it.account.copy(signingOutAll = false, actionNote = "Every device has been signed out."))
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(account = it.account.copy(signingOutAll = false, actionError = e.message ?: "Could not sign out the other devices."))
+                }
+            }
+        }
+    }
+
+    fun deleteAccount(onDeleted: () -> Unit) {
+        _state.update { it.copy(account = it.account.copy(deleting = true, actionNote = "", actionError = "")) }
+        viewModelScope.launch {
+            try {
+                EyemailAuthService.deleteAccount(AuthSessionStore.token().orEmpty())
+                AuthSessionStore.clear()
+                SettingsStore.clear()
+                _state.update { it.copy(account = it.account.copy(deleting = false)) }
+                onDeleted()
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(account = it.account.copy(deleting = false, actionError = e.message ?: "Could not delete the account."))
+                }
+            }
+        }
+    }
+
     /** Password is never set here: the server mails a link to the recovery address. */
     fun sendResetLink() {
         _state.update { it.copy(account = it.account.copy(sendingReset = true, resetNote = "", resetError = "")) }
