@@ -18,6 +18,16 @@ class SignUpViewModel : ViewModel() {
     private val _signedIn = MutableStateFlow(false)
     val signedIn: StateFlow<Boolean> = _signedIn.asStateFlow()
 
+    /** The screen calls this once it has navigated, so the event fires only once. */
+    fun consumeSignedIn() {
+        _signedIn.value = false
+    }
+
+    /** Coming back always starts at the form with nothing half filled in. */
+    fun reset() {
+        _state.value = SignUpState()
+    }
+
     fun onName(value: String) = _state.update { it.copy(name = value, error = "") }
 
     fun onUsername(value: String) = _state.update {
@@ -52,6 +62,7 @@ class SignUpViewModel : ViewModel() {
                     password = current.password,
                 )
                 val session = EyemailAuthService.signIn(result.email, current.password)
+                lastCodeSentAt = System.currentTimeMillis()
                 _state.update {
                     it.copy(
                         busy = false,
@@ -82,8 +93,15 @@ class SignUpViewModel : ViewModel() {
                     recoveryEmail = current.recovery.trim().lowercase(),
                     idToken = current.pendingToken,
                 )
-                val session = EyemailAuthService.signIn(current.pendingEmail, current.password)
-                AuthSessionStore.save(session)
+                // The token from step one is already valid, so there is no second sign in
+                // to fail after the account has been created.
+                AuthSessionStore.save(
+                    EyemailAuthService.Session(
+                        uid = EyemailAuthService.uidFromToken(current.pendingToken),
+                        email = current.pendingEmail,
+                        idToken = current.pendingToken,
+                    ),
+                )
                 _state.update { it.copy(busy = false) }
                 _signedIn.value = true
             } catch (e: Exception) {
@@ -92,14 +110,22 @@ class SignUpViewModel : ViewModel() {
         }
     }
 
+    private var lastCodeSentAt: Long = 0L
+
     fun resendCode() {
         val current = _state.value
         if (current.busy) return
+        val waited = (System.currentTimeMillis() - lastCodeSentAt) / 1000
+        if (lastCodeSentAt != 0L && waited < 60) {
+            _state.update { it.copy(note = "Wait ${60 - waited}s before asking for another code.") }
+            return
+        }
         _state.update { it.copy(busy = true, error = "", note = "") }
 
         viewModelScope.launch {
             try {
                 EyemailAuthService.sendSignupOtp(current.recovery.trim().lowercase())
+                lastCodeSentAt = System.currentTimeMillis()
                 _state.update { it.copy(busy = false, note = "A new code is on its way.") }
             } catch (e: Exception) {
                 _state.update { it.copy(busy = false, error = e.message ?: "Could not send another code.") }
