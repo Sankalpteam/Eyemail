@@ -37,6 +37,10 @@ object SettingsStore {
     fun confirmDelete(): Boolean = prefs?.getBoolean("confirmDelete", true) ?: true
     fun setConfirmDelete(value: Boolean) = prefs?.edit()?.putBoolean("confirmDelete", value)?.apply()
 
+    fun clear() {
+        prefs?.edit()?.clear()?.apply()
+    }
+
     fun notifications(): Boolean = prefs?.getBoolean("notifications", false) ?: false
     fun setNotifications(value: Boolean) = prefs?.edit()?.putBoolean("notifications", value)?.apply()
 }
