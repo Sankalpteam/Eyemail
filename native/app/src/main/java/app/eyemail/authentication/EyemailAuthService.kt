@@ -47,7 +47,15 @@ object EyemailAuthService {
             val raw = response.body?.string().orEmpty()
             val json = if (raw.isBlank()) JSONObject() else runCatching { JSONObject(raw) }.getOrElse { JSONObject() }
             if (!response.isSuccessful) {
-                throw ApiError(friendly(readError(json)))
+                val detail = readError(json)
+                // Configuration failures are hard to tell apart on a phone, so the
+                // message carries the facts: the code, and how long the key is.
+                val hint = if (detail.contains("unregistered callers") || detail.contains("API key")) {
+                    " (HTTP ${response.code}, key length ${BuildConfig.FIREBASE_API_KEY.trim().length})"
+                } else {
+                    ""
+                }
+                throw ApiError(friendly(detail) + hint)
             }
             json
         }
@@ -90,12 +98,15 @@ object EyemailAuthService {
             .put("email", email)
             .put("password", password)
             .put("returnSecureToken", true)
-        val key = BuildConfig.FIREBASE_API_KEY
+        val key = BuildConfig.FIREBASE_API_KEY.trim()
         if (key.isBlank()) {
-            throw ApiError("The app has no Firebase key yet. Add FIREBASE_API_KEY to local.properties.")
+            throw ApiError(
+                "This build has no Firebase key at all. Set FIREBASE_API_KEY in the repository " +
+                    "secrets and rebuild.",
+            )
         }
         val json = post(
-            "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword",
+            "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=$key",
             body,
             absolute = true,
         )
