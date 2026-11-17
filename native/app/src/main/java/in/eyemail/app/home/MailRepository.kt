@@ -134,6 +134,19 @@ object MailRepository {
             JSONObject().put("starred", JSONObject().put("booleanValue", starred)))
     }
 
+    suspend fun setLabels(uid: String, token: String, mailId: String, labels: List<String>) {
+        val values = org.json.JSONArray()
+        labels.forEach { values.put(JSONObject().put("stringValue", it)) }
+        patch(
+            docsUrl(uid, "/$mailId") + "?updateMask.fieldPaths=labels",
+            token,
+            JSONObject().put(
+                "labels",
+                JSONObject().put("arrayValue", JSONObject().put("values", values)),
+            ),
+        )
+    }
+
     suspend fun moveTo(uid: String, token: String, mailId: String, folder: String) {
         patch(docsUrl(uid, "/$mailId") + "?updateMask.fieldPaths=folder", token,
             JSONObject().put("folder", JSONObject().put("stringValue", folder)))
