@@ -187,7 +187,13 @@ fun HomeScreen(
                 value = state.query,
                 onValueChange = viewModel::search,
                 singleLine = true,
-                placeholder = { Text("Search, or from:name is:unread", fontSize = 12.5.sp, color = Ey.Text3) },
+                placeholder = {
+                    Text(
+                        "Search or try from:razorpay is:unread",
+                        fontSize = 12.5.sp,
+                        color = Ey.Text3,
+                    )
+                },
                 shape = RoundedCornerShape(10.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Ey.Accent,
