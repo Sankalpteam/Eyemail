@@ -16,7 +16,7 @@ data class HomeState(
             val base = mails.filter { mail ->
                 when (folder) {
                     "starred" -> mail.starred && mail.folder != "trash"
-                    "label" -> mail.labels.isNotEmpty() && mail.folder != "trash"
+                    "labels" -> mail.labels.isNotEmpty() && mail.folder != "trash"
                     else -> mail.folder == folder
                 }
             }
