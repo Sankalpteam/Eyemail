@@ -60,7 +60,14 @@ fun ReaderPane(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
-            Text(mail.subject, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Ey.Text)
+            Text(
+                mail.subject,
+                fontSize = 21.sp,
+                lineHeight = 27.sp,
+                letterSpacing = (-0.5).sp,
+                fontWeight = FontWeight.Bold,
+                color = Ey.Text,
+            )
             Spacer(Modifier.height(10.dp))
             Text("FROM", fontSize = 9.5.sp, letterSpacing = 1.sp, color = Ey.Text3)
             Text(mail.fromName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Ey.Text)
