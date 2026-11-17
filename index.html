@@ -44,7 +44,7 @@
   .hidden{display:none !important}
   .mono{font-family:"Azeret Mono",monospace}
 
-  .app{height:100vh;display:grid;grid-template-columns:var(--rail) 1fr;gap:14px;padding:14px;
+  .app{height:100vh;display:grid;grid-template-columns:var(--rail) 1fr;grid-template-rows:minmax(0,1fr);gap:14px;padding:14px;
     transition:grid-template-columns .28s cubic-bezier(.4,0,.2,1)}
   [data-rail="collapsed"] .app{grid-template-columns:var(--rail-min) 1fr}
 
@@ -115,7 +115,7 @@
 
   /* ---------- shell ---------- */
   .shell{display:grid;grid-template-columns:minmax(340px,410px) 1fr;gap:14px;min-width:0}
-  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-md);
+  .panel{min-height:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-md);
     min-width:0;display:flex;flex-direction:column;overflow:hidden}
   .list-head{padding:14px 14px 10px;border-bottom:1px solid var(--border)}
   .topline{display:flex;align-items:center;gap:9px;margin-bottom:11px}
@@ -148,7 +148,9 @@
   .selrow .linkbtn{border:0;background:none;padding:0;color:var(--accent);font:600 11.5px/1 inherit;cursor:pointer}
   .selrow .linkbtn:hover{text-decoration:underline}
   .selrow .clear{margin-left:auto;border:0;background:none;color:var(--accent);font:600 11.5px/1 inherit;cursor:pointer;padding:4px}
-  .rows{flex:1;overflow-y:auto}
+  .rows{flex:1;min-height:0;overflow-y:auto}
+  .loadmore{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 12px;
+    border-top:1px solid var(--border);background:var(--surface-2);font-size:11.5px;color:var(--text-3)}
   .row{display:grid;grid-template-columns:16px 32px 1fr auto;gap:10px;padding:var(--row-pad) 14px;
     border-bottom:1px solid var(--border);cursor:pointer;position:relative;transition:background .12s}
   .row:hover{background:var(--surface-2)}
@@ -514,6 +516,11 @@
           <div class="sk" style="width:55%;margin-top:14px"></div><div class="sk" style="width:75%"></div>
         </div>
       </div>
+
+      <div class="loadmore hidden" id="loadMoreWrap">
+        <button class="tb" id="loadMoreBtn">Load more</button>
+        <span id="loadMoreInfo"></span>
+      </div>
     </section>
 
     <section class="panel reader" id="readerPane">
@@ -716,11 +723,17 @@
 <script type="module">
   import { auth, db, BACKEND_URL } from "./firebase-config.js";
   import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { collection, doc, query, orderBy, onSnapshot, updateDoc, deleteDoc, writeBatch }
+  import { collection, doc, query, orderBy, onSnapshot, updateDoc, deleteDoc, writeBatch, limit }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   /* ---------- state ---------- */
   const appEl = document.getElementById("app");
+  const PAGE_SIZE = 50;
+  let pageLimit = PAGE_SIZE;
+  let mailUnsub = null;
+  let pageIsFull = false;     // the last page came back full, so more may exist
+  let autoExtends = 0;        // guard against looping when a folder looks thin
+
   const emailListEl = document.getElementById("emailList");
   const emptyReader = document.getElementById("emptyReader");
   const mailDetail = document.getElementById("mailDetail");
@@ -852,18 +865,54 @@
     document.getElementById("userInitials").textContent = initials(prefs.displayName || user.displayName || user.email);
     loadProfile(user);
 
-    const q = query(collection(db, "users", user.uid, "emails"), orderBy("createdAt", "desc"));
-    onSnapshot(q, (snap) => {
+    startMailStream(user);
+  });
+
+  /* ---------- mail stream, a page at a time ---------- */
+  function startMailStream(user) {
+    if (mailUnsub) mailUnsub();
+    const q = query(collection(db, "users", user.uid, "emails"),
+                    orderBy("createdAt", "desc"), limit(pageLimit));
+    mailUnsub = onSnapshot(q, (snap) => {
+      pageIsFull = snap.size >= pageLimit;
       allEmails = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       collectLabels();
       updateUnreadBadge();
       renderList();
+      renderLoadMore();
       if (selectedEmailId) {
         const m = allEmails.find((x) => x.id === selectedEmailId);
         if (m) renderDetail(m);
       }
-    }, () => { emailListEl.innerHTML = `<div class="empty">Could not load mail. Check your connection.</div>`; });
-  });
+    }, () => {
+      emailListEl.innerHTML = `<div class="empty">Could not load mail. Check your connection.</div>`;
+    });
+  }
+
+  // If the open folder looks almost empty but more mail exists, pull the next
+  // page instead of showing a misleading empty list.
+  function maybeExtendPage(visibleCount) {
+    if (visibleCount >= 8 || !pageIsFull || autoExtends >= 6) return false;
+    autoExtends++;
+    pageLimit += PAGE_SIZE;
+    startMailStream(currentUser);
+    return true;
+  }
+
+  function loadMore() {
+    if (!pageIsFull) return;
+    pageLimit += PAGE_SIZE;
+    autoExtends = 0;
+    startMailStream(currentUser);
+  }
+
+  function renderLoadMore() {
+    const wrap = document.getElementById("loadMoreWrap");
+    if (!wrap) return;
+    wrap.classList.toggle("hidden", !pageIsFull);
+    const info = document.getElementById("loadMoreInfo");
+    if (info) info.textContent = `Showing your latest ${allEmails.length}`;
+  }
 
   /* ---------- labels ---------- */
   function collectLabels() {
@@ -952,6 +1001,7 @@
       emailListEl.innerHTML = `<div class="empty">Nothing here.<br/><span style="font-size:11.5px">Try a different folder, filter, or search.</span></div>`;
       updateBulkBar();
       syncSelectAll();
+      if (maybeExtendPage(0)) return;
       return;
     }
 
@@ -1005,6 +1055,7 @@
       });
     });
     syncSelectAll();
+    if (maybeExtendPage(list.length)) return;
 
     emailListEl.querySelectorAll("[data-act]").forEach((b) => {
       b.addEventListener("click", async (e) => {
@@ -1026,7 +1077,7 @@
   function updateUnreadBadge() {
     const n = allEmails.filter((m) => m.folder === "inbox" && !m.read).length;
     const b = document.getElementById("unreadBadge");
-    b.textContent = n;
+    b.textContent = pageIsFull ? `${n}+` : String(n);
     b.classList.toggle("hidden", n === 0);
   }
 
@@ -1104,6 +1155,8 @@
   }
 
   document.querySelectorAll("[data-bulk]").forEach((b) => b.addEventListener("click", () => bulk(b.dataset.bulk)));
+
+  document.getElementById("loadMoreBtn").addEventListener("click", loadMore);
 
   document.getElementById("selectAll").addEventListener("change", (e) => {
     if (e.target.checked) visibleIds.forEach((id) => selected.add(id));
