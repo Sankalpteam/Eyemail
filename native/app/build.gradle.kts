@@ -16,11 +16,11 @@ fun prop(name: String, fallback: String): String =
     (localProps.getProperty(name) ?: System.getenv(name) ?: fallback)
 
 android {
-    namespace = "in.eyemail.app"
+    namespace = "app.eyemail"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "in.eyemail.app"
+        applicationId = "in.eyemail.app"   // the store id stays; the Kotlin package cannot use "in"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -29,6 +29,7 @@ android {
         buildConfigField("String", "BACKEND_URL", "\"${prop("BACKEND_URL", "https://eyemail-backend.onrender.com")}\"")
         buildConfigField("String", "FIREBASE_API_KEY", "\"${prop("FIREBASE_API_KEY", "")}\"")
         buildConfigField("String", "DOMAIN_NAME", "\"eyemail.in\"")
+        buildConfigField("String", "FIRESTORE_PROJECT", "\"${prop("FIRESTORE_PROJECT", "eyemail-c3398")}\"")
     }
 
     buildTypes {
@@ -56,6 +57,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-compose:1.9.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-text-google-fonts")
     implementation("androidx.compose.foundation:foundation")
