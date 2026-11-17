@@ -244,12 +244,17 @@ fun HomeScreen(
                     "sent" -> SentScreen(mails = state.visible, onOpen = viewModel::open)
                     "drafts" -> DraftsScreen(mails = state.visible, onOpen = viewModel::open)
                     "spam" -> SpamScreen(mails = state.visible, onOpen = viewModel::open)
-                    "trash" -> TrashScreen(mails = state.visible, onOpen = viewModel::open)
+                    "trash" -> TrashScreen(
+                        mails = state.visible,
+                        onOpen = viewModel::open,
+                        onEmptyTrash = viewModel::emptyTrash,
+                    )
                     "labels" -> LabelsScreen(
                         mails = state.mails,
-                        selectedLabel = null,
-                        onCreate = { name -> viewModel.createLabel(name) },
-                        onSelect = { },
+                        labels = state.labels,
+                        selectedLabel = state.selectedLabel,
+                        onCreate = viewModel::createLabel,
+                        onSelect = viewModel::selectLabel,
                         onOpen = viewModel::open,
                     )
                     "domain" -> CustomDomainScreen()
