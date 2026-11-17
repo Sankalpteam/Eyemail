@@ -3,11 +3,14 @@ package app.eyemail.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -20,26 +23,43 @@ import androidx.compose.ui.unit.sp
 import app.eyemail.Ey
 
 /** One option, drawn as its own card so nobody reads the list as one paragraph. */
+/**
+ * One option. Every card is the same height so the column reads as a list of
+ * equals, and the control sits on the right where it does on the web.
+ * A control that needs the whole width (a text box) asks for it with wide = true,
+ * and then the card keeps the same height and puts the control underneath.
+ */
 @Composable
 fun SettingRow(
     title: String,
     subtitle: String,
     modifier: Modifier = Modifier,
+    wide: Boolean = false,
     control: @Composable (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(bottom = 10.dp)
+            .heightIn(min = if (wide) 108.dp else 84.dp)
             .background(Ey.Surface, RoundedCornerShape(12.dp))
             .border(1.dp, Ey.Border, RoundedCornerShape(12.dp))
-            .padding(14.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.Center,
     ) {
-        Text(title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Ey.Text)
-        Spacer(Modifier.height(3.dp))
-        Text(subtitle, fontSize = 11.6.sp, lineHeight = 16.sp, color = Ey.Text3)
-        if (control != null) {
-            Spacer(Modifier.height(9.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Ey.Text)
+                Spacer(Modifier.height(3.dp))
+                Text(subtitle, fontSize = 11.6.sp, lineHeight = 16.sp, color = Ey.Text3)
+            }
+            if (control != null && !wide) {
+                Spacer(Modifier.width(10.dp))
+                control()
+            }
+        }
+        if (control != null && wide) {
+            Spacer(Modifier.height(10.dp))
             control()
         }
     }
