@@ -54,7 +54,10 @@ private enum class Screen { Login, SignUp, Forgot, SignedIn, Settings }
 
 @Composable
 private fun EyemailApp() {
-    var screen by rememberSaveable { mutableStateOf(Screen.Login) }
+    // A restored screen must not point at a mailbox we no longer have a session for.
+    var screen by rememberSaveable {
+        mutableStateOf(if (AuthSessionStore.isSignedIn()) Screen.SignedIn else Screen.Login)
+    }
     var sessionEmail by rememberSaveable { mutableStateOf("") }
 
     // The back gesture steps inside the app and never drops the person out of it.
