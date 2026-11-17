@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,10 @@ fun ForgotPasswordScreen(
     viewModel: ForgotPasswordViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.reset()
+    }
 
     Column(
         modifier = Modifier
@@ -70,6 +75,7 @@ fun ForgotPasswordScreen(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Done,
                 enabled = !state.busy,
+                onImeAction = viewModel::send,
             )
 
             Spacer(Modifier.height(12.dp))
