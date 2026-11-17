@@ -267,6 +267,25 @@
   .modal-card .mh{display:flex;align-items:center;padding:12px 16px;background:var(--surface-3);font-size:13px;font-weight:700}
   .modal-card .mh button{margin-left:auto;background:none;border:0;color:var(--text-3);font-size:16px;cursor:pointer}
   .modal-body{padding:16px;overflow-y:auto}
+  .modal-card.settings{width:min(760px,100%);max-height:min(620px,90vh);display:flex;flex-direction:column}
+  .settings-body{display:grid;grid-template-columns:170px 1fr;min-height:0;flex:1}
+  .setnav{display:flex;flex-direction:column;gap:2px;padding:12px 10px;border-right:1px solid var(--border);
+    background:var(--surface-2);border-bottom-left-radius:var(--r-xl)}
+  .setnav button{border:0;background:none;text-align:left;padding:9px 11px;border-radius:9px;cursor:pointer;
+    font:600 12.5px/1.2 inherit;color:var(--text-2)}
+  .setnav button:hover{background:var(--surface-3)}
+  .setnav button.on{background:var(--accent-soft);color:var(--accent)}
+  .setpanes{padding:18px 20px;overflow-y:auto;min-height:0}
+  .setpane h3{margin:0 0 14px;font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:var(--text-3);
+    font-family:"Azeret Mono",monospace;font-weight:500}
+  .setnote{margin:10px 0 0;font-size:11.5px;color:var(--text-3);line-height:1.6}
+  .meter{height:8px;border-radius:6px;background:var(--surface-3);overflow:hidden}
+  .meter div{height:100%;background:var(--accent);border-radius:6px;transition:width .25s}
+  @media (max-width:640px){
+    .settings-body{grid-template-columns:1fr}
+    .setnav{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--border);border-radius:0}
+    .setnav button{white-space:nowrap}
+  }
   .modal-body p{margin:0 0 12px;font-size:12.4px;line-height:1.6;color:var(--text-2)}
   .modal-body code{font-family:"Azeret Mono",monospace;font-size:11.4px;background:var(--surface-3);padding:2px 5px;border-radius:5px}
   .dnsform{display:flex;gap:8px}
@@ -635,38 +654,91 @@
 
 <!-- settings modal -->
 <div class="modal hidden" id="settingsModal">
-  <div class="modal-card">
+  <div class="modal-card settings">
     <div class="mh">Settings<button id="closeSettingsBtn" type="button">&times;</button></div>
-    <div class="modal-body">
-      <div class="setting">
-        <div><b>Display name</b><span>Shown on mail you send</span></div>
-        <input id="settingName" type="text" placeholder="Your name" />
-      </div>
-      <div class="setting">
-        <div><b>Signature</b><span>Added to the end of every new mail</span></div>
-        <input id="settingSignature" type="text" placeholder="— sent from Eyemail" />
-      </div>
-      <div class="setting">
-        <div><b>Appearance</b><span>Light or dark</span></div>
-        <div class="seg" id="themeSeg">
-          <button data-theme-val="light">Light</button>
-          <button data-theme-val="dark">Dark</button>
-        </div>
-      </div>
-      <div class="setting">
-        <div><b>Density</b><span>Row height in the list</span></div>
-        <div class="seg" id="densitySeg">
-          <button data-density-val="comfortable">Comfortable</button>
-          <button data-density-val="compact">Compact</button>
-        </div>
-      </div>
-      <div class="setting">
-        <div><b>Recovery email</b><span>Login OTP and password reset go here</span></div>
-        <span class="mono" id="settingRecovery" style="font-size:11.5px">-</span>
-      </div>
-      <div class="setting" style="border-bottom:0">
-        <div><b>Security</b><span>OTP on every login, 5 minute expiry</span></div>
-        <span class="tag blue">2FA ON</span>
+    <div class="settings-body">
+      <nav class="setnav" id="setNav">
+        <button type="button" data-sec="account" class="on">Account</button>
+        <button type="button" data-sec="appearance">Appearance</button>
+        <button type="button" data-sec="mail">Mail</button>
+        <button type="button" data-sec="storage">Storage</button>
+        <button type="button" data-sec="about">About</button>
+      </nav>
+
+      <div class="setpanes">
+        <section class="setpane" data-pane="account">
+          <h3>Account</h3>
+          <div class="setting">
+            <div><b>Display name</b><span>Shown on mail you send</span></div>
+            <input id="settingName" type="text" placeholder="Your name" />
+          </div>
+          <div class="setting">
+            <div><b>Eyemail address</b><span>Your address is also your account id</span></div>
+            <span class="mono" id="settingAddress" style="font-size:11.5px">-</span>
+          </div>
+          <div class="setting">
+            <div><b>Recovery email</b><span>Password reset goes here</span></div>
+            <span class="mono" id="settingRecovery" style="font-size:11.5px">-</span>
+          </div>
+          <div class="setting">
+            <div><b>Password</b><span>We mail you a reset link, we never show or store your password</span></div>
+            <button type="button" class="tb" id="changePasswordBtn">Send reset link</button>
+          </div>
+          <p class="setnote" id="pwStatus"></p>
+        </section>
+
+        <section class="setpane hidden" data-pane="appearance">
+          <h3>Appearance</h3>
+          <div class="setting">
+            <div><b>Theme</b><span>Light or dark</span></div>
+            <div class="seg" id="themeSeg">
+              <button data-theme-val="light">Light</button>
+              <button data-theme-val="dark">Dark</button>
+            </div>
+          </div>
+          <div class="setting">
+            <div><b>Density</b><span>Row height in the list</span></div>
+            <div class="seg" id="densitySeg">
+              <button data-density-val="comfortable">Comfortable</button>
+              <button data-density-val="compact">Compact</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="setpane hidden" data-pane="mail">
+          <h3>Mail</h3>
+          <div class="setting">
+            <div><b>Signature</b><span>Added to the end of every new mail</span></div>
+            <input id="settingSignature" type="text" placeholder="— sent from Eyemail" />
+          </div>
+          <div class="setting">
+            <div><b>Ask before deleting forever</b><span>One confirmation before a mail leaves Trash</span></div>
+            <div class="seg" id="confirmSeg">
+              <button data-confirm="yes">Ask</button>
+              <button data-confirm="no">Do not ask</button>
+            </div>
+          </div>
+          <div class="setting" style="border-bottom:0">
+            <div><b>Sending limit</b><span>Outside Eyemail, per day, free plan</span></div>
+            <span class="tag blue">50 a day</span>
+          </div>
+        </section>
+
+        <section class="setpane hidden" data-pane="storage">
+          <h3>Storage</h3>
+          <div class="setting" style="display:block">
+            <div style="margin-bottom:10px"><b>Used</b><span id="settingStorageText">0 MB / 1 GB</span></div>
+            <div class="meter"><div id="settingStorageBar" style="width:2%"></div></div>
+            <p class="setnote">Mail only. Deleting a mail frees its space; emptying Trash is what actually gives it back.</p>
+          </div>
+        </section>
+
+        <section class="setpane hidden" data-pane="about">
+          <h3>About</h3>
+          <div class="setting"><div><b>Eyemail</b><span>Business mail on your own domain</span></div><span class="mono" style="font-size:11.5px">v1.0</span></div>
+          <div class="setting"><div><b>Domain</b><span>All addresses live here</span></div><span class="mono" style="font-size:11.5px">@eyemail.in</span></div>
+          <div class="setting" style="border-bottom:0"><div><b>Not supported yet</b><span>Attachments, and sending as a customer domain</span></div><span class="tag">later</span></div>
+        </section>
       </div>
     </div>
   </div>
@@ -833,6 +905,8 @@
     document.documentElement.dataset.density = prefs.density;
     document.querySelectorAll("#themeSeg button").forEach((b) => b.classList.toggle("on", b.dataset.themeVal === prefs.theme));
     document.querySelectorAll("#densitySeg button").forEach((b) => b.classList.toggle("on", b.dataset.densityVal === prefs.density));
+    document.querySelectorAll("#confirmSeg button").forEach((b) =>
+      b.classList.toggle("on", (b.dataset.confirm === "yes") === (prefs.confirmDelete !== false)));
   }
 
   /* ---------- profile ---------- */
@@ -847,6 +921,16 @@
       document.getElementById("userNameLabel").textContent = name;
       document.getElementById("userInitials").textContent = initials(name);
       document.getElementById("settingRecovery").textContent = profile.recoveryEmail || "not set";
+      document.getElementById("settingAddress").textContent = user.email;
+      const setUsed = Number(profile.storageUsedBytes || 0);
+      const setLimit = Number(profile.storageLimitBytes || 1);
+      const mb = (setUsed / (1024 * 1024)).toFixed(2);
+      const gb = (setLimit / (1024 * 1024 * 1024)).toFixed(0);
+      const pct = Math.min(100, Math.max(2, (setUsed / setLimit) * 100));
+      const st = document.getElementById("settingStorageText");
+      const sb = document.getElementById("settingStorageBar");
+      if (st) st.textContent = `${mb} MB / ${gb} GB`;
+      if (sb) sb.style.width = `${pct}%`;
       document.getElementById("settingName").value = prefs.displayName || profile.name || "";
       document.getElementById("settingSignature").value = prefs.signature || "";
       const used = profile.storageUsedBytes || 0;
@@ -1636,6 +1720,41 @@
     if (e.target.closest("#logoutBtn")) return;
     settingsModal.classList.remove("hidden");
   });
+  // section switching
+  document.querySelectorAll("#setNav button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll("#setNav button").forEach((x) => x.classList.toggle("on", x === b));
+    document.querySelectorAll(".setpane").forEach((p) => p.classList.toggle("hidden", p.dataset.pane !== b.dataset.sec));
+  }));
+
+  // delete confirmation preference
+  document.querySelectorAll("#confirmSeg button").forEach((b) => b.addEventListener("click", () => {
+    prefs.confirmDelete = b.dataset.confirm === "yes";
+    savePrefs();
+    document.querySelectorAll("#confirmSeg button").forEach((x) => x.classList.toggle("on", x === b));
+  }));
+
+  // password reset from inside settings
+  document.getElementById("changePasswordBtn").addEventListener("click", async () => {
+    const status = document.getElementById("pwStatus");
+    const btn = document.getElementById("changePasswordBtn");
+    btn.disabled = true;
+    status.textContent = "Sending...";
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eyemail: currentUser.email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Could not send the link.");
+      status.textContent = `Reset link sent to ${data.maskedRecoveryEmail}. Check Inbox and Spam.`;
+    } catch (err) {
+      status.textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   document.getElementById("settingName").addEventListener("input", (e) => {
     prefs.displayName = e.target.value.trim();
     savePrefs();
