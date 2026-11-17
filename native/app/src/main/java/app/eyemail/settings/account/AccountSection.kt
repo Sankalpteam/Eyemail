@@ -25,6 +25,8 @@ fun AccountSection(
     state: AccountState,
     onName: (String) -> Unit,
     onSendReset: () -> Unit,
+    onSignOutAll: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth().padding(14.dp)) {
@@ -65,6 +67,28 @@ fun AccountSection(
 
         Alert(state.resetError, isError = true)
         Alert(state.resetNote, isError = false)
+
+        SettingRow("Sign out of all devices", "Every phone and laptop must sign in again") {
+            SmallButton(
+                text = if (state.signingOutAll) "Signing out..." else "Sign out everywhere",
+                enabled = !state.signingOutAll && !state.deleting,
+                onClick = onSignOutAll,
+            )
+        }
+
+        SettingRow(
+            "Delete my account",
+            "Removes the mailbox, its mail and the login. Cannot be undone.",
+        ) {
+            SmallButton(
+                text = if (state.deleting) "Deleting..." else "Delete account",
+                enabled = !state.deleting && !state.signingOutAll,
+                onClick = onDelete,
+            )
+        }
+
+        Alert(state.actionError, isError = true)
+        Alert(state.actionNote, isError = false)
 
         SettingRow("Free plan", "1 GB storage, 50 outside mails a day, 20 recipients a message") {
             Tag("NO CARD")
