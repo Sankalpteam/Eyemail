@@ -139,6 +139,13 @@ object EyemailAuthService {
         post("/api/auth/register-mailbox", body, idToken)
     }
 
+    /** The uid is inside the token already, so no second call is needed to read it. */
+    fun uidFromToken(idToken: String): String {
+        val payload = idToken.split(".").getOrNull(1) ?: return ""
+        val json = String(android.util.Base64.decode(payload, android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING))
+        return runCatching { JSONObject(json).optString("user_id") }.getOrDefault("")
+    }
+
     /** Ends every session; the web calls this from Sign out of all devices. */
     suspend fun signOutAll(idToken: String) {
         post("/api/auth/sign-out-all", JSONObject(), idToken)
