@@ -180,7 +180,7 @@
   .sender .avatar{width:38px;height:38px;flex:0 0 38px;border-radius:12px;font-size:13px}
   .sender-txt b{display:block;font-size:13.2px;line-height:1.25}
   .sender-txt span{font-size:11.3px;color:var(--text-3)}
-  .sender .when{margin-left:auto;font:500 10.5px/1.5 "Azeret Mono",monospace;color:var(--text-3);text-align:right}
+  .sender .when{margin-left:auto;white-space:nowrap;font:500 10.5px/1.5 "Azeret Mono",monospace;color:var(--text-3);text-align:right}
   .toolbar{display:flex;align-items:center;gap:6px;overflow-x:hidden;padding:9px 20px;border-bottom:1px solid var(--border);background:var(--surface-2);flex-wrap:wrap}
   .tb{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface);
     border-radius:8px;padding:7px 10px;font:600 11.8px/1 inherit;color:var(--text-2);cursor:pointer}
@@ -193,8 +193,26 @@
   .thread{border-top:1px solid var(--border);margin-top:20px;padding-top:14px;max-width:70ch}
   .thread h4{margin:0 0 8px;font:600 10.5px/1 "Azeret Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
   .thread-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--surface-2);cursor:pointer}
-  .thread-item b{font-size:12px}
-  .thread-item span{display:block;font-size:11.3px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .thread-item:hover{border-color:var(--border-strong)}
+  .thread-item.now{border-color:var(--accent);background:var(--accent-soft)}
+  .thread-top{display:flex;align-items:center;gap:8px;min-width:0}
+  .thread-top b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .thread-top .at{margin-left:auto;font:500 10px/1 "Azeret Mono",monospace;color:var(--text-3);white-space:nowrap}
+  .dir{font:600 9px/1 "Azeret Mono",monospace;letter-spacing:.06em;text-transform:uppercase;padding:3px 5px;border-radius:4px;
+    background:var(--surface-3);color:var(--text-2);flex:0 0 auto}
+  .dir.out{background:var(--accent-soft);color:var(--accent)}
+  .thread-sub{font-size:11.6px;color:var(--text-2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .thread-snip{font-size:11px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .addr{margin-top:10px;display:grid;grid-template-columns:38px 1fr;gap:4px 8px;align-items:baseline}
+  .addr .lbl{font:600 9.5px/1.6 "Azeret Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+  .addr .val{font-size:11.8px;color:var(--text-2);line-height:1.6;word-break:break-word;min-width:0}
+  .quote{margin-top:16px;border-left:3px solid var(--border-strong);padding:2px 0 2px 12px}
+  .quote summary{cursor:pointer;font-size:11.5px;color:var(--text-3);list-style:none;display:flex;align-items:center;gap:6px}
+  .quote summary::-webkit-details-marker{display:none}
+  .quote summary:hover{color:var(--accent)}
+  .quote .qbody{margin-top:10px;font-size:12.6px;line-height:1.7;color:var(--text-3);white-space:pre-wrap}
+  .quote .qhead{font-size:11.5px;color:var(--text-3);margin-bottom:6px}
   .reader-back, .reader-menu{display:none}
   @media (max-width:1080px){ .reader-back{display:inline-flex} }
   @media (max-width:860px){ .reader-menu{display:grid} }
@@ -492,7 +510,7 @@
             <div class="avatar" id="detailAvatar">E</div>
             <div class="sender-txt">
               <b id="detailFromName"></b>
-              <span id="detailAddresses"></span>
+              <span id="detailAddresses" class="addr"></span>
             </div>
             <div class="when" id="detailDate"></div>
           </div>
@@ -517,6 +535,10 @@
 
         <div class="body-scroll">
           <div class="prose" id="detailBody"></div>
+          <details class="quote hidden" id="quoteBox">
+            <summary id="quoteSummary">Show the earlier message</summary>
+            <div class="qbody" id="quoteBody"></div>
+          </details>
           <div class="thread hidden" id="threadBox">
             <h4>In this conversation</h4>
             <div id="threadList"></div>
@@ -709,6 +731,37 @@
     const p = AV[h % AV.length].split(",");
     return `background:linear-gradient(140deg,${p[0]},${p[1]})`;
   }
+  function fmtFull(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    const mon = d.toLocaleString("en-GB", { month: "short" });
+    const hour = d.getHours();
+    const h12 = String(hour % 12 || 12).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return `${d.getDate()} ${mon} ${d.getFullYear()}, ${h12}:${min} ${hour >= 12 ? "PM" : "AM"}`;
+  }
+
+  // A reply carries the earlier mail inside its body. Split it out so the new
+  // text reads on its own and the history sits behind a toggle.
+  function splitQuoted(body) {
+    const text = String(body || "");
+    const lines = text.split("\n");
+    let cut = -1;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (/^on .+wrote:$/i.test(line) || /^-{2,}\s*original message\s*-{2,}$/i.test(line)) { cut = i; break; }
+      if (line.startsWith(">")) { cut = i; break; }
+    }
+    if (cut <= 0) return { main: text.trim(), quote: "", header: "" };
+    const head = lines.slice(cut, cut + 1).join("").trim();
+    const rest = lines.slice(cut + 1).join("\n")
+      .split("\n").map((l) => l.replace(/^\s*>\s?/, "")).join("\n").trim();
+    const quote = /^on .+wrote:$/i.test(head) ? rest : lines.slice(cut).join("\n")
+      .split("\n").map((l) => l.replace(/^\s*>\s?/, "")).join("\n").trim();
+    return { main: lines.slice(0, cut).join("\n").trim(), quote, header: /^on /i.test(head) ? head : "" };
+  }
+
   function initials(str) {
     const parts = String(str || "E").replace(/[^A-Za-z0-9 ]/g, " ").trim().split(/\s+/).filter(Boolean);
     return parts.length ? (parts[0][0] + (parts[1] ? parts[1][0] : "")).toUpperCase() : "E";
@@ -1020,25 +1073,65 @@
   function renderDetail(m) {
     emptyReader.classList.add("hidden");
     mailDetail.classList.remove("hidden");
+
+    const mine = m.from === currentUser.email;
+    const who = mine ? (m.to || "") : (m.from || "");
+
     document.getElementById("detailSubject").textContent = m.subject || "(No Subject)";
-    document.getElementById("detailFromName").textContent = m.fromName || m.from;
-    document.getElementById("detailAvatar").textContent = initials(m.fromName || m.from);
-    document.getElementById("detailAvatar").style.cssText = avatarStyle(m.from || m.to);
-    const ccTxt = (m.cc && m.cc.length) ? `  cc  ${m.cc.join(", ")}` : "";
-    document.getElementById("detailAddresses").textContent = `${m.from}  to  ${m.to}${ccTxt}`;
-    document.getElementById("detailDate").textContent = fmtDate(m.createdAt);
-    document.getElementById("detailBody").textContent = m.body || "";
+    document.getElementById("detailFromName").textContent =
+      mine ? `To: ${m.toName || m.to}` : (m.fromName || m.from);
+    document.getElementById("detailAvatar").textContent = initials(mine ? (m.to || "?") : (m.fromName || m.from));
+    document.getElementById("detailAvatar").style.cssText = avatarStyle(who);
+
+    // Two labelled rows: who sent it, and who received it.
+    const rows = [
+      ["From", `${escapeHtml(m.fromName || m.from || "")} &lt;${escapeHtml(m.from || "")}&gt;`],
+      ["To", escapeHtml(m.to || "")],
+    ];
+    if (m.cc && m.cc.length) rows.push(["Cc", escapeHtml(m.cc.join(", "))]);
+    document.getElementById("detailAddresses").innerHTML = rows
+      .map(([k, v]) => `<span class="lbl">${k}</span><span class="val">${v}</span>`).join("");
+    document.getElementById("detailDate").textContent = fmtFull(m.createdAt);
+
+    const parts = splitQuoted(m.body);
+    document.getElementById("detailBody").textContent = parts.main || "(empty message)";
+
+    const quoteBox = document.getElementById("quoteBox");
+    if (parts.quote) {
+      quoteBox.classList.remove("hidden");
+      quoteBox.open = false;
+      document.getElementById("quoteSummary").textContent =
+        parts.header ? `Earlier message \u00b7 ${parts.header}` : "Show the earlier message";
+      document.getElementById("quoteBody").textContent = parts.quote;
+    } else {
+      quoteBox.classList.add("hidden");
+    }
+
     document.getElementById("starBtn").textContent = m.starred ? "Starred" : "Star";
     document.getElementById("deleteBtn").textContent = m.folder === "trash" ? "Delete forever" : "Trash";
 
+    // The conversation, newest first, each line saying which way it went.
     const base = String(m.subject || "").replace(/^(re|fwd):\s*/i, "").trim().toLowerCase();
-    const thread = allEmails.filter((x) => x.id !== m.id && String(x.subject || "").replace(/^(re|fwd):\s*/i, "").trim().toLowerCase() === base);
+    const thread = allEmails
+      .filter((x) => String(x.subject || "").replace(/^(re|fwd):\s*/i, "").trim().toLowerCase() === base)
+      .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+
     const box = document.getElementById("threadBox");
-    if (thread.length) {
+    if (thread.length > 1) {
       box.classList.remove("hidden");
-      document.getElementById("threadList").innerHTML = thread.slice(0, 6).map((t) =>
-        `<div class="thread-item" data-thread="${t.id}"><b>${escapeHtml(t.fromName || t.from)}</b>
-          <span>${escapeHtml(t.subject || "")} &middot; ${fmtDate(t.createdAt)}</span></div>`).join("");
+      document.getElementById("threadList").innerHTML = thread.slice(0, 8).map((t) => {
+        const out = t.from === currentUser.email;
+        const person = out ? (t.to || "") : (t.fromName || t.from || "");
+        return `<div class="thread-item ${t.id === m.id ? "now" : ""}" data-thread="${t.id}">
+          <div class="thread-top">
+            <span class="dir ${out ? "out" : ""}">${out ? "Sent" : "Received"}</span>
+            <b>${escapeHtml(person)}</b>
+            <span class="at">${escapeHtml(fmtFull(t.createdAt))}</span>
+          </div>
+          <div class="thread-sub">${escapeHtml(t.subject || "(No Subject)")}${t.id === m.id ? " \u00b7 open now" : ""}</div>
+          <div class="thread-snip">${escapeHtml(t.snippet || "")}</div>
+        </div>`;
+      }).join("");
       document.querySelectorAll("[data-thread]").forEach((el) =>
         el.addEventListener("click", () => openEmail(el.dataset.thread)));
     } else {
