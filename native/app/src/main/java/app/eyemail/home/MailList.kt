@@ -30,7 +30,7 @@ import app.eyemail.home.Mail
 
 /** The rows of a folder: sender, subject, snippet, time, and the unread dot. */
 @Composable
-fun InboxList(
+fun MailList(
     mails: List<Mail>,
     emptyText: String,
     onOpen: (Mail) -> Unit,
