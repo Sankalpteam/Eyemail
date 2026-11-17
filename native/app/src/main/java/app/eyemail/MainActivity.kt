@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
         SettingsStore.init(this)
         ThemeState.load()
         app.eyemail.settings.notifications.NotificationPermission.init(this)
+        app.eyemail.home.Notifier.init(this)
         enableEdgeToEdge()
         setContent {
             EyemailTheme {
