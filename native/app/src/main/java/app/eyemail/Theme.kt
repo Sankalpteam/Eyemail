@@ -31,10 +31,15 @@ object Ey {
     val Accent = Color(0xFF1857B8)
     val Accent2 = Color(0xFF0F3D86)
     val AccentSoft = Color(0xFFE8EFFB)
-    val Danger = Color(0xFFB42318)
     /** The button gradient, straight from the web: 150deg, accent to accent-2. */
     val ButtonGradient = Brush.linearGradient(listOf(Color(0xFF1857B8), Color(0xFF0F3D86)))
-    val Ok = Color(0xFF067647)
+    // The web's own red and green, not Tailwind's: danger #b23b3b, ok #1d7a52
+    val Danger = Color(0xFFB23B3B)
+    val DangerSoft = Color(0xFFFBEAEA)
+    val Ok = Color(0xFF1D7A52)
+    val OkSoft = Color(0xFFE6F4EC)
+    /** --row-pad: 13px in the web list */
+    val RowPad = 13
 }
 
 private val LightColors = lightColorScheme(
