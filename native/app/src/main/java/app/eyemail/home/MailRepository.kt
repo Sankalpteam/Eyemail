@@ -112,17 +112,113 @@ object MailRepository {
     }
 
     private fun readError(raw: String): String = runCatching {
-        JSONObject(raw).optJSONObject("error")?.optString("message")?.takeIf { it.isNotBlank() }
+        val json = if (raw.trimStart().startsWith("[")) {
+            JSONArray(raw).optJSONObject(0)
+        } else {
+            JSONObject(raw)
+        }
+        json?.optJSONObject("error")?.optString("message")?.takeIf { it.isNotBlank() }
     }.getOrNull() ?: "Could not reach the mailbox."
 
-    /** The newest page of one folder. Firestore returns them unsorted, so we sort here. */
-    suspend fun list(uid: String, token: String, pageSize: Int = 50): List<Mail> {
-        val url = docsUrl(uid) + "?pageSize=$pageSize&orderBy=" +
-            java.net.URLEncoder.encode("createdAt desc", "UTF-8")
-        val json = get(url, token)
-        val docs = json.optJSONArray("documents") ?: JSONArray()
-        return (0 until docs.length()).map { toMail(docs.getJSONObject(it)) }
+    /**
+     * One folder, newest first, asked of Firestore itself.
+     *
+     * A plain list call would return the newest mails of the whole mailbox and the
+     * app would then filter them, which made Trash and Spam look empty whenever the
+     * newest mail happened to be in the inbox. This asks for the folder.
+     */
+    suspend fun list(uid: String, token: String, folder: String, pageSize: Int = 50): List<Mail> {
+        val query = JSONObject().put(
+            "structuredQuery",
+            JSONObject()
+                .put("from", JSONArray().put(JSONObject().put("collectionId", "emails")))
+                .put(
+                    "where",
+                    JSONObject().put(
+                        "fieldFilter",
+                        JSONObject()
+                            .put("field", JSONObject().put("fieldPath", "folder"))
+                            .put("op", "EQUAL")
+                            .put("value", JSONObject().put("stringValue", folder)),
+                    ),
+                )
+                .put(
+                    "orderBy",
+                    JSONArray().put(
+                        JSONObject()
+                            .put("field", JSONObject().put("fieldPath", "createdAt"))
+                            .put("direction", "DESCENDING"),
+                    ),
+                )
+                .put("limit", pageSize),
+        )
+
+        val project = BuildConfig.FIRESTORE_PROJECT
+        val url = "https://firestore.googleapis.com/v1/projects/$project/databases/(default)/documents" +
+            "/users/$uid:runQuery"
+
+        val raw = postForArray(url, token, query)
+        val out = mutableListOf<Mail>()
+        for (i in 0 until raw.length()) {
+            val item = raw.optJSONObject(i) ?: continue
+            val doc = item.optJSONObject("document") ?: continue   // rows without a document are the end
+            out.add(toMail(doc))
+        }
+        return out
     }
+
+    /** Starred is its own list, because the panel has a Starred row. */
+    suspend fun listStarred(uid: String, token: String, pageSize: Int = 50): List<Mail> {
+        val query = JSONObject().put(
+            "structuredQuery",
+            JSONObject()
+                .put("from", JSONArray().put(JSONObject().put("collectionId", "emails")))
+                .put(
+                    "where",
+                    JSONObject().put(
+                        "fieldFilter",
+                        JSONObject()
+                            .put("field", JSONObject().put("fieldPath", "starred"))
+                            .put("op", "EQUAL")
+                            .put("value", JSONObject().put("booleanValue", true)),
+                    ),
+                )
+                .put(
+                    "orderBy",
+                    JSONArray().put(
+                        JSONObject()
+                            .put("field", JSONObject().put("fieldPath", "createdAt"))
+                            .put("direction", "DESCENDING"),
+                    ),
+                )
+                .put("limit", pageSize),
+        )
+        val project = BuildConfig.FIRESTORE_PROJECT
+        val url = "https://firestore.googleapis.com/v1/projects/$project/databases/(default)/documents" +
+            "/users/$uid:runQuery"
+        val raw = postForArray(url, token, query)
+        val out = mutableListOf<Mail>()
+        for (i in 0 until raw.length()) {
+            val doc = raw.optJSONObject(i)?.optJSONObject("document") ?: continue
+            out.add(toMail(doc))
+        }
+        return out
+    }
+
+    private suspend fun postForArray(url: String, token: String, body: JSONObject): JSONArray =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url(url)
+                .header("Authorization", "Bearer $token")
+                .post(body.toString().toRequestBody(JSON))
+                .build()
+            client.newCall(request).execute().use { response ->
+                val text = response.body?.string().orEmpty()
+                if (!response.isSuccessful) throw ApiError(readError(text))
+                // runQuery answers with an array of results, not one object.
+                JSONArray(text)
+            }
+        }
 
     suspend fun setRead(uid: String, token: String, mailId: String, read: Boolean) {
         patch(docsUrl(uid, "/$mailId") + "?updateMask.fieldPaths=read", token,
@@ -176,6 +272,20 @@ object MailRepository {
                 }
             }
         }
+
+    /** Empty trash in one call, the same endpoint the web uses. */
+    suspend fun emptyTrash(token: String): Int = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url("${BuildConfig.BACKEND_URL}/api/messages/empty-trash")
+            .header("Authorization", "Bearer $token")
+            .post(JSONObject().toString().toRequestBody(JSON))
+            .build()
+        client.newCall(request).execute().use { response ->
+            val raw = response.body?.string().orEmpty()
+            if (!response.isSuccessful) throw ApiError(readError(raw))
+            runCatching { JSONObject(raw).optInt("deleted", 0) }.getOrDefault(0)
+        }
+    }
 
     /** Storage and the free plan limit, from the profile the backend already serves. */
     suspend fun profile(token: String): JSONObject = withContext(Dispatchers.IO) {
