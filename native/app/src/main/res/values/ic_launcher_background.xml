@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The same blue as the web: #1857b8 to #0f3d86, flattened for the launcher. -->
+    <color name="ic_launcher_background">#1857B8</color>
+    <color name="splash_background">#EEF1F4</color>
+</resources>
