@@ -13,7 +13,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import app.eyemail.R
-import app.eyemail.settings.SettingsStore
 
 /**
  * The same tokens as the web app, so a screen built here matches the browser
@@ -99,7 +98,7 @@ private val EyTypography = Typography(
 
 @Composable
 fun EyemailTheme(
-    dark: Boolean = SettingsStore.theme() == "dark",
+    dark: Boolean = app.eyemail.settings.ThemeState.dark,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(
