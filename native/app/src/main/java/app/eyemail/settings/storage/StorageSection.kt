@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,7 +37,7 @@ fun StorageSection(
                     modifier = Modifier
                         .fillMaxWidth(state.percent.coerceIn(0.02f, 1f))
                         .height(8.dp)
-                        .background(if (state.percent >= 1f) Color(0xFFDC2626) else Ey.Accent, RoundedCornerShape(5.dp)),
+                        .background(if (state.percent >= 1f) Ey.Danger else Ey.Accent, RoundedCornerShape(5.dp)),
                 )
             }
         }
