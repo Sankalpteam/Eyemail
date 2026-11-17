@@ -129,6 +129,16 @@ object EyemailAuthService {
         post("/api/auth/register-mailbox", body, idToken)
     }
 
+    /** Ends every session; the web calls this from Sign out of all devices. */
+    suspend fun signOutAll(idToken: String) {
+        post("/api/auth/sign-out-all", JSONObject(), idToken)
+    }
+
+    /** Removes the mailbox, its mail and the login. Not reversible. */
+    suspend fun deleteAccount(idToken: String) {
+        post("/api/auth/delete-account", JSONObject(), idToken)
+    }
+
     suspend fun forgotPassword(eyemail: String): String {
         val json = post("/api/auth/forgot-password", JSONObject().put("eyemail", eyemail))
         return json.optString("maskedRecoveryEmail")
