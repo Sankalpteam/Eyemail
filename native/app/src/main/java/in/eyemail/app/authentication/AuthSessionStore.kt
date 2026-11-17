@@ -34,6 +34,8 @@ object AuthSessionStore {
 
     fun email(): String? = prefs?.getString(KEY_EMAIL, null)
 
+    fun uid(): String? = prefs?.getString(KEY_UID, null)
+
     fun isSignedIn(): Boolean = !token().isNullOrBlank()
 
     fun clear() {
