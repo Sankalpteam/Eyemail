@@ -43,6 +43,7 @@ import app.eyemail.settings.storage.StorageSection
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onAccountDeleted: () -> Unit,
     viewModel: SettingsViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -108,6 +109,8 @@ fun SettingsScreen(
                     state = state.account,
                     onName = viewModel::setName,
                     onSendReset = viewModel::sendResetLink,
+                    onSignOutAll = viewModel::signOutEverywhere,
+                    onDelete = { viewModel.deleteAccount(onAccountDeleted) },
                 )
 
                 SettingsState.Section.Appearance -> AppearanceSection(
