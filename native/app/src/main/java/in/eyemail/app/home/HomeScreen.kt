@@ -36,8 +36,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import in.eyemail.app.Ey
 import in.eyemail.app.authentication.AuthSessionStore
 import in.eyemail.app.home.compose.ComposePane
-import in.eyemail.app.home.inbox.InboxList
+import in.eyemail.app.home.customdomain.CustomDomainScreen
+import in.eyemail.app.home.drafts.DraftsScreen
+import in.eyemail.app.home.inbox.InboxScreen
+import in.eyemail.app.home.labels.LabelsScreen
 import in.eyemail.app.home.reader.ReaderPane
+import in.eyemail.app.home.sent.SentScreen
+import in.eyemail.app.home.spam.SpamScreen
+import in.eyemail.app.home.starred.StarredScreen
+import in.eyemail.app.home.trash.TrashScreen
 import in.eyemail.app.home.storage.FullStorageBanner
 import in.eyemail.app.home.storage.StorageMeter
 
@@ -48,6 +55,8 @@ private val FOLDERS = listOf(
     "drafts" to "Drafts",
     "spam" to "Spam",
     "trash" to "Trash",
+    "labels" to "Labels",
+    "domain" to "Custom domain",
 )
 
 /**
@@ -224,17 +233,22 @@ fun HomeScreen(
             }
 
             Box(modifier = Modifier.weight(1f).fillMaxWidth().background(Ey.Surface)) {
-                InboxList(
-                    mails = state.visible,
-                    emptyText = when (state.folder) {
-                        "trash" -> "Trash is empty."
-                        "spam" -> "No spam. Good."
-                        "drafts" -> "No drafts yet."
-                        "sent" -> "Nothing sent yet."
-                        else -> "No mail here yet."
-                    },
-                    onOpen = viewModel::open,
-                )
+                when (state.folder) {
+                    "starred" -> StarredScreen(mails = state.visible, onOpen = viewModel::open)
+                    "sent" -> SentScreen(mails = state.visible, onOpen = viewModel::open)
+                    "drafts" -> DraftsScreen(mails = state.visible, onOpen = viewModel::open)
+                    "spam" -> SpamScreen(mails = state.visible, onOpen = viewModel::open)
+                    "trash" -> TrashScreen(mails = state.visible, onOpen = viewModel::open)
+                    "labels" -> LabelsScreen(
+                        mails = state.mails,
+                        selectedLabel = null,
+                        onCreate = { name -> viewModel.createLabel(name) },
+                        onSelect = { },
+                        onOpen = viewModel::open,
+                    )
+                    "domain" -> CustomDomainScreen()
+                    else -> InboxScreen(mails = state.visible, onOpen = viewModel::open)
+                }
             }
 
             Row(
