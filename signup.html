@@ -304,7 +304,7 @@
       const regData = await reg.json();
       if (!reg.ok) throw new Error(regData.detail || "Could not create the mailbox.");
 
-      window.location.href = "index.html";
+      window.location.href = "app.html";
     } catch (err) {
       showAlert(err.message, true);
       btn.disabled = false;
