@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -117,6 +118,7 @@ fun EyField(
     isPassword: Boolean = false,
     enabled: Boolean = true,
     labelAction: (@Composable () -> Unit)? = null,
+    onImeAction: (() -> Unit)? = null,
 ) {
     var revealed by remember { mutableStateOf(false) }
     Column(modifier = modifier.fillMaxWidth()) {
@@ -145,6 +147,10 @@ fun EyField(
                 VisualTransformation.None
             },
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+            keyboardActions = KeyboardActions(
+                onDone = { onImeAction?.invoke() },
+                onGo = { onImeAction?.invoke() },
+            ),
             trailingIcon = if (isPassword) {
                 {
                     TextButton(onClick = { revealed = !revealed }) {
