@@ -136,6 +136,12 @@
   .bulkbar #bulkCount{white-space:nowrap;margin-right:auto}
   .bulkbar .tb{border-color:rgba(24,87,184,.25);background:var(--surface);color:var(--text-2);
     padding:6px 9px;font-size:11.3px;white-space:nowrap}
+  .selrow{display:flex;align-items:center;gap:9px;padding:9px 14px;border-bottom:1px solid var(--border);
+    background:var(--surface-2);font-size:12px;color:var(--text-2)}
+  .selrow input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
+  .selrow label{cursor:pointer;font-weight:600;color:var(--text-2)}
+  .selrow label:hover{color:var(--accent)}
+  .selrow .clear{margin-left:auto;border:0;background:none;color:var(--accent);font:600 11.5px/1 inherit;cursor:pointer;padding:4px}
   .rows{flex:1;overflow-y:auto}
   .row{display:grid;grid-template-columns:16px 32px 1fr auto;gap:10px;padding:var(--row-pad) 14px;
     border-bottom:1px solid var(--border);cursor:pointer;position:relative;transition:background .12s}
@@ -484,6 +490,12 @@
         <button class="tb" data-bulk="restore" data-only="trash">Restore</button>
         <button class="tb danger" data-bulk="forever" data-only="trash">Delete forever</button>
         <button class="tb" data-bulk="clear">Clear</button>
+      </div>
+
+      <div class="selrow" id="selRow">
+        <input type="checkbox" id="selectAll" />
+        <label for="selectAll" id="selectAllText">Select all</label>
+        <button class="clear hidden" id="clearSel">Clear selection</button>
       </div>
 
       <div class="rows" id="emailList">
@@ -930,6 +942,7 @@
     if (!list.length) {
       emailListEl.innerHTML = `<div class="empty">Nothing here.<br/><span style="font-size:11.5px">Try a different folder, filter, or search.</span></div>`;
       updateBulkBar();
+      syncSelectAll();
       return;
     }
 
@@ -971,6 +984,7 @@
       cb.addEventListener("change", () => {
         cb.checked ? selected.add(cb.dataset.check) : selected.delete(cb.dataset.check);
         updateBulkBar();
+        syncSelectAll();
       });
     });
     emailListEl.querySelectorAll("[data-star]").forEach((b) => {
@@ -981,6 +995,8 @@
         await writeMail(m.id, { starred: !m.starred }, "Could not star this message.");
       });
     });
+    syncSelectAll();
+
     emailListEl.querySelectorAll("[data-act]").forEach((b) => {
       b.addEventListener("click", async (e) => {
         e.stopPropagation();
@@ -1006,6 +1022,25 @@
   }
 
   /* ---------- selection / bulk ---------- */
+  function syncSelectAll() {
+    const ids = visibleIds;
+    const master = document.getElementById("selectAll");
+    const text = document.getElementById("selectAllText");
+    const clear = document.getElementById("clearSel");
+    const chosen = ids.filter((id) => selected.has(id)).length;
+
+    document.getElementById("selRow").classList.toggle("hidden", ids.length === 0);
+    master.checked = ids.length > 0 && chosen === ids.length;
+    master.indeterminate = chosen > 0 && chosen < ids.length;
+
+    if (ids.length === 0) text.textContent = "Select all";
+    else if (chosen === 0) text.textContent = `Select all ${ids.length}`;
+    else if (chosen === ids.length) text.textContent = `All ${ids.length} selected`;
+    else text.textContent = `${chosen} of ${ids.length} selected`;
+
+    clear.classList.toggle("hidden", chosen === 0);
+  }
+
   function updateBulkBar() {
     const bar = document.getElementById("bulkBar");
     bar.classList.toggle("hidden", selected.size === 0);
@@ -1057,6 +1092,17 @@
   }
 
   document.querySelectorAll("[data-bulk]").forEach((b) => b.addEventListener("click", () => bulk(b.dataset.bulk)));
+
+  document.getElementById("selectAll").addEventListener("change", (e) => {
+    if (e.target.checked) visibleIds.forEach((id) => selected.add(id));
+    else selected.clear();
+    renderList();
+  });
+
+  document.getElementById("clearSel").addEventListener("click", () => {
+    selected.clear();
+    renderList();
+  });
 
   /* ---------- reader ---------- */
   function openEmail(id) {
@@ -1593,6 +1639,7 @@
   function goFolder(f) {
     currentFolder = f;
     currentLabel = null;
+    selected.clear();
     document.querySelectorAll(".folder-btn").forEach((b) => b.classList.toggle("active", b.dataset.folder === f));
     renderLabelNav();
     closeReader();
