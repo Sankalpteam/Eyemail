@@ -41,6 +41,7 @@ fun NotificationsSection(
                 text = when {
                     state.blocked -> "Blocked by the phone"
                     state.enabled -> "Turn off"
+                    state.permissionGranted -> "Turn on"
                     else -> "Enable notifications"
                 },
                 enabled = !state.blocked,
