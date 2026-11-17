@@ -48,7 +48,14 @@ fun SignUpScreen(
     val signedIn by viewModel.signedIn.collectAsStateWithLifecycle()
 
     LaunchedEffect(signedIn) {
-        if (signedIn) onSignedIn()
+        if (signedIn) {
+            viewModel.consumeSignedIn()
+            onSignedIn()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.reset()
     }
 
     Column(
@@ -116,6 +123,7 @@ fun SignUpScreen(
                     imeAction = ImeAction.Done,
                     isPassword = true,
                     enabled = !state.busy,
+                    onImeAction = viewModel::createAccount,
                 )
 
                 Spacer(Modifier.height(10.dp))
@@ -144,6 +152,7 @@ fun SignUpScreen(
                     keyboardType = KeyboardType.NumberPassword,
                     imeAction = ImeAction.Done,
                     enabled = !state.busy,
+                    onImeAction = viewModel::verifyCode,
                 )
 
                 Spacer(Modifier.height(10.dp))
