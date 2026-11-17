@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class SettingsViewModel : ViewModel() {
+class SettingsViewModel(
+    private val onSignedOutEverywhere: () -> Unit = {},
+) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsState())
     val state: StateFlow<SettingsState> = _state.asStateFlow()
@@ -35,7 +37,10 @@ class SettingsViewModel : ViewModel() {
                     undoSeconds = SettingsStore.undoSeconds(),
                     confirmDelete = SettingsStore.confirmDelete(),
                 ),
-                notifications = it.notifications.copy(enabled = SettingsStore.notifications()),
+                notifications = it.notifications.copy(
+                    enabled = SettingsStore.notifications(),
+                    permissionGranted = NotificationPermission.isGranted(),
+                ),
                 about = AboutState(version = "1.0", domain = BuildConfig.DOMAIN_NAME),
             )
         }
@@ -74,7 +79,7 @@ class SettingsViewModel : ViewModel() {
     }
 
     fun setTheme(value: String) {
-        SettingsStore.setTheme(value)
+        ThemeState.set(value)
         _state.update { it.copy(appearance = it.appearance.copy(theme = value)) }
     }
 
@@ -110,9 +115,12 @@ class SettingsViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 EyemailAuthService.signOutAll(AuthSessionStore.token().orEmpty())
+                // The tokens are dead on the server, so the session here goes too.
+                AuthSessionStore.clear()
                 _state.update {
                     it.copy(account = it.account.copy(signingOutAll = false, actionNote = "Every device has been signed out."))
                 }
+                onSignedOutEverywhere()
             } catch (e: Exception) {
                 _state.update {
                     it.copy(account = it.account.copy(signingOutAll = false, actionError = e.message ?: "Could not sign out the other devices."))
