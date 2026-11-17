@@ -28,7 +28,7 @@ fun MailSection(
     Column(modifier = modifier.fillMaxWidth().padding(14.dp)) {
         SectionTitle("Mail")
 
-        SettingRow("Signature", "Added to the end of every new mail") {
+        SettingRow("Signature", "Added to the end of every new mail", wide = true) {
             OutlinedTextField(
                 value = state.signature,
                 onValueChange = onSignature,
