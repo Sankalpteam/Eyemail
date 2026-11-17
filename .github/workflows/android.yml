@@ -1,0 +1,73 @@
+name: Build the Android app
+
+on:
+  push:
+    paths:
+      - "native/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: native
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up the JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      # local.properties is never committed, so the build gets its values from here.
+      - name: Write local.properties
+        run: |
+          cat > local.properties <<EOF
+          sdk.dir=$ANDROID_SDK_ROOT
+          BACKEND_URL=${{ secrets.BACKEND_URL }}
+          FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}
+          FIRESTORE_PROJECT=${{ secrets.FIRESTORE_PROJECT }}
+          EOF
+
+      - name: Build the debug APK
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Upload the debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: eyemail-debug-apk
+          path: native/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      # A signed release build only runs when the keystore is in the repository secrets.
+      - name: Build the signed release bundle
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
+          gradle :app:bundleRelease --no-daemon --stacktrace \
+            -Pandroid.injected.signing.store.file="$PWD/release.keystore" \
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+
+      - name: Upload the release bundle
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: eyemail-release-aab
+          path: native/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
