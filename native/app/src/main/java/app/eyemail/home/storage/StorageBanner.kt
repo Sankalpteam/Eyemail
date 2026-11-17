@@ -3,6 +3,10 @@ package app.eyemail.home.storage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,7 +49,20 @@ fun StorageMeter(usedBytes: Long, limitBytes: Long, modifier: Modifier = Modifie
             )
         }
         Spacer(Modifier.height(6.dp))
-        Text("Free plan storage", fontSize = 10.sp, letterSpacing = 0.8.sp, color = Ey.Text3)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "FREE PLAN",
+                fontSize = 9.5.sp,
+                letterSpacing = 0.9.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Ey.Accent,
+                modifier = Modifier
+                    .background(Ey.AccentSoft, RoundedCornerShape(5.dp))
+                    .padding(horizontal = 6.dp, vertical = 3.dp),
+            )
+            Spacer(Modifier.width(6.dp))
+            Text("1 GB included", fontSize = 10.5.sp, color = Ey.Text3)
+        }
     }
 }
 
