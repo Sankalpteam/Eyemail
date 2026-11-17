@@ -13,6 +13,15 @@ jobs:
     defaults:
       run:
         working-directory: native
+    env:
+      # Secrets cannot be read inside an if:, so the check is done once here.
+      BACKEND_URL: ${{ secrets.BACKEND_URL }}
+      FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      FIRESTORE_PROJECT: ${{ secrets.FIRESTORE_PROJECT }}
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v4
@@ -31,12 +40,13 @@ jobs:
       # local.properties is never committed, so the build gets its values from here.
       - name: Write local.properties
         run: |
-          cat > local.properties <<EOF
-          sdk.dir=$ANDROID_SDK_ROOT
-          BACKEND_URL=${{ secrets.BACKEND_URL }}
-          FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}
-          FIRESTORE_PROJECT=${{ secrets.FIRESTORE_PROJECT }}
-          EOF
+          {
+            echo "sdk.dir=$ANDROID_SDK_ROOT"
+            echo "BACKEND_URL=$BACKEND_URL"
+            echo "FIREBASE_API_KEY=$FIREBASE_API_KEY"
+            echo "FIRESTORE_PROJECT=$FIRESTORE_PROJECT"
+          } > local.properties
+          echo "local.properties written for project $FIRESTORE_PROJECT"
 
       - name: Build the debug APK
         run: gradle :app:assembleDebug --no-daemon --stacktrace
@@ -48,16 +58,13 @@ jobs:
           path: native/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
 
-      # A signed release build only runs when the keystore is in the repository secrets.
+      - name: Prepare the keystore
+        if: env.KEYSTORE_BASE64 != ''
+        run: echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
+
       - name: Build the signed release bundle
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        if: env.KEYSTORE_BASE64 != ''
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
           gradle :app:bundleRelease --no-daemon --stacktrace \
             -Pandroid.injected.signing.store.file="$PWD/release.keystore" \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
@@ -65,7 +72,7 @@ jobs:
             -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
 
       - name: Upload the release bundle
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: env.KEYSTORE_BASE64 != ''
         uses: actions/upload-artifact@v4
         with:
           name: eyemail-release-aab
