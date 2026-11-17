@@ -200,28 +200,31 @@ fun HomeScreen(
                     FullStorageBanner(state.storageUsed, state.storageLimit)
                 }
 
-                OutlinedTextField(
-                    value = state.query,
-                    onValueChange = viewModel::search,
-                    singleLine = true,
-                    placeholder = {
-                        Text(
-                            "Search or try from:razorpay is:unread",
-                            fontSize = 12.5.sp,
-                            color = Ey.Text3,
-                        )
-                    },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Ey.Accent,
-                        unfocusedBorderColor = Ey.Border,
-                        focusedContainerColor = Ey.Surface,
-                        unfocusedContainerColor = Ey.Surface,
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                )
+                // The web sits the search on the surface with a thin border, not on the page colour.
+                Column(modifier = Modifier.fillMaxWidth().background(Ey.Surface)) {
+                    OutlinedTextField(
+                        value = state.query,
+                        onValueChange = viewModel::search,
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                "Search or try from:razorpay is:unread",
+                                fontSize = 12.5.sp,
+                                color = Ey.Text3,
+                            )
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Ey.Accent,
+                            unfocusedBorderColor = Ey.Border,
+                            focusedContainerColor = Ey.Surface2,
+                            unfocusedContainerColor = Ey.Surface2,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                    )
+                }
 
                 Row(
                     modifier = Modifier
@@ -318,22 +321,23 @@ private fun MenuPanel(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 12.dp, vertical = 14.dp),
     ) {
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(46.dp)
                 .background(Ey.ButtonGradient, RoundedCornerShape(12.dp))
                 .clickable(onClick = onCompose),
-            contentAlignment = Alignment.Center,
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 Icons.Filled.Create,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.width(18.dp),
+                modifier = Modifier.width(17.dp),
             )
-            Spacer(Modifier.width(8.dp))
-            Text("Compose", color = Color.White, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.width(10.dp))
+            Text("Compose", color = Color.White, fontSize = 13.5.sp, fontWeight = FontWeight.SemiBold)
         }
 
         Spacer(Modifier.height(10.dp))
@@ -349,13 +353,24 @@ private fun MenuPanel(
         }
 
         Spacer(Modifier.height(14.dp))
-        Text(
-            "LABELS",
-            fontSize = 9.5.sp,
-            letterSpacing = 1.1.sp,
-            color = Ey.Text3,
-            modifier = Modifier.padding(start = 8.dp, bottom = 6.dp),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 14.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "LABELS",
+                fontSize = 10.sp,
+                letterSpacing = 1.4.sp,
+                color = Ey.Text3,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                "+",
+                fontSize = 15.sp,
+                color = Ey.Text3,
+                modifier = Modifier.clickable(onClick = { onFolder("labels") }),
+            )
+        }
         if (state.labels.isEmpty()) {
             Text(
                 "No labels yet",
@@ -375,13 +390,12 @@ private fun MenuPanel(
             }
         }
 
-        Spacer(Modifier.height(14.dp))
         Text(
             "WORKSPACE",
-            fontSize = 9.5.sp,
-            letterSpacing = 1.1.sp,
+            fontSize = 10.sp,
+            letterSpacing = 1.4.sp,
             color = Ey.Text3,
-            modifier = Modifier.padding(start = 8.dp, bottom = 6.dp),
+            modifier = Modifier.padding(start = 10.dp, top = 14.dp, bottom = 8.dp),
         )
         WORKSPACE_ROWS.forEach { row ->
             MenuRow(
@@ -396,7 +410,13 @@ private fun MenuPanel(
         Spacer(Modifier.height(16.dp))
 
         // The web keeps the meter in the panel, under the workspace rows.
-        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Ey.Surface2, RoundedCornerShape(12.dp))
+                .border(1.dp, Ey.Border, RoundedCornerShape(12.dp))
+                .padding(12.dp),
+        ) {
             StorageMeter(
                 usedBytes = state.storageUsed,
                 limitBytes = state.storageLimit,
@@ -405,18 +425,47 @@ private fun MenuPanel(
 
         Spacer(Modifier.height(16.dp))
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp)
+                .clickable(onClick = onSignOut)
+                .padding(vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Box(
+                modifier = Modifier
+                    .width(32.dp)
+                    .height(32.dp)
+                    .background(Ey.Accent, RoundedCornerShape(9.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    initials(AuthSessionStore.email().orEmpty()),
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Spacer(Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    AuthSessionStore.email().orEmpty(),
-                    fontSize = 11.sp,
-                    color = Ey.Text2,
+                    AuthSessionStore.email().substringBefore("@").ifBlank { "You" },
+                    fontSize = 12.5.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Ey.Text,
                 )
-                Text("Sign out", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = Ey.Accent,
-                    modifier = Modifier.clickable(onClick = onSignOut).padding(top = 4.dp))
+                Text(
+                    AuthSessionStore.email().orEmpty(),
+                    fontSize = 10.5.sp,
+                    color = Ey.Text3,
+                )
             }
+            Text(
+                "Sign out",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = Ey.Accent,
+            )
         }
         Spacer(Modifier.height(10.dp))
         Text(
@@ -441,9 +490,9 @@ private fun MenuRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 1.dp)
-            .background(if (selected) Ey.AccentSoft else Color.Transparent, RoundedCornerShape(9.dp))
+            .background(if (selected) Ey.AccentSoft else Color.Transparent, RoundedCornerShape(10.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 9.dp, vertical = 10.dp),
+            .padding(horizontal = 10.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,
     ) {
@@ -453,10 +502,10 @@ private fun MenuRow(
             tint = if (selected) Ey.Accent else Ey.Text3,
             modifier = Modifier.width(18.dp),
         )
-        Spacer(Modifier.width(10.dp))
+        Spacer(Modifier.width(11.dp))
         Text(
             label,
-            fontSize = 13.sp,
+            fontSize = 13.5.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
             color = if (selected) Ey.Accent else Ey.Text2,
             modifier = Modifier.weight(1f),
@@ -473,6 +522,12 @@ private fun MenuRow(
             )
         }
     }
+}
+
+/** The two letters on the account chip, the same rule the list rows use. */
+private fun initials(address: String): String {
+    val name = address.substringBefore("@").ifBlank { "E" }
+    return name.take(1).uppercase()
 }
 
 private fun titleFor(folder: String): String = when (folder) {
