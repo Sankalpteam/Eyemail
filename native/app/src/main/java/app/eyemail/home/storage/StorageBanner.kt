@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,7 +41,7 @@ fun StorageMeter(usedBytes: Long, limitBytes: Long, modifier: Modifier = Modifie
                 modifier = Modifier
                     .fillMaxWidth(pct.coerceAtLeast(0.02f))
                     .height(7.dp)
-                    .background(if (pct >= 1f) Color(0xFFDC2626) else Ey.Accent, RoundedCornerShape(4.dp)),
+                    .background(if (pct >= 1f) Ey.Danger else Ey.Accent, RoundedCornerShape(4.dp)),
             )
         }
         Spacer(Modifier.height(6.dp))
@@ -58,19 +57,19 @@ fun FullStorageBanner(usedBytes: Long, limitBytes: Long, modifier: Modifier = Mo
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color(0xFFFEE4E2))
+            .background(Ey.DangerSoft)
             .padding(horizontal = 14.dp, vertical = 10.dp),
     ) {
         Text(
             "Free plan storage full - $usedMb MB of $limitGb GB",
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF991B1B),
+            color = Ey.Danger,
         )
         Text(
             "New mail will bounce until you free space. Empty Trash to get it back.",
             fontSize = 11.sp,
-            color = Color(0xFF991B1B),
+            color = Ey.Danger,
         )
     }
 }
