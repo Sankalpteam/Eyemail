@@ -1,6 +1,7 @@
 package app.eyemail
 
 import android.os.Bundle
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -37,6 +38,8 @@ import app.eyemail.authentication.signup.SignUpScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // The splash reads the theme, so it is installed before anything is drawn.
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         AuthSessionStore.init(this)
         SettingsStore.init(this)
