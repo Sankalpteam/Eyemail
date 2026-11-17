@@ -133,7 +133,7 @@
   .chip.on{background:var(--text);color:var(--surface);border-color:var(--text)}
   .bulkbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px;overflow-x:hidden;padding:8px 12px;background:var(--accent-soft);
     border-bottom:1px solid var(--border);font-size:12px;color:var(--accent);font-weight:600}
-  .bulkbar #bulkCount{white-space:nowrap;margin-right:auto}
+  .bulkbar .acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
   .bulkbar .tb{border-color:rgba(24,87,184,.25);background:var(--surface);color:var(--text-2);
     padding:6px 9px;font-size:11.3px;white-space:nowrap}
   .selrow{display:flex;align-items:center;gap:9px;padding:9px 14px;border-bottom:1px solid var(--border);
@@ -346,8 +346,7 @@
 
     .bulkbar{padding:10px 12px;gap:8px;row-gap:8px}
     .bulkbar .tb{flex:0 0 auto;padding:9px 12px;font-size:12px;min-height:36px;border-radius:9px}
-    .bulkbar #bulkCount{width:100%;margin:0 0 2px}
-
+  
     .row{padding:12px 12px;gap:10px}
     .row .from,.row .subj{font-size:13px}
     .row .snip{font-size:12px}
@@ -481,21 +480,21 @@
         </div>
       </div>
 
-      <div class="bulkbar hidden" id="bulkBar">
-        <span id="bulkCount">0 selected</span>
-        <button class="tb" data-bulk="read">Mark read</button>
-        <button class="tb" data-bulk="unread">Unread</button>
-        <button class="tb" data-bulk="star">Star</button>
-        <button class="tb" data-bulk="trash" data-only="normal">Trash</button>
-        <button class="tb" data-bulk="restore" data-only="trash">Restore</button>
-        <button class="tb danger" data-bulk="forever" data-only="trash">Delete forever</button>
-        <button class="tb" data-bulk="clear">Clear</button>
-      </div>
-
       <div class="selrow" id="selRow">
         <input type="checkbox" id="selectAll" />
         <label for="selectAll" id="selectAllText">Select all</label>
         <button class="clear hidden" id="clearSel">Clear selection</button>
+      </div>
+
+      <div class="bulkbar hidden" id="bulkBar">
+        <div class="acts">
+          <button class="tb" data-bulk="read">Mark read</button>
+          <button class="tb" data-bulk="unread">Unread</button>
+          <button class="tb" data-bulk="star">Star</button>
+          <button class="tb" data-bulk="trash" data-only="normal">Trash</button>
+          <button class="tb" data-bulk="restore" data-only="trash">Restore</button>
+          <button class="tb danger" data-bulk="forever" data-only="trash">Delete forever</button>
+        </div>
       </div>
 
       <div class="rows" id="emailList">
@@ -1044,7 +1043,6 @@
   function updateBulkBar() {
     const bar = document.getElementById("bulkBar");
     bar.classList.toggle("hidden", selected.size === 0);
-    document.getElementById("bulkCount").textContent = `${selected.size} selected`;
 
     // In Trash a "Trash" button is meaningless - offer Restore and Delete forever instead
     const inTrash = currentFolder === "trash";
