@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import in.eyemail.app.authentication.AuthSessionStore
+import in.eyemail.app.home.HomeScreen
 import in.eyemail.app.authentication.EyemailMark
 import in.eyemail.app.authentication.forgot.ForgotPasswordScreen
 import in.eyemail.app.authentication.login.LoginScreen
@@ -78,45 +79,13 @@ private fun EyemailApp() {
 
         Screen.Forgot -> ForgotPasswordScreen(onBack = { screen = Screen.Login })
 
-        Screen.SignedIn -> SignedInPlaceholder(
-            email = sessionEmail,
+        Screen.SignedIn -> HomeScreen(
             onSignOut = {
                 AuthSessionStore.clear()
                 sessionEmail = ""
                 screen = Screen.Login
             },
+            onSettings = { /* settings/ is the next folder */ },
         )
-    }
-}
-
-/**
- * Where the inbox will land. It exists so signing in finishes somewhere honest
- * instead of a blank screen while the mailbox screens are being built.
- */
-@Composable
-private fun SignedInPlaceholder(email: String, onSignOut: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Ey.Bg)
-            .padding(horizontal = 22.dp, vertical = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        EyemailMark(size = 52)
-        Spacer(Modifier.height(18.dp))
-        Text("You are signed in", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Ey.Text)
-        Spacer(Modifier.height(6.dp))
-        Text(email, fontSize = 13.sp, color = Ey.Text2)
-        Spacer(Modifier.height(18.dp))
-        Text(
-            "The inbox, reader and settings screens come next.",
-            fontSize = 12.5.sp,
-            color = Ey.Text3,
-        )
-        Spacer(Modifier.height(20.dp))
-        TextButton(onClick = onSignOut) {
-            Text("Sign out", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Ey.Accent)
-        }
     }
 }
