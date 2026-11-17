@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -65,7 +66,7 @@ fun LoginScreen(
         ) {
             BrandHeader(
                 title = "Sign in",
-                subtitle = "Your business mail, without the bill.",
+                subtitle = "Enter your @${BuildConfig.DOMAIN_NAME} address and password.",
             )
 
             Spacer(Modifier.height(24.dp))
@@ -91,20 +92,18 @@ fun LoginScreen(
                 imeAction = ImeAction.Done,
                 isPassword = true,
                 enabled = !state.busy,
+                labelAction = {
+                    Text(
+                        "Forgot password?",
+                        fontSize = 12.5.sp,
+                        color = Ey.Accent,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clickable(enabled = !state.busy, onClick = onForgot),
+                    )
+                },
             )
 
-            Spacer(Modifier.height(8.dp))
-
-            TextButton(onClick = onForgot, enabled = !state.busy) {
-                Text(
-                    "Forgot your password?",
-                    fontSize = 12.5.sp,
-                    color = Ey.Accent,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(14.dp))
             Alert(state.error, isError = true)
             Spacer(Modifier.height(10.dp))
 
@@ -123,9 +122,8 @@ fun LoginScreen(
                 onClick = onSignup,
             )
 
-            Spacer(Modifier.height(28.dp))
-            Text("Powered by Indo Workspace", fontSize = 11.sp, color = Ey.Text3)
-            FooterCredit(Modifier.padding(top = 6.dp))
+            Spacer(Modifier.height(18.dp))
+            FooterCredit()
         }
     }
 }
