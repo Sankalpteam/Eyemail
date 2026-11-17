@@ -125,11 +125,11 @@
     </i> Eyemail</div>
     <div>
       <h2>Your business mail, without the bill.</h2>
-      <p>Your mailbox opens with your Indo Account. One password, typed once, in one place.</p>
+      <p>Unlimited @eyemail.in addresses on your own domain, 1 GB free storage, and a recovery mail verified at signup.</p>
       <div class="facts">
-        <div class="fact"><span class="tick">&#10003;</span><span><b>One sign-in</b> - the same Indo Account works across every Indo app</span></div>
+        <div class="fact"><span class="tick">&#10003;</span><span><b>Recovery mail verified</b> - a 6-digit code at signup, so a reset always reaches you</span></div>
         <div class="fact"><span class="tick">&#10003;</span><span><b>Real inbox</b> - send to Gmail, Yahoo and other Eyemail users</span></div>
-        <div class="fact"><span class="tick">&#10003;</span><span><b>Nothing to remember</b> - no second password for mail</span></div>
+        <div class="fact"><span class="tick">&#10003;</span><span><b>Real inbox</b> - send to Gmail, Yahoo and other Eyemail users</span></div>
       </div>
     </div>
     <div class="brandfoot">EYEMAIL.IN &middot; SECURE WEBMAIL</div>
@@ -139,42 +139,51 @@
 
 
 
+
+
   <section class="formpane">
     <div class="card">
       <h1>Sign in</h1>
-      <p class="sub">Your mailbox opens with your <b>Indo Account</b>. There is no separate mail password.</p>
+      <p class="sub">Enter your <b>@eyemail.in</b> address and password.</p>
 
       <div id="alertBox" class="alert err hidden"></div>
 
-      <button id="indoSignInBtn" type="button" class="btn">Sign in with Indo Account</button>
+      <form id="loginForm">
+        <div class="field">
+          <label for="emailInput">Eyemail address</label>
+          <input id="emailInput" type="text" required placeholder="yourname@eyemail.in" autocomplete="username" style="text-transform:lowercase" />
+        </div>
+        <div class="field">
+          <div class="row-between">
+            <label for="passwordInput">Password</label>
+            <a href="forgot-password.html">Forgot password?</a>
+          </div>
+          <input id="passwordInput" type="password" required placeholder="Enter your password" autocomplete="current-password" />
+        </div>
+        <button id="loginBtn" type="submit" class="btn">Sign in</button>
+      </form>
 
-      <p class="foot">New here? <a href="signup.html">Create an Indo Account</a></p>
-
-      <p class="foot" id="helpLine" style="margin-top:6px;font-size:12px;color:var(--text-3)">
-        Mailbox not set up yet? Ask your administrator to finish provisioning it.
-      </p>
+      <p class="foot">New here? <a href="signup.html">Create your Eyemail</a></p>
     </div>
   </section>
 </div>
 
 <script type="module">
-  import { auth } from "./firebase-config.js";
-  import { signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { auth, DOMAIN_NAME } from "./firebase-config.js";
+  import { signInWithEmailAndPassword, signInWithCustomToken }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+  const loginForm = document.getElementById("loginForm");
   const alertBox = document.getElementById("alertBox");
-  const indoBtn = document.getElementById("indoSignInBtn");
-
-  // Fixed word, not a URL: the Indo sign-in page must never be an open redirect.
-  const INDO_SIGNIN_URL =
-    "https://indoworkspace.github.io/Indo-Account/Sign%20in/index.html?next=mail";
+  const loginBtn = document.getElementById("loginBtn");
 
   function showAlert(msg) {
     alertBox.textContent = msg;
     alertBox.className = "alert err";
   }
 
-  // The panel opens this page with #t=<custom token>. The hash never leaves the
-  // browser, so the token is not written to any server log.
+  // A #t=<custom token> link still opens the mailbox directly. The hash never
+  // leaves the browser, so the token is not written to any server log.
   function readToken() {
     const hashMatch = (location.hash || "").match(/[#&]t=([^&]+)/);
     if (hashMatch) return decodeURIComponent(hashMatch[1]);
@@ -187,27 +196,46 @@
     try { history.replaceState(null, "", location.pathname); } catch (_) {}
   }
 
-  indoBtn.addEventListener("click", () => {
-    window.location.href = INDO_SIGNIN_URL;
-  });
-
   (async function consumeToken() {
     const token = readToken();
     if (!token) return;
     scrubToken();
-    indoBtn.disabled = true;
-    indoBtn.textContent = "Opening your mailbox...";
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Opening your mailbox...";
     try {
       await signInWithCustomToken(auth, token);
       window.location.href = "index.html";
     } catch (err) {
       showAlert(err.code === "auth/invalid-custom-token"
-        ? "That sign-in link has expired. Ask for a new one."
+        ? "That sign-in link has expired. Sign in with your password instead."
         : "Could not open the mailbox with that link.");
-      indoBtn.disabled = false;
-      indoBtn.textContent = "Sign in with Indo Account";
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Sign in";
     }
   })();
+
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    alertBox.className = "alert err hidden";
+
+    let raw = document.getElementById("emailInput").value.trim().toLowerCase();
+    if (!raw.includes("@")) raw = `${raw}@${DOMAIN_NAME}`;
+    const password = document.getElementById("passwordInput").value;
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Signing in...";
+
+    try {
+      await signInWithEmailAndPassword(auth, raw, password);
+      window.location.href = "index.html";
+    } catch (err) {
+      showAlert(err.code === "auth/too-many-requests"
+        ? "Too many attempts. Please wait a minute and try again."
+        : "Invalid Eyemail address or password.");
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Sign in";
+    }
+  });
 </script>
 </body>
 </html>
