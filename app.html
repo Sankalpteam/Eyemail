@@ -90,6 +90,10 @@
   .plan{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-2)}
   .pill{font:500 10px/1 "Azeret Mono",monospace;background:var(--gold-soft);color:var(--gold);
     border:1px solid rgba(183,121,31,.28);padding:3px 7px;border-radius:99px}
+  .pwr-rail{margin:12px 0 0;font:500 9.5px/1.5 "Azeret Mono",monospace;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--text-3);text-align:center}
+  .pwr-rail b{color:var(--text-2);font-weight:600}
+  [data-rail="collapsed"] .pwr-rail{display:none}
   .user{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 6px;border-radius:10px;cursor:pointer}
   .user:hover{background:var(--surface-3)}
   .avatar{width:32px;height:32px;flex:0 0 32px;border-radius:10px;display:grid;place-items:center;
@@ -487,6 +491,7 @@
       <div class="storage-top"><span>Storage</span><b id="storageText">0 MB / 1 GB</b></div>
       <div class="bar"><i id="storageBar"></i></div>
       <div class="plan"><span class="pill">FREE PLAN</span><span>1 GB included</span></div>
+      <div class="pwr-rail">Powered by <b>Indo Workspace</b></div>
     </div>
 
     <div class="user" id="userChip">
@@ -817,6 +822,7 @@
           <h3>About</h3>
           <div class="setting"><div><b>Eyemail</b><span>Business mail on your own domain</span></div><span class="mono" style="font-size:11.5px">v1.0</span></div>
           <div class="setting"><div><b>Domain</b><span>All addresses live here</span></div><span class="mono" style="font-size:11.5px">@eyemail.in</span></div>
+          <div class="setting"><div><b>Built by</b><span>Powered by Indo Workspace</span></div><span class="tag blue">Indo</span></div>
           <div class="setting"><div><b>Free plan</b><span>1 GB storage, 50 outside mails a day, 20 recipients a message</span></div><span class="tag blue">no card</span></div>
           <div class="setting" style="border-bottom:0"><div><b>Not supported yet</b><span>Attachments, and sending as a customer domain</span></div><span class="tag">later</span></div>
         </section>
