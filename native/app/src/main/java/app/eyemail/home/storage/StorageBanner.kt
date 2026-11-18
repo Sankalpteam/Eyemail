@@ -28,12 +28,16 @@ fun StorageMeter(usedBytes: Long, limitBytes: Long, modifier: Modifier = Modifie
     val pct = if (limitBytes > 0) (usedBytes.toFloat() / limitBytes).coerceIn(0f, 1f) else 0f
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            "$usedMb MB / $limitGb GB",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Ey.Text2,
-        )
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("Storage", fontSize = 11.5.sp, color = Ey.Text2, modifier = Modifier.weight(1f))
+            Text(
+                "$usedMb MB / $limitGb GB",
+                fontSize = 11.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                color = Ey.Text,
+            )
+        }
         Spacer(Modifier.height(6.dp))
         Box(
             modifier = Modifier
