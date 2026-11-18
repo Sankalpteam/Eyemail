@@ -33,7 +33,9 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -192,8 +194,10 @@ fun HomeScreen(
             ) {
                 Header(
                     title = titleFor(state.folder),
-                    address = AuthSessionStore.email().orEmpty(),
+                    count = state.visible.size,
+                    loading = state.loading,
                     onMenu = { scope.launch { drawer.open() } },
+                    onRefresh = viewModel::load,
                 )
 
                 if (state.storageFull) {
@@ -224,27 +228,6 @@ fun HomeScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 14.dp, vertical = 10.dp),
                     )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        "${state.visible.size} messages",
-                        fontSize = 11.sp,
-                        color = Ey.Text3,
-                        modifier = Modifier.weight(1f),
-                    )
-                    if (state.loading) {
-                        Text("Loading...", fontSize = 11.sp, color = Ey.Text3)
-                    } else {
-                        TextButton(onClick = viewModel::load) {
-                            Text("Refresh", fontSize = 11.5.sp, color = Ey.Accent)
-                        }
-                    }
                 }
 
                 if (state.error.isNotBlank()) {
@@ -288,20 +271,33 @@ fun HomeScreen(
 }
 
 @Composable
-private fun Header(title: String, address: String, onMenu: () -> Unit) {
+private fun Header(
+    title: String,
+    count: Int,
+    loading: Boolean,
+    onMenu: () -> Unit,
+    onRefresh: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(Ey.Surface)
-            .padding(start = 4.dp, end = 12.dp, top = 6.dp, bottom = 6.dp),
+            .padding(start = 4.dp, end = 8.dp, top = 6.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onMenu) {
             Icon(Icons.Filled.Menu, contentDescription = "Menu", tint = Ey.Text2)
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Ey.Text)
-            Text(address, fontSize = 10.5.sp, color = Ey.Text3)
+            Text(title, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, color = Ey.Text)
+            Text(
+                if (loading) "Loading..." else "$count messages",
+                fontSize = 11.sp,
+                color = Ey.Text3,
+            )
+        }
+        IconButton(onClick = onRefresh) {
+            Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = Ey.Text3)
         }
     }
 }
@@ -321,6 +317,37 @@ private fun MenuPanel(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 12.dp, vertical = 14.dp),
     ) {
+        // The web panel starts with the mark and the name.
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, bottom = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(34.dp)
+                    .height(34.dp)
+                    .background(Ey.ButtonGradient, RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Filled.Email,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.width(17.dp),
+                )
+            }
+            Spacer(Modifier.width(10.dp))
+            Column {
+                Text("Eyemail", fontSize = 14.5.sp, fontWeight = FontWeight.ExtraBold, color = Ey.Text)
+                Text(
+                    "EYEMAIL.IN",
+                    fontSize = 10.5.sp,
+                    letterSpacing = 0.7.sp,
+                    color = Ey.Text3,
+                )
+            }
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -410,6 +437,9 @@ private fun MenuPanel(
         Spacer(Modifier.height(16.dp))
 
         // The web keeps the meter in the panel, under the workspace rows.
+        Box(Modifier.fillMaxWidth().height(1.dp).background(Ey.Border).padding(horizontal = 4.dp))
+        Spacer(Modifier.height(10.dp))
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -420,6 +450,13 @@ private fun MenuPanel(
             StorageMeter(
                 usedBytes = state.storageUsed,
                 limitBytes = state.storageLimit,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "POWERED BY INDO WORKSPACE",
+                fontSize = 9.sp,
+                letterSpacing = 1.sp,
+                color = Ey.Text3,
             )
         }
 
@@ -460,21 +497,13 @@ private fun MenuPanel(
                     color = Ey.Text3,
                 )
             }
-            Text(
-                "Sign out",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = Ey.Accent,
+            Icon(
+                Icons.Filled.ExitToApp,
+                contentDescription = "Sign out",
+                tint = Ey.Text3,
+                modifier = Modifier.width(18.dp),
             )
         }
-        Spacer(Modifier.height(10.dp))
-        Text(
-            "POWERED BY INDO WORKSPACE",
-            fontSize = 9.sp,
-            letterSpacing = 1.sp,
-            color = Ey.Text3,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-        )
     }
 }
 
