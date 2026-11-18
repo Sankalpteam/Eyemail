@@ -13,10 +13,14 @@ fun InboxScreen(
     mails: List<Mail>,
     onOpen: (Mail) -> Unit,
     modifier: Modifier = Modifier,
+    selected: Set<String> = emptySet(),
+    onToggle: (String) -> Unit = {},
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         MailList(
             mails = mails,
+            selected = selected,
+            onToggle = onToggle,
             emptyText = "No mail here yet.",
             onOpen = onOpen,
         )
