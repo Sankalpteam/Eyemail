@@ -13,10 +13,14 @@ fun DraftsScreen(
     mails: List<Mail>,
     onOpen: (Mail) -> Unit,
     modifier: Modifier = Modifier,
+    selected: Set<String> = emptySet(),
+    onToggle: (String) -> Unit = {},
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         MailList(
             mails = mails,
+            selected = selected,
+            onToggle = onToggle,
             emptyText = "No drafts yet.",
             onOpen = onOpen,
         )
