@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -39,11 +40,17 @@ fun ReaderPane(
     onReply: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.fillMaxSize().background(Ey.Surface)) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Ey.Surface)
+            .statusBarsPadding(),
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Ey.Surface2)
+                .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -52,14 +59,12 @@ fun ReaderPane(
             ActionChip(if (mail.starred) "Starred" else "Star", onStar)
             ActionChip("Spam", onSpam)
             ActionChip("Trash", onTrash)
-            Spacer(Modifier.weight(1f))
             ActionChip("Reply", onReply)
         }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-            .statusBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
