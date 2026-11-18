@@ -12,7 +12,10 @@ data class HomeState(
     val storageLimit: Long = 1L shl 30,
     val labels: List<String> = emptyList(),
     val selectedLabel: String? = null,
+    val selected: Set<String> = emptySet(),
 ) {
+    val selecting: Boolean get() = selected.isNotEmpty()
+
     val visible: List<Mail>
         get() {
             val base = mails.filter { mail ->
