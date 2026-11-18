@@ -1,8 +1,7 @@
 {
   "name": "Eyemail",
   "short_name": "Eyemail",
-  "description": "Business mail on your own domain, free on the free plan.",
-  "start_url": "./app.html",
+  "start_url": "./web/app.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#eef1f4",
