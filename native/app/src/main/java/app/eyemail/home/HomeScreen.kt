@@ -164,7 +164,10 @@ fun HomeScreen(
         else -> ModalNavigationDrawer(
             drawerState = drawer,
             drawerContent = {
-                ModalDrawerSheet(drawerContainerColor = Ey.Surface) {
+                ModalDrawerSheet(
+                    drawerContainerColor = Ey.Surface,
+                    modifier = Modifier.fillMaxWidth(0.6f),
+                ) {
                     MenuPanel(
                         state = state,
                         onCompose = {
