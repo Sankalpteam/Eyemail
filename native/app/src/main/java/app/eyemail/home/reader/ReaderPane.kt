@@ -17,6 +17,9 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -55,7 +58,7 @@ fun ReaderPane(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            ActionChip("Back", onBack)
+            IconChip(Icons.AutoMirrored.Filled.ArrowBack, "Back", onBack)
             ActionChip(if (mail.starred) "Starred" else "Star", onStar)
             ActionChip("Spam", onSpam)
             ActionChip("Trash", onTrash)
@@ -99,6 +102,29 @@ fun ReaderPane(
 private fun longDate(iso: String): String {
     val parsed = parseIso(iso) ?: return iso
     return java.text.SimpleDateFormat("d MMM yyyy, HH:mm", java.util.Locale.getDefault()).format(parsed)
+}
+
+/** The arrow form of a chip, for Back, the way the web draws it. */
+@Composable
+private fun IconChip(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .background(Ey.Surface, RoundedCornerShape(8.dp))
+            .border(1.dp, Ey.Border, RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 9.dp, vertical = 6.dp),
+    ) {
+        Icon(
+            icon,
+            contentDescription = label,
+            tint = Ey.Text2,
+            modifier = Modifier.width(18.dp),
+        )
+    }
 }
 
 @Composable
