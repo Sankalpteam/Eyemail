@@ -89,6 +89,71 @@ class HomeViewModel : ViewModel() {
 
     fun search(query: String) = _state.update { it.copy(query = query) }
 
+    /* ---------- selection, the same gestures as the web ---------- */
+
+    fun toggleSelect(mailId: String) = _state.update { current ->
+        val next = current.selected.toMutableSet()
+        if (!next.add(mailId)) next.remove(mailId)
+        current.copy(selected = next)
+    }
+
+    fun selectAll() = _state.update { it.copy(selected = it.visible.map { mail -> mail.id }.toSet()) }
+
+    fun clearSelection() = _state.update { it.copy(selected = emptySet()) }
+
+    /** One action over everything ticked, so a bulk move is a single pass. */
+    fun bulk(action: String) {
+        val ids = _state.value.selected.toList()
+        if (ids.isEmpty()) return
+        val mails = _state.value.mails.filter { it.id in ids }
+        _state.update { it.copy(selected = emptySet()) }
+
+        viewModelScope.launch {
+            try {
+                for (mail in mails) {
+                    when (action) {
+                        "read" -> {
+                            optimistic(mail.id) { it.copy(read = true) }
+                            MailRepository.setRead(uid(), token(), mail.id, true)
+                        }
+                        "unread" -> {
+                            optimistic(mail.id) { it.copy(read = false) }
+                            MailRepository.setRead(uid(), token(), mail.id, false)
+                        }
+                        "star" -> {
+                            optimistic(mail.id) { it.copy(starred = true) }
+                            MailRepository.setStarred(uid(), token(), mail.id, true)
+                        }
+                        "spam" -> {
+                            optimistic(mail.id) { it.copy(folder = "spam") }
+                            MailRepository.moveTo(uid(), token(), mail.id, "spam")
+                        }
+                        "notspam" -> {
+                            optimistic(mail.id) { it.copy(folder = "inbox") }
+                            MailRepository.moveTo(uid(), token(), mail.id, "inbox")
+                        }
+                        "trash" -> {
+                            optimistic(mail.id) { it.copy(folder = "trash") }
+                            MailRepository.moveTo(uid(), token(), mail.id, "trash")
+                        }
+                        "restore" -> {
+                            optimistic(mail.id) { it.copy(folder = "inbox") }
+                            MailRepository.moveTo(uid(), token(), mail.id, "inbox")
+                        }
+                        "forever" -> {
+                            _state.update { s -> s.copy(mails = s.mails.filterNot { it.id == mail.id }) }
+                            MailRepository.deleteForever(uid(), token(), mail.id)
+                        }
+                    }
+                }
+                load()
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Could not finish that action.") }
+                load()
+            }
+        }
+    }
+
     fun open(mail: Mail) {
         _state.update { it.copy(openMailId = mail.id) }
         if (!mail.read) setRead(mail, true)
