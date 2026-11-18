@@ -1,6 +1,7 @@
 package app.eyemail.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -233,6 +234,17 @@ fun HomeScreen(
                     )
                 }
 
+                if (state.selecting) {
+                    BulkBar(
+                        count = state.selected.size,
+                        folder = state.folder,
+                        allSelected = state.selected.size == state.visible.size,
+                        onSelectAll = viewModel::selectAll,
+                        onClear = viewModel::clearSelection,
+                        onAction = viewModel::bulk,
+                    )
+                }
+
                 if (state.error.isNotBlank()) {
                     Box(
                         modifier = Modifier
@@ -246,14 +258,28 @@ fun HomeScreen(
 
                 Box(modifier = Modifier.weight(1f).fillMaxWidth().background(Ey.Surface)) {
                     when (state.folder) {
-                        "starred" -> StarredScreen(mails = state.visible, onOpen = viewModel::open)
-                        "sent" -> SentScreen(mails = state.visible, onOpen = viewModel::open)
-                        "drafts" -> DraftsScreen(mails = state.visible, onOpen = viewModel::open)
-                        "spam" -> SpamScreen(mails = state.visible, onOpen = viewModel::open)
+                        "starred" -> StarredScreen(
+                            mails = state.visible, onOpen = viewModel::open,
+                            selected = state.selected, onToggle = viewModel::toggleSelect,
+                        )
+                        "sent" -> SentScreen(
+                            mails = state.visible, onOpen = viewModel::open,
+                            selected = state.selected, onToggle = viewModel::toggleSelect,
+                        )
+                        "drafts" -> DraftsScreen(
+                            mails = state.visible, onOpen = viewModel::open,
+                            selected = state.selected, onToggle = viewModel::toggleSelect,
+                        )
+                        "spam" -> SpamScreen(
+                            mails = state.visible, onOpen = viewModel::open,
+                            selected = state.selected, onToggle = viewModel::toggleSelect,
+                        )
                         "trash" -> TrashScreen(
                             mails = state.visible,
                             onOpen = viewModel::open,
                             onEmptyTrash = viewModel::emptyTrash,
+                            selected = state.selected,
+                            onToggle = viewModel::toggleSelect,
                         )
                         "labels" -> LabelsScreen(
                             mails = state.mails,
@@ -264,10 +290,81 @@ fun HomeScreen(
                             onOpen = viewModel::open,
                         )
                         "domain" -> CustomDomainScreen()
-                        else -> InboxScreen(mails = state.visible, onOpen = viewModel::open)
+                        else -> InboxScreen(
+                            mails = state.visible, onOpen = viewModel::open,
+                            selected = state.selected, onToggle = viewModel::toggleSelect,
+                        )
                     }
                 }
 
+            }
+        }
+    }
+}
+
+/** The web's bulk bar: the count, Select all, and the actions for this folder. */
+@Composable
+private fun BulkBar(
+    count: Int,
+    folder: String,
+    allSelected: Boolean,
+    onSelectAll: () -> Unit,
+    onClear: () -> Unit,
+    onAction: (String) -> Unit,
+) {
+    val actions = when (folder) {
+        "trash" -> listOf("restore" to "Restore", "forever" to "Delete forever")
+        "spam" -> listOf("notspam" to "Not spam", "read" to "Mark read", "trash" to "Trash")
+        else -> listOf(
+            "read" to "Mark read",
+            "unread" to "Unread",
+            "star" to "Star",
+            "spam" to "Spam",
+            "trash" to "Trash",
+        )
+    }
+
+    Column(modifier = Modifier.fillMaxWidth().background(Ey.AccentSoft)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "$count selected",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Ey.Accent,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                if (allSelected) "Clear" else "Select all",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Ey.Accent,
+                modifier = Modifier
+                    .clickable { if (allSelected) onClear() else onSelectAll() }
+                    .padding(horizontal = 6.dp, vertical = 4.dp),
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            actions.forEach { (key, label) ->
+                Text(
+                    label,
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (key == "forever") Ey.Danger else Ey.Text2,
+                    modifier = Modifier
+                        .background(Ey.Surface, RoundedCornerShape(8.dp))
+                        .border(1.dp, Ey.Border, RoundedCornerShape(8.dp))
+                        .clickable { onAction(key) }
+                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                )
             }
         }
     }
