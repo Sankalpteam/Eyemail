@@ -1,0 +1,2435 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-rail="expanded" data-density="comfortable">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<link rel="icon" type="image/png" sizes="32x32" href="../branding/app-icons/eyemail-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="../branding/app-icons/eyemail-180.png" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="theme-color" content="#1857b8" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Eyemail" />
+<meta name="color-scheme" content="light dark" />
+
+<title>Eyemail — Inbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Azeret+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#eef1f4; --surface:#fff; --surface-2:#f7f9fa; --surface-3:#eff3f5;
+    --border:rgba(16,26,43,.09); --border-strong:rgba(16,26,43,.16);
+    --text:#101a2b; --text-2:#4a5a6a; --text-3:#8494a3;
+    --accent:#1857b8; --accent-2:#0f3d86; --accent-soft:#e8effb;
+    --gold:#b7791f; --gold-soft:#fbf1dd;
+    --danger:#b23b3b; --danger-soft:#fbeaea;
+    --ok:#1d7a52; --ok-soft:#e6f4ec;
+    --shadow-sm:0 1px 2px rgba(16,26,43,.05);
+    --shadow-md:0 8px 24px -12px rgba(16,26,43,.24);
+    --shadow-lg:0 26px 64px -30px rgba(16,26,43,.5);
+    --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:22px;
+    --rail:270px; --rail-min:76px; --row-pad:13px;
+  }
+  [data-theme="dark"]{
+    --bg:#0b1118; --surface:#111a24; --surface-2:#16212c; --surface-3:#1c2833;
+    --border:rgba(255,255,255,.08); --border-strong:rgba(255,255,255,.16);
+    --text:#eaf0f5; --text-2:#a4b4c2; --text-3:#6f8290;
+    --accent:#5b9bff; --accent-2:#8fc0ff; --accent-soft:rgba(91,155,255,.16);
+    --gold:#e0b155; --gold-soft:rgba(224,177,85,.14);
+    --danger:#e07777; --danger-soft:rgba(224,119,119,.14);
+    --ok:#57c99a; --ok-soft:rgba(87,201,154,.14);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+    --shadow-md:0 10px 30px -14px rgba(0,0,0,.7);
+    --shadow-lg:0 30px 70px -30px rgba(0,0,0,.85);
+  }
+  [data-density="compact"]{ --row-pad:7px }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:"Plus Jakarta Sans",-apple-system,"Segoe UI",sans-serif;color:var(--text);
+    background:radial-gradient(900px 520px at 12% -8%, rgba(24,87,184,.13), transparent 60%),
+               radial-gradient(760px 480px at 96% 4%, rgba(183,121,31,.09), transparent 62%), var(--bg);
+    -webkit-font-smoothing:antialiased;overflow:hidden}
+  .hidden{display:none !important}
+  .mono{font-family:"Azeret Mono",monospace}
+
+  .app{height:100vh;display:grid;grid-template-columns:var(--rail) 1fr;grid-template-rows:minmax(0,1fr);gap:14px;padding:14px;
+    transition:grid-template-columns .28s cubic-bezier(.4,0,.2,1)}
+  [data-rail="collapsed"] .app{grid-template-columns:var(--rail-min) 1fr}
+
+  /* ---------- rail ---------- */
+  .rail{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-md);
+    display:flex;flex-direction:column;padding:14px 12px 12px;overflow-y:auto;overflow-x:hidden}
+  .brand{display:flex;align-items:center;gap:10px;padding:4px 6px 14px}
+  .mark{width:34px;height:34px;border-radius:11px;flex:0 0 34px;background:linear-gradient(150deg,var(--accent),var(--accent-2));
+    display:grid;place-items:center;color:#fff}
+  .brand-txt b{display:block;font-size:14.5px;line-height:1.15;letter-spacing:-.01em}
+  .brand-txt span{font-size:10.5px;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase}
+  .compose{display:flex;align-items:center;gap:10px;justify-content:center;border:0;cursor:pointer;
+    background:linear-gradient(150deg,var(--accent),var(--accent-2));color:#fff;border-radius:var(--r-md);
+    padding:11px 14px;font:600 13.5px/1 inherit;margin-bottom:14px;box-shadow:0 10px 22px -14px rgba(24,87,184,.9);
+    transition:transform .15s,filter .15s}
+  .compose:hover{transform:translateY(-1px);filter:brightness(1.05)}
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;border:0;background:none;
+    color:var(--text-2);font:500 13.5px/1.2 inherit;cursor:pointer;width:100%;text-align:left;transition:background .15s,color .15s}
+  .nav-item svg{flex:0 0 18px;opacity:.85}
+  .nav-item:hover{background:var(--surface-3);color:var(--text)}
+  .nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .nav-item .count{margin-left:auto;font:500 11px/1 "Azeret Mono",monospace;color:var(--text-3);
+    background:var(--surface-3);border-radius:99px;padding:3px 6px}
+  .nav-item.active .count{background:rgba(255,255,255,.6);color:var(--accent)}
+  [data-theme="dark"] .nav-item.active .count{background:rgba(0,0,0,.25)}
+  .rail-label{display:flex;align-items:center;justify-content:space-between;font:500 10px/1 "Azeret Mono",monospace;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);padding:16px 10px 8px}
+  .rail-label button{border:0;background:none;color:var(--text-3);cursor:pointer;font-size:14px;line-height:1}
+  .rail-label button:hover{color:var(--accent)}
+  .labeldot{width:9px;height:9px;border-radius:99px;flex:0 0 9px}
+  .divider{height:1px;background:var(--border);margin:12px 4px 8px}
+  .storage{padding:12px;border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--border);margin-top:auto}
+  .storage-top{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;color:var(--text-2)}
+  .storage-top b{font:600 11.5px/1 "Azeret Mono",monospace;color:var(--text)}
+  .bar{height:6px;border-radius:99px;background:var(--surface-3);margin:9px 0 8px;overflow:hidden}
+  .bar i{display:block;height:100%;width:2%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .4s}
+  .plan{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-2)}
+  .pill{font:500 10px/1 "Azeret Mono",monospace;background:var(--gold-soft);color:var(--gold);
+    border:1px solid rgba(183,121,31,.28);padding:3px 7px;border-radius:99px}
+  .pwr-rail{margin:12px 0 0;font:500 9.5px/1.5 "Azeret Mono",monospace;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--text-3);text-align:center}
+  .pwr-rail b{color:var(--text-2);font-weight:600}
+  [data-rail="collapsed"] .pwr-rail{display:none}
+  .user{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 6px;border-radius:10px;cursor:pointer}
+  .user:hover{background:var(--surface-3)}
+  .avatar{width:32px;height:32px;flex:0 0 32px;border-radius:10px;display:grid;place-items:center;
+    font:700 12px/1 "Plus Jakarta Sans",sans-serif;color:#fff;background:linear-gradient(140deg,#3a4d63,#1d2a3a)}
+  .user-txt{min-width:0}
+  .user-txt b{display:block;font-size:12.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .user-txt span{font-size:11px;color:var(--text-3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .iconbtn{width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);
+    display:grid;place-items:center;color:var(--text-2);cursor:pointer;flex:0 0 34px}
+  .iconbtn:hover{background:var(--surface-3);color:var(--text)}
+  [data-rail="collapsed"] .brand-txt,[data-rail="collapsed"] .compose span,[data-rail="collapsed"] .nav-item span:not(.count),
+  [data-rail="collapsed"] .rail-label,[data-rail="collapsed"] .storage,[data-rail="collapsed"] .user-txt,
+  [data-rail="collapsed"] .nav-item .count{display:none}
+  [data-rail="collapsed"] .rail{padding:14px 10px 12px;align-items:center}
+  [data-rail="collapsed"] .brand{padding:4px 0 14px;justify-content:center}
+  [data-rail="collapsed"] .brand .mark,
+  [data-rail="collapsed"] .brand .brand-txt{display:none}
+  [data-rail="collapsed"] .brand .rail-menu{margin-left:0;width:34px;height:34px;flex:0 0 34px}
+  [data-rail="collapsed"] .compose{padding:11px;width:44px;height:44px;border-radius:13px}
+  [data-rail="collapsed"] .nav{width:100%}
+  [data-rail="collapsed"] .nav-item{justify-content:center;padding:11px 0;width:44px;height:42px;margin:0 auto}
+  [data-rail="collapsed"] .nav-item.active{border-radius:12px}
+  [data-rail="collapsed"] #labelNav,
+  [data-rail="collapsed"] #addLabelBtn,
+  [data-rail="collapsed"] #logoutBtn{display:none}
+  [data-rail="collapsed"] .nav-item .labeldot{display:none}
+  [data-rail="collapsed"] .user{justify-content:center}
+
+  /* ---------- shell ---------- */
+  .shell{display:grid;grid-template-columns:minmax(340px,410px) 1fr;gap:14px;min-width:0}
+  .panel{min-height:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-md);
+    min-width:0;display:flex;flex-direction:column;overflow:hidden}
+  .quota-banner{display:flex;align-items:center;gap:10px;padding:9px 14px;font-size:12px;
+    background:#fef3c7;color:#92400e;border-bottom:1px solid #fde68a}
+  [data-theme="dark"] .quota-banner{background:rgba(217,119,6,.16);color:#fbbf24;border-bottom-color:rgba(217,119,6,.3)}
+  .quota-banner.full{background:#fee2e2;color:#991b1b;border-bottom-color:#fecaca}
+  [data-theme="dark"] .quota-banner.full{background:rgba(220,38,38,.18);color:#fca5a5;border-bottom-color:rgba(220,38,38,.32)}
+  .quota-banner span{flex:1;min-width:0}
+  .quota-banner button{border:0;background:none;color:inherit;font:700 11.5px/1 inherit;cursor:pointer;
+    text-decoration:underline;white-space:nowrap;padding:2px 0}
+  .list-head{padding:14px 14px 10px;border-bottom:1px solid var(--border)}
+  .topline{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+  .title-wrap{min-width:0;flex:1}
+  .title-wrap h1{margin:0;font-size:18px;letter-spacing:-.02em;line-height:1.15;text-transform:capitalize}
+  .title-wrap p{margin:2px 0 0;font-size:11.5px;color:var(--text-3)}
+  .search{display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:var(--r-md);padding:8px 10px;cursor:text}
+  .search input{border:0;background:none;outline:none;flex:1;min-width:0;font:500 13px/1.3 inherit;color:var(--text)}
+  .search input::placeholder{color:var(--text-3)}
+  .kbd{font:500 10px/1 "Azeret Mono",monospace;color:var(--text-3);border:1px solid var(--border-strong);
+    border-radius:5px;padding:3px 5px;background:var(--surface)}
+  .chips{display:flex;gap:6px;padding:10px 0 2px;overflow-x:auto;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{font:500 11.5px/1 inherit;color:var(--text-2);background:transparent;border:1px solid var(--border);
+    border-radius:99px;padding:6px 11px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+  .chip:hover{background:var(--surface-3)}
+  .chip.on{background:var(--text);color:var(--surface);border-color:var(--text)}
+  .bulkbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px;overflow-x:hidden;padding:8px 12px;background:var(--accent-soft);
+    border-bottom:1px solid var(--border);font-size:12px;color:var(--accent);font-weight:600}
+  .bulkbar .acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .bulkbar .tb{border-color:rgba(24,87,184,.25);background:var(--surface);color:var(--text-2);
+    padding:6px 9px;font-size:11.3px;white-space:nowrap}
+  @media (min-width:861px){ .list-menu{display:none} }
+  .selrow{display:flex;align-items:center;gap:9px;padding:9px 14px;border-bottom:1px solid var(--border);
+    background:var(--surface-2);font-size:12px;color:var(--text-2)}
+  .selrow input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
+  .selrow label{cursor:pointer;font-weight:600;color:var(--text-2)}
+  .selrow label:hover{color:var(--accent)}
+  .selrow .linkbtn{border:0;background:none;padding:0;color:var(--accent);font:600 11.5px/1 inherit;cursor:pointer}
+  .selrow .linkbtn:hover{text-decoration:underline}
+  .selrow .clear{margin-left:auto;border:0;background:none;color:var(--accent);font:600 11.5px/1 inherit;cursor:pointer;padding:4px}
+  .rows{flex:1;min-height:0;overflow-y:auto}
+  .loadmore{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 12px;
+    border-top:1px solid var(--border);background:var(--surface-2);font-size:11.5px;color:var(--text-3)}
+  .row{display:grid;grid-template-columns:16px 32px 1fr auto;gap:10px;padding:var(--row-pad) 14px;
+    border-bottom:1px solid var(--border);cursor:pointer;position:relative;transition:background .12s}
+  .row:hover{background:var(--surface-2)}
+  .row.on{background:var(--accent-soft)}
+  .row.on:before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+  .row input[type=checkbox]{margin-top:6px;accent-color:var(--accent);cursor:pointer}
+  .row .avatar{border-radius:10px;font-size:11.5px;width:32px;height:32px}
+  .row-main{min-width:0}
+  .row-top{display:flex;align-items:baseline;gap:8px}
+  .from{font-size:12.8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row.unread .from,.row.unread .subj{font-weight:700}
+  .time{margin-left:auto;font:500 10px/1 "Azeret Mono",monospace;color:var(--text-3);white-space:nowrap}
+  .subj{font-size:12.3px;color:var(--text);margin:2px 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+  .snip{font-size:11.3px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+  .tags{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+  .tag{font:500 9px/1 "Azeret Mono",monospace;text-transform:uppercase;letter-spacing:.07em;padding:3px 5px;border-radius:4px;
+    background:var(--surface-3);color:var(--text-2)}
+  .tag.gold{background:var(--gold-soft);color:var(--gold)}
+  .tag.blue{background:var(--accent-soft);color:var(--accent)}
+  .row-side{display:flex;flex-direction:column;align-items:center;gap:5px;padding-top:3px}
+  .dot{width:7px;height:7px;border-radius:99px;background:var(--accent)}
+  .dot.off{visibility:hidden}
+  .star{color:var(--text-3);opacity:.45;line-height:1;background:none;border:0;cursor:pointer;padding:0}
+  .star.on{color:var(--gold);opacity:1}
+  .hoveracts{display:none;gap:2px}
+  .row:hover .hoveracts{display:flex}
+  .row:hover .dot{visibility:hidden}
+  .hoveracts button{border:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;
+    width:22px;height:22px;display:grid;place-items:center;cursor:pointer;color:var(--text-2)}
+  .hoveracts button:hover{color:var(--accent);border-color:rgba(24,87,184,.35)}
+  .empty{padding:38px 22px;text-align:center;color:var(--text-3);font-size:12.5px;line-height:1.6}
+  .skeleton{padding:14px;display:grid;gap:10px}
+  .sk{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--surface-3),var(--surface-2),var(--surface-3));
+    background-size:200% 100%;animation:sh 1.3s linear infinite}
+  @keyframes sh{to{background-position:-200% 0}}
+
+  /* ---------- reader ---------- */
+  .reader-head{padding:16px 20px 13px;border-bottom:1px solid var(--border)}
+  .reader-head h2{margin:0 0 10px;font-size:21px;line-height:1.3;letter-spacing:-.025em;max-width:56ch}
+  .sender{display:flex;align-items:center;gap:11px}
+  .sender .avatar{width:38px;height:38px;flex:0 0 38px;border-radius:12px;font-size:13px}
+  .sender-txt b{display:block;font-size:13.2px;line-height:1.25}
+  .sender-txt span{font-size:11.3px;color:var(--text-3)}
+  .sender .when{margin-left:auto;white-space:nowrap;font:500 10.5px/1.5 "Azeret Mono",monospace;color:var(--text-3);text-align:right}
+  .toolbar{display:flex;align-items:center;gap:6px;overflow-x:hidden;padding:9px 20px;border-bottom:1px solid var(--border);background:var(--surface-2);flex-wrap:wrap}
+  .tb{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface);
+    border-radius:8px;padding:7px 10px;font:600 11.8px/1 inherit;color:var(--text-2);cursor:pointer}
+  .tb:hover{border-color:var(--border-strong);color:var(--text)}
+  .tb.primary{background:var(--text);color:var(--surface);border-color:var(--text)}
+  .tb.danger:hover{color:var(--danger);border-color:rgba(178,59,59,.4)}
+  .toolbar .spacer{margin-left:auto}
+  .body-scroll{flex:1;overflow-y:auto;padding:20px 24px 26px}
+  .prose{max-width:70ch;font-size:13.4px;line-height:1.72;color:var(--text-2);white-space:pre-wrap}
+  .thread{border-top:1px solid var(--border);margin-top:20px;padding-top:14px;max-width:70ch}
+  .thread h4{margin:0 0 8px;font:600 10.5px/1 "Azeret Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+  .thread-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--surface-2);cursor:pointer}
+  .thread-item:hover{border-color:var(--border-strong)}
+  .thread-item.now{border-color:var(--accent);background:var(--accent-soft)}
+  .thread-top{display:flex;align-items:center;gap:8px;min-width:0}
+  .thread-top b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .thread-top .at{margin-left:auto;font:500 10px/1 "Azeret Mono",monospace;color:var(--text-3);white-space:nowrap}
+  .dir{font:600 9px/1 "Azeret Mono",monospace;letter-spacing:.06em;text-transform:uppercase;padding:3px 5px;border-radius:4px;
+    background:var(--surface-3);color:var(--text-2);flex:0 0 auto}
+  .dir.out{background:var(--accent-soft);color:var(--accent)}
+  .thread-sub{font-size:11.6px;color:var(--text-2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .thread-snip{font-size:11px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .addr{margin-top:10px;display:grid;grid-template-columns:38px 1fr;gap:4px 8px;align-items:baseline}
+  .addr .lbl{font:600 9.5px/1.6 "Azeret Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+  .addr .val{font-size:11.8px;color:var(--text-2);line-height:1.6;word-break:break-word;min-width:0}
+  .quote{margin-top:16px;border-left:3px solid var(--border-strong);padding:2px 0 2px 12px}
+  .quote summary{cursor:pointer;font-size:11.5px;color:var(--text-3);list-style:none;display:flex;align-items:center;gap:6px}
+  .quote summary::-webkit-details-marker{display:none}
+  .quote summary:hover{color:var(--accent)}
+  .quote .qbody{margin-top:10px;font-size:12.6px;line-height:1.7;color:var(--text-3);white-space:pre-wrap}
+  .quote .qhead{font-size:11.5px;color:var(--text-3);margin-bottom:6px}
+  .reader-back, .reader-menu{display:none}
+  .tb.reader-back{align-items:center;justify-content:center;padding:7px 9px}
+  @media (max-width:1080px){ .reader-back{display:inline-flex} }
+  @media (max-width:860px){ .reader-menu{display:grid} }
+  .scrim{position:fixed;inset:0;background:rgba(10,16,24,.45);z-index:45;display:none}
+  .app.rail-open .scrim{display:block}
+  @media (min-width:861px){ .scrim{display:none !important} }
+  .reader-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-3);
+    font-size:12.5px;padding:24px;text-align:center}
+  .reader-empty .glyph{width:46px;height:46px;border-radius:14px;background:var(--surface-3);display:grid;place-items:center}
+  .quickreply{border-top:1px solid var(--border);padding:10px 20px;display:flex;gap:8px;align-items:center;background:var(--surface-2)}
+  .quickreply input{flex:1;border:1px solid var(--border);border-radius:9px;padding:9px 11px;font:500 12.5px/1.3 inherit;
+    background:var(--surface);color:var(--text);outline:none}
+  .quickreply input:focus{border-color:var(--accent)}
+
+  /* ---------- composer ---------- */
+  .composer{position:fixed;right:26px;bottom:26px;width:min(560px,calc(100vw - 40px));background:var(--surface);
+    border:1px solid var(--border-strong);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden;z-index:60}
+  .composer .ch{display:flex;align-items:center;gap:8px;padding:11px 15px;background:var(--surface-3);font-size:12.5px;font-weight:700}
+  .composer .ch .draft{font:500 9.5px/1 "Azeret Mono",monospace;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em}
+  .composer .ch .x{margin-left:auto;color:var(--text-3);cursor:pointer;background:none;border:0;font-size:16px;line-height:1}
+  .cfld{display:flex;align-items:center;gap:10px;padding:9px 15px;border-top:1px solid var(--border)}
+  .cfld .lbl{width:52px;color:var(--text-3);font:500 10px/1 "Azeret Mono",monospace;text-transform:uppercase;letter-spacing:.1em}
+  .cfld input{border:0;outline:none;background:none;flex:1;font:500 12.8px/1.4 inherit;color:var(--text)}
+  .cbody{padding:10px 15px 12px;border-top:1px solid var(--border)}
+  .cbody textarea{width:100%;min-height:130px;border:0;outline:none;resize:vertical;background:none;
+    font:500 12.8px/1.68 inherit;color:var(--text)}
+  .cfoot{display:flex;align-items:center;gap:8px;padding:10px 15px;border-top:1px solid var(--border);background:var(--surface-2)}
+  .send{background:linear-gradient(150deg,var(--accent),var(--accent-2));color:#fff;border:0;border-radius:9px;
+    padding:9px 16px;font:700 12.5px/1 inherit;cursor:pointer}
+  .cfoot .hint{margin-left:auto;font:500 10px/1 "Azeret Mono",monospace;color:var(--text-3)}
+  .alert{margin:0 0 8px;padding:8px 10px;border-radius:8px;font-size:11.8px;background:var(--danger-soft);color:var(--danger);
+    border:1px solid rgba(178,59,59,.22)}
+
+  /* ---------- overlays ---------- */
+  .modal{position:fixed;inset:0;background:rgba(10,16,24,.55);display:grid;place-items:center;padding:20px;z-index:70}
+  .modal-card{width:min(540px,100%);background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border-strong);
+    box-shadow:var(--shadow-lg);overflow:hidden;max-height:86vh;display:flex;flex-direction:column}
+  .modal-card .mh{display:flex;align-items:center;padding:12px 16px;background:var(--surface-3);font-size:13px;font-weight:700}
+  .modal-card .mh button{margin-left:auto;background:none;border:0;color:var(--text-3);font-size:16px;cursor:pointer}
+  .modal-body{padding:16px;overflow-y:auto}
+  /* One fixed frame, so switching section never resizes the window */
+  .modal-card.settings{width:min(760px,100%);height:min(620px,88vh);display:flex;flex-direction:column}
+  .settings-body{display:grid;grid-template-columns:170px 1fr;min-height:0;flex:1}
+  .setnav{display:flex;flex-direction:column;gap:2px;padding:12px 10px;border-right:1px solid var(--border);
+    background:var(--surface-2);border-bottom-left-radius:var(--r-xl)}
+  .setnav button{border:0;background:none;text-align:left;padding:9px 11px;border-radius:9px;cursor:pointer;
+    font:600 12.5px/1.2 inherit;color:var(--text-2)}
+  .setnav button:hover{background:var(--surface-3)}
+  .setnav button.on{background:var(--accent-soft);color:var(--accent)}
+  .setpanes{padding:18px 20px;overflow-y:auto;min-height:0;flex:1}
+  .setpane h3{margin:0 0 14px;font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:var(--text-3);
+    font-family:"Azeret Mono",monospace;font-weight:500}
+  .recovery-form{margin:6px 0 14px;padding:12px;border:1px dashed var(--border-strong);border-radius:10px;background:var(--surface-2)}
+  .field-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .field-row input{flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font:inherit;font-size:12.5px;background:var(--surface);color:var(--text)}
+  .field-row input.otp{letter-spacing:.28em;font-family:"Azeret Mono",monospace;max-width:140px}
+  .setnote{margin:10px 0 0;font-size:11.5px;color:var(--text-3);line-height:1.6}
+  .meter{height:8px;border-radius:6px;background:var(--surface-3);overflow:hidden}
+  .meter div{height:100%;background:var(--accent);border-radius:6px;transition:width .25s}
+  .modal-body p{margin:0 0 12px;font-size:12.4px;line-height:1.6;color:var(--text-2)}
+  .modal-body code{font-family:"Azeret Mono",monospace;font-size:11.4px;background:var(--surface-3);padding:2px 5px;border-radius:5px}
+  .dnsform{display:flex;gap:8px}
+  .dnsform input{flex:1;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--r-md);
+    font:500 13px/1 inherit;background:var(--surface);color:var(--text);outline:none}
+  .dnsform button{border:0;border-radius:var(--r-md);padding:10px 14px;cursor:pointer;color:#fff;
+    font:700 12.5px/1 inherit;background:linear-gradient(150deg,var(--accent),var(--accent-2))}
+  .dnsbox{margin-top:12px;display:grid;gap:7px}
+  .dnsrow{padding:9px 11px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);font-size:11.4px}
+  .dnsrow b{font:700 10.4px/1 "Azeret Mono",monospace;letter-spacing:.08em;color:var(--accent)}
+  .dnsrow code{display:block;margin-top:4px;font-family:"Azeret Mono",monospace;font-size:10.8px;word-break:break-all;color:var(--text-2)}
+
+  .palette{position:fixed;inset:0;background:rgba(10,16,24,.5);display:flex;justify-content:center;align-items:flex-start;
+    padding:12vh 20px 20px;z-index:90}
+  .palette-card{width:min(600px,100%);background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--r-lg);
+    box-shadow:var(--shadow-lg);overflow:hidden}
+  .palette-card input{width:100%;border:0;border-bottom:1px solid var(--border);padding:15px 16px;font:500 14px/1.3 inherit;
+    background:none;outline:none;color:var(--text)}
+  .palette-list{max-height:46vh;overflow-y:auto;padding:6px}
+  .pitem{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;cursor:pointer;font-size:13px;color:var(--text-2)}
+  .pitem.sel{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .pitem .hint{margin-left:auto;font:500 10px/1 "Azeret Mono",monospace;color:var(--text-3)}
+  .shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;font-size:12.4px;color:var(--text-2)}
+  .shortcuts div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)}
+  .shortcuts kbd{font:500 10.5px/1 "Azeret Mono",monospace;background:var(--surface-3);border:1px solid var(--border);
+    border-radius:5px;padding:3px 6px;color:var(--text-2)}
+  .setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+  .setting b{font-size:12.8px;display:block}
+  .setting span{font-size:11.4px;color:var(--text-3)}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .seg button{border:0;background:var(--surface);padding:6px 10px;font:600 11.4px/1 inherit;color:var(--text-2);cursor:pointer}
+  .seg button.on{background:var(--text);color:var(--surface)}
+  .setting input[type=text]{width:200px;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;
+    font:500 12.4px/1 inherit;background:var(--surface);color:var(--text);outline:none}
+
+  .toastwrap{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:95;display:flex;flex-direction:column;gap:8px;align-items:center}
+  .toast{background:var(--text);color:var(--surface);padding:10px 14px;border-radius:10px;font-size:12.4px;font-weight:600;
+    box-shadow:var(--shadow-md);display:flex;align-items:center;gap:12px}
+  .toast button{background:none;border:0;color:var(--accent-2);font:700 12px/1 inherit;cursor:pointer}
+  [data-theme="dark"] .toast button{color:#8fc0ff}
+
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px;border:3px solid transparent;background-clip:content-box}
+  svg{display:block}
+
+  @media (max-width:1080px){
+    .shell{grid-template-columns:1fr}
+    .reader{display:none}
+    .app.reader-open .list{display:none}
+    .app.reader-open .reader{display:flex}
+  }
+  @media (max-width:860px){
+    .app,
+    [data-rail="collapsed"] .app{grid-template-columns:1fr;padding:0;height:100dvh}
+    .rail{position:fixed;inset:0 auto 0 0;width:270px;border-radius:0;z-index:50;transform:translateX(-100%);
+      transition:transform .25s ease;box-shadow:var(--shadow-lg)}
+    .app.rail-open .rail{transform:none}
+    [data-rail="collapsed"] .rail{width:270px}
+    /* inside the mobile drawer the rail is always fully expanded */
+    .app.rail-open .rail .brand-txt,
+    .app.rail-open .rail .compose span,
+    .app.rail-open .rail .nav-item span,
+    .app.rail-open .rail .rail-label,
+    .app.rail-open .rail .storage,
+    .app.rail-open .rail .user-txt,
+    .app.rail-open .rail #logoutBtn{display:revert}
+    .app.rail-open .rail #labelNav{display:block}
+    .app.rail-open .rail #addLabelBtn{display:inline-block}
+    .app.rail-open .rail{padding:14px 12px 12px;align-items:stretch}
+    .app.rail-open .rail .brand{padding:4px 6px 14px}
+    .app.rail-open .rail .compose{width:auto;height:auto;padding:11px 14px;border-radius:var(--r-md)}
+    .app.rail-open .rail .nav{width:100%}
+    .app.rail-open .rail .nav-item{justify-content:flex-start;padding:9px 10px;width:100%;height:auto;margin:0}
+    .app.rail-open .rail .nav-item.active{border-radius:10px}
+    .app.rail-open .rail .user{justify-content:flex-start}
+    .shell{padding:10px}
+    .composer{right:10px;left:10px;width:auto;bottom:10px}
+
+    /* ---- phone spacing: give everything room, wrap instead of squeezing ---- */
+    .list-head{padding:12px 12px 8px}
+    .topline{gap:8px;margin-bottom:10px}
+    .search{padding:10px 12px}
+    .chips{gap:8px;padding:10px 0 4px}
+    .chip{padding:8px 13px;font-size:12px}
+
+    .bulkbar{padding:10px 12px;gap:8px;row-gap:8px}
+    .bulkbar .tb{flex:0 0 auto;padding:9px 12px;font-size:12px;min-height:36px;border-radius:9px}
+  
+    .row{padding:12px 12px;gap:10px}
+    .row .from,.row .subj{font-size:13px}
+    .row .snip{font-size:12px}
+
+    .reader-head{padding:14px 14px 12px}
+    .reader-head h2{font-size:19px;line-height:1.32;margin-bottom:10px}
+    .toolbar{padding:10px 12px;gap:8px;row-gap:8px}
+    .toolbar .tb{flex:0 0 auto;padding:9px 12px;font-size:12px;min-height:36px;border-radius:9px}
+    .toolbar .iconbtn{width:36px;height:36px;flex:0 0 36px}
+    .toolbar .spacer{display:none}
+    .body-scroll{padding:16px 14px 22px}
+    .prose{font-size:13.6px;line-height:1.7}
+    .quickreply{padding:10px 12px;gap:8px}
+    .quickreply input{padding:11px 12px;font-size:13px}
+    .quickreply .tb{padding:10px 14px;min-height:40px}
+
+    .cfld{padding:11px 14px}
+    .cbody{padding:12px 14px 14px}
+    .cfoot{padding:11px 14px;gap:10px;flex-wrap:wrap}
+    .cfoot .hint{width:100%;margin:0}
+
+    .modal-body{padding:16px 14px}
+    .dnsform{flex-wrap:wrap}
+    .dnsform input{min-width:100%}
+  }
+  @media (max-width:640px){
+    /* One column on a phone: the sections become a short row of tabs, and each
+       setting stacks its label above its control so nothing is squeezed. */
+    /* On a phone Settings is not a popup: it takes the whole screen, like a page. */
+    .modal-card.settings{position:fixed;inset:0;width:100%;height:100dvh;max-height:100dvh;
+      border-radius:0;margin:0}
+    .modal-card.settings .mh{padding-top:calc(14px + env(safe-area-inset-top))}
+    .settings-body{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+    .setnav{flex-direction:row;align-items:center;gap:2px;overflow-x:auto;overflow-y:hidden;
+      border-right:0;border-bottom:1px solid var(--border);border-radius:0;padding:8px 8px;
+      scrollbar-width:none;scroll-snap-type:x proximity;
+      mask-image:linear-gradient(to right,#000 88%,transparent 100%);
+      -webkit-mask-image:linear-gradient(to right,#000 88%,transparent 100%)}
+    .setnav::-webkit-scrollbar{display:none}
+    .setnav button{white-space:nowrap;flex:0 0 auto;align-self:center;padding:8px 9px;font-size:11.6px;
+      scroll-snap-align:start}
+    .setpanes{padding:14px 14px 18px}
+    /* Each option is its own card, so nobody reads the list as one long paragraph. */
+    .setting{flex-direction:column;align-items:stretch;gap:9px;padding:14px;margin:0 0 10px;
+      background:var(--surface);border:1px solid var(--border);border-bottom:1px solid var(--border);
+      border-radius:12px;box-shadow:0 1px 2px rgba(15,26,43,.04)}
+    .setting:last-child{margin-bottom:0}
+    .setting b{font-size:13px}
+    .setting span{font-size:11.6px}
+    .setting > div:first-child{min-width:0}
+    .setting span{display:block;line-height:1.5}
+    .setting .tb,.setting .seg{align-self:flex-start}
+    .setting .tb{white-space:nowrap}
+    .setting input[type=text]{width:100%}
+    .seg button{white-space:nowrap;padding:7px 12px}
+    .setting .tag{white-space:nowrap;display:inline-block;align-self:flex-start;width:auto}
+    .setting .mono{display:block}
+    .setnote{margin-top:8px}
+    .field-row{flex-wrap:wrap}
+    .field-row input{flex:1 1 100%}
+    .field-row input.otp{max-width:100%}
+    .field-row .tb{flex:0 0 auto}
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- ================= rail ================= -->
+  <aside class="rail" id="sidebar">
+    <div class="brand">
+      <div class="mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 8 7.1 4.7a2 2 0 0 0 2.2 0L20 8"/></svg>
+      </div>
+      <div class="brand-txt"><b>Eyemail</b><span>eyemail.in</span></div>
+      <button class="iconbtn rail-menu" id="railMenuBtn" title="Collapse menu" style="width:28px;height:28px;flex:0 0 28px;margin-left:auto">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+
+    <button class="compose" id="composeBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      <span>Compose</span>
+    </button>
+
+    <nav class="nav" id="folderNav">
+      <button class="nav-item active folder-btn" data-folder="inbox">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.1Z"/></svg>
+        <span>Inbox</span><span class="count hidden" id="unreadBadge">0</span>
+      </button>
+      <button class="nav-item folder-btn" data-folder="starred">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.8l6.5-.9Z"/></svg>
+        <span>Starred</span>
+      </button>
+      <button class="nav-item folder-btn" data-folder="sent">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        <span>Sent</span>
+      </button>
+      <button class="nav-item folder-btn" data-folder="drafts">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+        <span>Drafts</span>
+      </button>
+      <button class="nav-item folder-btn" data-folder="spam">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v5"/><path d="M12 17.5h.01"/></svg>
+        <span>Spam</span>
+      </button>
+      <button class="nav-item folder-btn" data-folder="trash">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        <span>Trash</span>
+      </button>
+    </nav>
+
+    <div class="rail-label"><span>Labels</span><button id="addLabelBtn" title="New label">+</button></div>
+    <nav class="nav" id="labelNav"></nav>
+
+    <div class="rail-label">Workspace</div>
+    <nav class="nav">
+      <button class="nav-item" id="openDomainBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg>
+        <span>Custom domain</span>
+      </button>
+      <button class="nav-item" id="openSettingsBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2 2 2 0 1 1-4 0 1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 4a2 2 0 1 1 4 0 1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 11a2 2 0 1 1 0 4Z"/></svg>
+        <span>Settings</span>
+      </button>
+    </nav>
+
+    <div class="divider"></div>
+
+    <div class="storage">
+      <div class="storage-top"><span>Storage</span><b id="storageText">0 MB / 1 GB</b></div>
+      <div class="bar"><i id="storageBar"></i></div>
+      <div class="plan"><span class="pill">FREE PLAN</span><span>1 GB included</span></div>
+      <div class="pwr-rail">Powered by <b>Indo Workspace</b></div>
+    </div>
+
+    <div class="user" id="userChip">
+      <div class="avatar" id="userInitials">E</div>
+      <div class="user-txt">
+        <b id="userNameLabel">Loading...</b>
+        <span id="userEmailLabel">...</span>
+      </div>
+      <button class="iconbtn" id="logoutBtn" title="Sign out" style="width:28px;height:28px;flex:0 0 28px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ================= shell ================= -->
+  <div class="shell">
+    <section class="panel list" id="listPane">
+      <div class="quota-banner hidden" id="quotaBanner">
+        <span id="quotaText">Your mailbox is nearly full</span>
+        <button type="button" id="quotaFixBtn">Free up space</button>
+      </div>
+
+      <div class="list-head">
+        <div class="topline">
+          <button class="iconbtn list-menu" id="menuToggle" title="Menu">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div class="title-wrap">
+            <h1 id="folderTitle">Inbox</h1>
+            <button class="tb danger hidden" id="emptyTrashBtn" title="Delete everything in Trash">Empty trash</button>
+            <p id="mailCount">0 messages</p>
+          </div>
+          <button class="iconbtn" id="refreshBtn" title="Refresh">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+          </button>
+          <button class="iconbtn" id="themeBtn" title="Theme">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+          </button>
+        </div>
+
+        <div class="search" id="searchWrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="searchInput" type="search" placeholder="Search or try from:razorpay is:unread" />
+          <span class="kbd">/</span>
+        </div>
+
+        <div class="chips" id="filterChips">
+          <button class="chip on" data-filter="all">All</button>
+          <button class="chip" data-filter="unread">Unread</button>
+          <button class="chip" data-filter="starred">Starred</button>
+          <button class="chip" data-filter="month">This month</button>
+        </div>
+      </div>
+
+      <div class="selrow" id="selRow">
+        <input type="checkbox" id="selectAll" />
+        <label for="selectAll" id="selectAllText">Select all</label>
+        <button type="button" class="linkbtn hidden" id="selectAllBtn">Select all</button>
+        <button class="clear hidden" id="clearSel">Clear selection</button>
+      </div>
+
+      <div class="bulkbar hidden" id="bulkBar">
+        <div class="acts">
+          <button class="tb" data-bulk="read">Mark read</button>
+          <button class="tb" data-bulk="unread">Unread</button>
+          <button class="tb" data-bulk="star">Star</button>
+          <button class="tb" data-bulk="spam" data-only="normal">Spam</button>
+          <button class="tb" data-bulk="notspam" data-only="spam">Not spam</button>
+          <button class="tb" data-bulk="trash" data-only="normal">Trash</button>
+          <button class="tb" data-bulk="restore" data-only="trash">Restore</button>
+          <button class="tb danger" data-bulk="forever" data-only="trash">Delete forever</button>
+        </div>
+      </div>
+
+      <div class="rows" id="emailList">
+        <div class="skeleton">
+          <div class="sk" style="width:60%"></div><div class="sk" style="width:85%"></div><div class="sk" style="width:40%"></div>
+          <div class="sk" style="width:70%;margin-top:14px"></div><div class="sk" style="width:90%"></div>
+          <div class="sk" style="width:55%;margin-top:14px"></div><div class="sk" style="width:75%"></div>
+        </div>
+      </div>
+
+      <div class="loadmore hidden" id="loadMoreWrap">
+        <button class="tb" id="loadMoreBtn">Load more</button>
+        <span id="loadMoreInfo"></span>
+      </div>
+    </section>
+
+    <section class="panel reader" id="readerPane">
+      <div class="reader-empty" id="emptyReader">
+        <div class="glyph">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 8 7.1 4.7a2 2 0 0 0 2.2 0L20 8"/></svg>
+        </div>
+        <p>Select a message &middot; press <b class="mono">?</b> for shortcuts</p>
+      </div>
+
+      <div id="mailDetail" class="hidden" style="display:flex;flex-direction:column;flex:1;min-height:0">
+        <div class="reader-head">
+          <h2 id="detailSubject"></h2>
+          <div class="sender">
+            <div class="avatar" id="detailAvatar">E</div>
+            <div class="sender-txt">
+              <b id="detailFromName"></b>
+              <span id="detailAddresses" class="addr"></span>
+            </div>
+            <div class="when" id="detailDate"></div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <button class="iconbtn reader-menu" id="readerMenuBtn" title="Menu" style="width:30px;height:30px;flex:0 0 30px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <button class="tb primary" id="replyBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17 4 12l5-5"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+            Reply
+          </button>
+          <button class="tb" id="replyAllBtn">Reply all</button>
+          <button class="tb" id="forwardBtn">Forward</button>
+          <button class="tb" id="starBtn">Star</button>
+          <button class="tb" id="labelBtn">Label</button>
+          <div class="spacer"></div>
+          <button class="tb danger" id="deleteBtn">Trash</button>
+          <button class="tb reader-back" id="backToListBtn" title="Back" aria-label="Back"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m11 18-6-6 6-6"/></svg></button>
+        </div>
+
+        <div class="body-scroll">
+          <div class="prose" id="detailBody"></div>
+          <details class="quote hidden" id="quoteBox">
+            <summary id="quoteSummary">Show the earlier message</summary>
+            <div class="qbody" id="quoteBody"></div>
+          </details>
+          <div class="thread hidden" id="threadBox">
+            <h4>In this conversation</h4>
+            <div id="threadList"></div>
+          </div>
+        </div>
+
+        <div class="quickreply">
+          <input id="quickReplyInput" placeholder="Quick reply to this message..." />
+          <button class="tb primary" id="quickReplyBtn">Send</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- composer -->
+<div class="composer hidden" id="composeModal">
+  <div class="ch">
+    <span id="composeTitle">New message</span>
+    <span class="draft" id="draftState"></span>
+    <button class="x" id="closeComposeBtn" type="button">&times;</button>
+  </div>
+  <form id="composeForm">
+    <div class="cfld"><span class="lbl">To</span>
+      <input id="composeTo" type="email" required placeholder="name@gmail.com or user@eyemail.in" list="contactList" />
+      <datalist id="contactList"></datalist>
+    </div>
+    <div class="cfld hidden" id="ccRow"><span class="lbl">Cc</span>
+      <input id="composeCc" type="text" placeholder="comma separated" />
+    </div>
+    <div class="cfld hidden" id="bccRow"><span class="lbl">Bcc</span>
+      <input id="composeBcc" type="text" placeholder="comma separated" />
+    </div>
+    <div class="cfld" style="padding-top:0;border-top:0">
+      <button type="button" class="tb" id="ccToggle" style="padding:4px 8px;font-size:11px">Cc / Bcc</button>
+      <button type="button" class="tb" id="saveDraftBtn" style="padding:4px 8px;font-size:11px">Save draft</button>
+    </div>
+    <div class="cfld"><span class="lbl">Subject</span>
+      <input id="composeSubject" type="text" required placeholder="Subject" />
+    </div>
+    <div class="cbody">
+      <div class="alert hidden" id="composeAlert"></div>
+      <textarea id="composeBody" required placeholder="Write your message..."></textarea>
+    </div>
+    <div class="cfoot">
+      <button class="send" id="sendMailBtn" type="submit">Send</button>
+      <button class="tb" type="button" id="cancelComposeBtn">Discard</button>
+      <span class="hint" id="composeHint">Delivered via Brevo</span>
+    </div>
+  </form>
+</div>
+
+<!-- domain modal -->
+<div class="modal hidden" id="domainModal">
+  <div class="modal-card">
+    <div class="mh">Connect a custom domain<button id="closeDomainBtn" type="button">&times;</button></div>
+    <div class="modal-body">
+      <p>Add your company domain (for example <code>yourcompany.in</code>) to create addresses on it. We generate the MX, SPF and verification records for you.</p>
+      <form class="dnsform" id="domainForm">
+        <input id="domainInput" type="text" required placeholder="yourcompany.in" style="text-transform:lowercase" />
+        <button type="submit">Get DNS</button>
+      </form>
+      <div class="dnsbox hidden" id="dnsResultBox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- settings modal -->
+<div class="modal hidden" id="settingsModal">
+  <div class="modal-card settings">
+    <div class="mh">Settings<button id="closeSettingsBtn" type="button">&times;</button></div>
+    <div class="settings-body">
+      <nav class="setnav" id="setNav">
+        <button type="button" data-sec="account" class="on">Account</button>
+        <button type="button" data-sec="appearance">Appearance</button>
+        <button type="button" data-sec="mail">Mail</button>
+        <button type="button" data-sec="notifications">Notifications</button>
+        <button type="button" data-sec="storage">Storage</button>
+        <button type="button" data-sec="about">About</button>
+      </nav>
+
+      <div class="setpanes">
+        <section class="setpane" data-pane="account">
+          <h3>Account</h3>
+          <div class="setting">
+            <div><b>Display name</b><span>Shown on mail you send</span></div>
+            <input id="settingName" type="text" placeholder="Your name" />
+          </div>
+          <div class="setting">
+            <div><b>Eyemail address</b><span>Your address is also your account id</span></div>
+            <span class="mono" id="settingAddress" style="font-size:11.5px">-</span>
+          </div>
+          <div class="setting">
+            <div><b>Recovery email</b><span>Password reset and codes go here</span></div>
+            <span class="mono" id="settingRecovery" style="font-size:11.5px">-</span>
+            <button type="button" class="tb" id="changeRecoveryBtn">Change</button>
+          </div>
+          <div class="recovery-form hidden" id="recoveryForm">
+            <div class="field-row">
+              <input id="newRecoveryEmail" type="email" placeholder="new address@gmail.com" />
+              <button type="button" class="tb" id="sendRecoveryCodeBtn">Send code</button>
+            </div>
+            <div class="field-row hidden" id="recoveryCodeRow">
+              <input id="recoveryCodeInput" class="otp" type="text" inputmode="numeric" maxlength="6" placeholder="000000" />
+              <button type="button" class="tb primary" id="verifyRecoveryBtn">Verify</button>
+            </div>
+            <p class="setnote" id="recoveryStatus"></p>
+          </div>
+          <div class="setting">
+            <div><b>Password</b><span>We mail you a reset link, we never show or store your password</span></div>
+            <button type="button" class="tb" id="changePasswordBtn">Send reset link</button>
+          </div>
+          <p class="setnote" id="pwStatus"></p>
+
+          <div class="setting">
+            <div><b>Sign out of all devices</b><span>Every phone and laptop must sign in again</span></div>
+            <button type="button" class="tb" id="signOutAllBtn">Sign out everywhere</button>
+          </div>
+
+          <div class="setting" style="border-bottom:0">
+            <div><b>Delete my account</b><span>Removes the mailbox, its mail and the login. Cannot be undone.</span></div>
+            <button type="button" class="tb danger" id="deleteAccountBtn">Delete account</button>
+          </div>
+        </section>
+
+        <section class="setpane hidden" data-pane="appearance">
+          <h3>Appearance</h3>
+          <div class="setting">
+            <div><b>Theme</b><span>Light or dark</span></div>
+            <div class="seg" id="themeSeg">
+              <button data-theme-val="light">Light</button>
+              <button data-theme-val="dark">Dark</button>
+            </div>
+          </div>
+          <div class="setting">
+            <div><b>Density</b><span>Row height in the list</span></div>
+            <div class="seg" id="densitySeg">
+              <button data-density-val="comfortable">Comfortable</button>
+              <button data-density-val="compact">Compact</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="setpane hidden" data-pane="mail">
+          <h3>Mail</h3>
+          <div class="setting">
+            <div><b>Signature</b><span>Added to the end of every new mail</span></div>
+            <input id="settingSignature" type="text" placeholder="— sent from Eyemail" />
+          </div>
+          <div class="setting">
+            <div><b>Undo send</b><span>A short wait before the mail leaves</span></div>
+            <div class="seg" id="undoSeg">
+              <button data-undo="0">Off</button>
+              <button data-undo="5">5s</button>
+              <button data-undo="10">10s</button>
+            </div>
+          </div>
+          <div class="setting">
+            <div><b>Ask before deleting forever</b><span>One confirmation before a mail leaves Trash</span></div>
+            <div class="seg" id="confirmSeg">
+              <button data-confirm="yes">Ask</button>
+              <button data-confirm="no">Do not ask</button>
+            </div>
+          </div>
+          <div class="setting" style="border-bottom:0">
+            <div><b>Free plan sending limit</b>
+              <span>50 mails a day to addresses outside eyemail.in. It is there to keep spam out, not because mail is short.</span></div>
+            <span class="tag blue">50 / day</span>
+          </div>
+        </section>
+
+        <section class="setpane hidden" data-pane="notifications">
+          <h3>Notifications</h3>
+          <div class="setting">
+            <div><b>Desktop and mobile alerts</b><span>Tell me when a new mail arrives in the inbox</span></div>
+            <button type="button" class="tb" id="notifyBtn">Enable notifications</button>
+          </div>
+          <p class="setnote" id="notifyStatus">Checking this browser...</p>
+          <p class="setnote">This works while Eyemail is open in a tab, on a laptop or a phone browser. Alerts when the
+          browser is fully closed need a service worker, which is not in yet.</p>
+        </section>
+
+        <section class="setpane hidden" data-pane="storage">
+          <h3>Storage</h3>
+          <div class="setting" style="display:block">
+            <div style="margin-bottom:10px"><b>Used</b><span id="settingStorageText">0 MB / 1 GB</span></div>
+            <div class="meter"><div id="settingStorageBar" style="width:2%"></div></div>
+            <p class="setnote">Free plan storage: 1 GB of mail. Deleting a mail frees its space; emptying Trash is what
+            actually gives it back, and Trash is cleared automatically after 30 days.</p>
+          </div>
+        </section>
+
+        <section class="setpane hidden" data-pane="about">
+          <h3>About</h3>
+          <div class="setting"><div><b>Eyemail</b><span>Business mail on your own domain</span></div><span class="mono" style="font-size:11.5px">v1.0</span></div>
+          <div class="setting"><div><b>Domain</b><span>All addresses live here</span></div><span class="mono" style="font-size:11.5px">@eyemail.in</span></div>
+          <div class="setting"><div><b>Built by</b><span>Powered by Indo Workspace</span></div><span class="tag blue">Indo</span></div>
+          <div class="setting"><div><b>Free plan</b><span>1 GB storage, 50 outside mails a day, 20 recipients a message</span></div><span class="tag blue">no card</span></div>
+          <div class="setting" style="border-bottom:0"><div><b>Not supported yet</b><span>Attachments, and sending as a customer domain</span></div><span class="tag">later</span></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- label modal -->
+<div class="modal hidden" id="labelModal">
+  <div class="modal-card" style="width:min(420px,100%)">
+    <div class="mh">Labels<button id="closeLabelBtn" type="button">&times;</button></div>
+    <div class="modal-body">
+      <p>Pick labels for this message. They are saved on the message and filter from the sidebar.</p>
+      <div id="labelPicker" style="display:grid;gap:7px"></div>
+      <div class="dnsform" style="margin-top:12px">
+        <input id="newLabelInput" type="text" placeholder="New label, e.g. Finance" />
+        <button type="button" id="createLabelBtn">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- command palette -->
+<div class="palette hidden" id="palette">
+  <div class="palette-card">
+    <input id="paletteInput" placeholder="Type a command: compose, inbox, settings, theme, unread..." />
+    <div class="palette-list" id="paletteList"></div>
+  </div>
+</div>
+
+<!-- shortcuts -->
+<div class="modal hidden" id="shortcutModal">
+  <div class="modal-card" style="width:min(560px,100%)">
+    <div class="mh">Keyboard shortcuts<button id="closeShortcutBtn" type="button">&times;</button></div>
+    <div class="modal-body">
+      <div class="shortcuts">
+        <div><span>Command palette</span><kbd>Ctrl K</kbd></div>
+        <div><span>Compose</span><kbd>C</kbd></div>
+        <div><span>Search</span><kbd>/</kbd></div>
+        <div><span>Next / previous mail</span><kbd>J</kbd><kbd>K</kbd></div>
+        <div><span>Reply</span><kbd>R</kbd></div>
+        <div><span>Star</span><kbd>S</kbd></div>
+        <div><span>Trash</span><kbd>E</kbd></div>
+        <div><span>Select all in list</span><kbd>Ctrl A</kbd></div>
+        <div><span>Go to inbox</span><kbd>G I</kbd></div>
+        <div><span>Go to sent</span><kbd>G S</kbd></div>
+        <div><span>This help</span><kbd>?</kbd></div>
+        <div><span>Close / back</span><kbd>Esc</kbd></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toastwrap" id="toastWrap"></div>
+
+<script type="module">
+  import { auth, db, BACKEND_URL } from "./firebase-config.js";
+  import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { collection, doc, query, orderBy, onSnapshot, updateDoc, deleteDoc, writeBatch, limit, addDoc, getDocs, where }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  /* ---------- state ---------- */
+  const appEl = document.getElementById("app");
+  const PAGE_SIZE = 50;
+  let pageLimit = PAGE_SIZE;
+  let mailUnsub = null;
+  let pageIsFull = false;     // the last page came back full, so more may exist
+  let autoExtends = 0;        // guard against looping when a folder looks thin
+  // Remember which mails we have already announced, so a refresh is quiet.
+  const announced = new Set();
+  let firstLoad = true;
+
+  const emailListEl = document.getElementById("emailList");
+  const emptyReader = document.getElementById("emptyReader");
+  const mailDetail = document.getElementById("mailDetail");
+
+  let currentUser = null;
+  let allEmails = [];
+  let currentFolder = "inbox";
+  let currentLabel = null;
+  let selectedEmailId = null;
+  let searchQuery = "";
+  let activeFilter = "all";
+  let selected = new Set();
+  let profile = {};
+  let labels = [];
+  let visibleIds = [];
+
+  const PREFS_KEY = "eyemail_prefs";
+  const prefs = Object.assign(
+    { theme: "light", density: "comfortable", signature: "", displayName: "" },
+    JSON.parse(localStorage.getItem(PREFS_KEY) || "{}")
+  );
+  function savePrefs() { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }
+
+  /* ---------- helpers ---------- */
+  const AV = ["#1d5fc4,#123f85", "#6a4fa0,#463077", "#b7791f,#8a5a13", "#2f6f4f,#1d4a35", "#a63f4a,#7d2b34", "#3a5a7a,#26394f"];
+  function avatarStyle(seed) {
+    let h = 0;
+    for (const c of String(seed || "x")) h = (h * 31 + c.charCodeAt(0)) % 997;
+    const p = AV[h % AV.length].split(",");
+    return `background:linear-gradient(140deg,${p[0]},${p[1]})`;
+  }
+  function fmtFull(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    const mon = d.toLocaleString("en-GB", { month: "short" });
+    const hour = d.getHours();
+    const h12 = String(hour % 12 || 12).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return `${d.getDate()} ${mon} ${d.getFullYear()}, ${h12}:${min} ${hour >= 12 ? "PM" : "AM"}`;
+  }
+
+  // A reply carries the earlier mail inside its body. Split it out so the new
+  // text reads on its own and the history sits behind a toggle.
+  function splitQuoted(body) {
+    const text = String(body || "");
+    const lines = text.split("\n");
+    let cut = -1;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (/^on .+wrote:$/i.test(line) || /^-{2,}\s*original message\s*-{2,}$/i.test(line)) { cut = i; break; }
+      if (line.startsWith(">")) { cut = i; break; }
+    }
+    if (cut <= 0) return { main: text.trim(), quote: "", header: "" };
+    const head = lines.slice(cut, cut + 1).join("").trim();
+    const rest = lines.slice(cut + 1).join("\n")
+      .split("\n").map((l) => l.replace(/^\s*>\s?/, "")).join("\n").trim();
+    const quote = /^on .+wrote:$/i.test(head) ? rest : lines.slice(cut).join("\n")
+      .split("\n").map((l) => l.replace(/^\s*>\s?/, "")).join("\n").trim();
+    return { main: lines.slice(0, cut).join("\n").trim(), quote, header: /^on /i.test(head) ? head : "" };
+  }
+
+  function initials(str) {
+    const parts = String(str || "E").replace(/[^A-Za-z0-9 ]/g, " ").trim().split(/\s+/).filter(Boolean);
+    return parts.length ? (parts[0][0] + (parts[1] ? parts[1][0] : "")).toUpperCase() : "E";
+  }
+  function escapeHtml(str) {
+    return String(str || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function fmtDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (d.getFullYear() === now.getFullYear()) return d.toLocaleDateString([], { day: "numeric", month: "short" });
+    return d.toLocaleDateString([], { day: "numeric", month: "short", year: "2-digit" });
+  }
+  function toast(msg, undo) {
+    const wrap = document.getElementById("toastWrap");
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.innerHTML = `<span>${escapeHtml(msg)}</span>`;
+    if (undo) {
+      const b = document.createElement("button");
+      b.textContent = "Undo";
+      b.onclick = () => { undo(); el.remove(); };
+      el.appendChild(b);
+    }
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), undo ? 6000 : 3000);
+  }
+
+  /* ---------- prefs ---------- */
+  function applyPrefs() {
+    if (typeof renderNotifyState === "function") renderNotifyState();
+    document.documentElement.dataset.theme = prefs.theme;
+    document.documentElement.dataset.density = prefs.density;
+    document.querySelectorAll("#themeSeg button").forEach((b) => b.classList.toggle("on", b.dataset.themeVal === prefs.theme));
+    document.querySelectorAll("#densitySeg button").forEach((b) => b.classList.toggle("on", b.dataset.densityVal === prefs.density));
+    document.querySelectorAll("#confirmSeg button").forEach((b) =>
+      b.classList.toggle("on", (b.dataset.confirm === "yes") === (prefs.confirmDelete !== false)));
+    document.querySelectorAll("#undoSeg button").forEach((b) =>
+      b.classList.toggle("on", Number(b.dataset.undo) === (prefs.undoSeconds || 0)));
+  }
+
+  /* ---------- profile ---------- */
+  async function loadProfile(user) {
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/user/profile`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return;
+      const data = await res.json();
+      profile = data.profile || {};
+      const name = prefs.displayName || profile.name || user.email.split("@")[0];
+      document.getElementById("userNameLabel").textContent = name;
+      document.getElementById("userInitials").textContent = initials(name);
+      document.getElementById("settingRecovery").textContent = profile.recoveryEmail || "not set";
+      document.getElementById("settingAddress").textContent = user.email;
+      const setUsed = Number(profile.storageUsedBytes || 0);
+      const setLimit = Number(profile.storageLimitBytes || 1);
+      const mb = (setUsed / (1024 * 1024)).toFixed(2);
+      const gb = (setLimit / (1024 * 1024 * 1024)).toFixed(0);
+      const pct = Math.min(100, Math.max(2, (setUsed / setLimit) * 100));
+      const st = document.getElementById("settingStorageText");
+      const sb = document.getElementById("settingStorageBar");
+      if (st) st.textContent = `${mb} MB / ${gb} GB`;
+      if (sb) sb.style.width = `${pct}%`;
+      storageUsed = setUsed;
+      storageLimit = setLimit;
+      renderQuotaBanner();
+      document.getElementById("settingName").value = prefs.displayName || profile.name || "";
+      document.getElementById("settingSignature").value = prefs.signature || "";
+      const used = profile.storageUsedBytes || 0;
+      const limit = profile.storageLimitBytes || 1073741824;
+      document.getElementById("storageText").textContent = `${(used / 1048576).toFixed(2)} MB / 1 GB`;
+      document.getElementById("storageBar").style.width = `${Math.min(100, Math.max(2, (used / limit) * 100))}%`;
+    } catch (_) {}
+  }
+
+  /* ---------- auth ---------- */
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = "login.html"; return; }
+    currentUser = user;
+    document.getElementById("userEmailLabel").textContent = user.email;
+    document.getElementById("userNameLabel").textContent = prefs.displayName || user.displayName || user.email.split("@")[0];
+    document.getElementById("userInitials").textContent = initials(prefs.displayName || user.displayName || user.email);
+    loadProfile(user);
+
+    startMailStream(user);
+  });
+
+  /* ---------- mail stream, a page at a time ---------- */
+  function startMailStream(user) {
+    if (mailUnsub) mailUnsub();
+    const q = query(collection(db, "users", user.uid, "emails"),
+                    orderBy("createdAt", "desc"), limit(pageLimit));
+    mailUnsub = onSnapshot(q, (snap) => {
+      pageIsFull = snap.size >= pageLimit;
+      allEmails = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      announceNewMail(allEmails);
+      collectLabels();
+      updateUnreadBadge();
+      renderList();
+      renderLoadMore();
+      updateFolderExtras();
+      if (selectedEmailId) {
+        const m = allEmails.find((x) => x.id === selectedEmailId);
+        if (m) renderDetail(m);
+      }
+    }, () => {
+      emailListEl.innerHTML = `<div class="empty">Could not load mail. Check your connection.</div>`;
+    });
+  }
+
+  // If the open folder looks almost empty but more mail exists, pull the next
+  // page instead of showing a misleading empty list.
+  function maybeExtendPage(visibleCount) {
+    if (visibleCount >= 8 || !pageIsFull || autoExtends >= 6) return false;
+    autoExtends++;
+    pageLimit += PAGE_SIZE;
+    startMailStream(currentUser);
+    return true;
+  }
+
+  function loadMore() {
+    if (!pageIsFull) return;
+    pageLimit += PAGE_SIZE;
+    autoExtends = 0;
+    startMailStream(currentUser);
+  }
+
+  function renderLoadMore() {
+    const wrap = document.getElementById("loadMoreWrap");
+    if (!wrap) return;
+    wrap.classList.toggle("hidden", !pageIsFull);
+    const info = document.getElementById("loadMoreInfo");
+    if (info) info.textContent = `Showing your latest ${allEmails.length}`;
+  }
+
+  /* ---------- labels ---------- */
+  function collectLabels() {
+    const set = new Set(labels);
+    allEmails.forEach((m) => (m.labels || []).forEach((l) => set.add(l)));
+    labels = [...set].sort((a, b) => a.localeCompare(b));
+    renderLabelNav();
+  }
+  function renderLabelNav() {
+    const nav = document.getElementById("labelNav");
+    if (!labels.length) { nav.innerHTML = `<div class="empty" style="padding:6px 10px;text-align:left;font-size:11px">No labels yet</div>`; return; }
+    nav.innerHTML = labels.map((l) => {
+      const n = allEmails.filter((m) => (m.labels || []).includes(l) && m.folder !== "trash").length;
+      return `<button class="nav-item label-btn ${currentLabel === l ? "active" : ""}" data-label="${escapeHtml(l)}">
+        <span class="labeldot" style="background:${labelColor(l)}"></span>
+        <span>${escapeHtml(l)}</span><span class="count">${n}</span></button>`;
+    }).join("");
+    nav.querySelectorAll(".label-btn").forEach((b) => b.addEventListener("click", () => {
+      currentLabel = b.dataset.label;
+      currentFolder = "label";
+      document.querySelectorAll(".folder-btn").forEach((x) => x.classList.remove("active"));
+      renderLabelNav();
+      closeReader();
+      renderList();
+      appEl.classList.remove("rail-open");
+    }));
+  }
+  function labelColor(l) {
+    let h = 0; for (const c of l) h = (h * 31 + c.charCodeAt(0)) % 360;
+    return `hsl(${h} 62% 46%)`;
+  }
+
+  /* ---------- list ---------- */
+  function parseQuery(raw) {
+    const tokens = { text: [], from: null, to: null, subject: null, unread: false, starred: false };
+    raw.split(/\s+/).filter(Boolean).forEach((t) => {
+      const [k, ...rest] = t.split(":");
+      const v = rest.join(":").toLowerCase();
+      if (rest.length && k === "from") tokens.from = v;
+      else if (rest.length && k === "to") tokens.to = v;
+      else if (rest.length && k === "subject") tokens.subject = v;
+      else if (t === "is:unread") tokens.unread = true;
+      else if (t === "is:starred") tokens.starred = true;
+      else tokens.text.push(t.toLowerCase());
+    });
+    return tokens;
+  }
+
+  function filteredEmails() {
+    const q = parseQuery(searchQuery);
+    return allEmails.filter((m) => {
+      if (currentFolder === "label") {
+        if (!(m.labels || []).includes(currentLabel) || m.folder === "trash") return false;
+      } else if (currentFolder === "starred") {
+        if (!m.starred || m.folder === "trash") return false;
+      } else if (m.folder !== currentFolder) return false;
+
+      if (activeFilter === "unread" && m.read) return false;
+      if (activeFilter === "starred" && !m.starred) return false;
+      if (activeFilter === "month") {
+        const d = new Date(m.createdAt || 0);
+        const now = new Date();
+        if (d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) return false;
+      }
+      if (q.unread && m.read) return false;
+      if (q.starred && !m.starred) return false;
+      if (q.from && !String(m.from || "").toLowerCase().includes(q.from)) return false;
+      if (q.to && !String(m.to || "").toLowerCase().includes(q.to)) return false;
+      if (q.subject && !String(m.subject || "").toLowerCase().includes(q.subject)) return false;
+      if (q.text.length) {
+        const hay = `${m.from} ${m.fromName} ${m.to} ${m.subject} ${m.body} ${(m.labels || []).join(" ")}`.toLowerCase();
+        if (!q.text.every((t) => hay.includes(t))) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderList() {
+    const list = filteredEmails();
+    visibleIds = list.map((m) => m.id);
+    const title = currentFolder === "label" ? currentLabel : currentFolder;
+    document.getElementById("folderTitle").textContent = title;
+    document.getElementById("mailCount").textContent = `${list.length} message${list.length === 1 ? "" : "s"}`;
+
+    if (!list.length) {
+      emailListEl.innerHTML = `<div class="empty">Nothing here.<br/><span style="font-size:11.5px">Try a different folder, filter, or search.</span></div>`;
+      updateBulkBar();
+      syncSelectAll();
+      if (maybeExtendPage(0)) return;
+      return;
+    }
+
+    emailListEl.innerHTML = list.map((m) => {
+      const unread = !m.read && m.folder === "inbox";
+      const sender = currentFolder === "sent" ? `To: ${m.to}` : (m.fromName || m.from);
+      const tags = (m.labels || []).map((l) => `<span class="tag blue">${escapeHtml(l)}</span>`).join("");
+      return `<div class="row mail-item ${m.id === selectedEmailId ? "on" : ""} ${unread ? "unread" : ""}" data-id="${m.id}">
+        <input type="checkbox" data-check="${m.id}" ${selected.has(m.id) ? "checked" : ""} />
+        <div class="avatar" style="${avatarStyle(m.from || m.to)}">${escapeHtml(initials(sender))}</div>
+        <div class="row-main">
+          <div class="row-top"><span class="from">${escapeHtml(sender)}</span><span class="time">${fmtDate(m.createdAt)}</span></div>
+          <div class="subj">${escapeHtml(m.subject || "(No Subject)")}</div>
+          <div class="snip">${escapeHtml(m.snippet || "")}</div>
+          ${tags ? `<div class="tags">${tags}</div>` : ""}
+        </div>
+        <div class="row-side">
+          <button class="star ${m.starred ? "on" : ""}" data-star="${m.id}" title="Star">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5L2.6 9.8l6.5-.9Z"/></svg>
+          </button>
+          ${unread ? '<span class="dot"></span>' : '<span class="dot off"></span>'}
+          <div class="hoveracts">
+            <button data-act="read" data-id="${m.id}" title="Toggle read">${m.read ? "&#9675;" : "&#9679;"}</button>
+            ${m.folder === "trash"
+              ? `<button data-act="restore" data-id="${m.id}" title="Restore to Inbox">&#8617;</button>`
+              : `<button data-act="trash" data-id="${m.id}" title="Trash">&#10005;</button>`}
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+
+    emailListEl.querySelectorAll(".mail-item").forEach((row) => {
+      row.addEventListener("click", (e) => {
+        if (e.target.closest("[data-check]") || e.target.closest("[data-star]") || e.target.closest("[data-act]")) return;
+        openEmail(row.dataset.id);
+      });
+    });
+    emailListEl.querySelectorAll("[data-check]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        cb.checked ? selected.add(cb.dataset.check) : selected.delete(cb.dataset.check);
+        updateBulkBar();
+        syncSelectAll();
+      });
+    });
+    emailListEl.querySelectorAll("[data-star]").forEach((b) => {
+      b.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const m = allEmails.find((x) => x.id === b.dataset.star);
+        if (!m) return;
+        await writeMail(m.id, { starred: !m.starred }, "Could not star this message.");
+      });
+    });
+    syncSelectAll();
+    if (maybeExtendPage(list.length)) return;
+
+    emailListEl.querySelectorAll("[data-act]").forEach((b) => {
+      b.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const m = allEmails.find((x) => x.id === b.dataset.id);
+        if (!m) return;
+        if (b.dataset.act === "read") {
+          await writeMail(m.id, { read: !m.read }, "Could not mark this message.");
+        } else if (b.dataset.act === "restore") {
+          await restoreFromTrash([m]);
+        } else {
+          await moveToTrash([m]);
+        }
+      });
+    });
+    updateBulkBar();
+    updateFolderExtras();
+  }
+
+  let storageUsed = 0;
+  let storageLimit = 1;
+
+  function renderQuotaBanner() {
+    const banner = document.getElementById("quotaBanner");
+    const text = document.getElementById("quotaText");
+    if (!banner || !text) return;
+    const pct = storageLimit > 0 ? (storageUsed / storageLimit) * 100 : 0;
+    if (pct < 90) { banner.classList.add("hidden"); return; }
+    banner.classList.remove("hidden");
+    banner.classList.toggle("full", pct >= 100);
+    const usedMb = (storageUsed / (1024 * 1024)).toFixed(0);
+    const limitGb = (storageLimit / (1024 * 1024 * 1024)).toFixed(0);
+    text.textContent = pct >= 100
+      ? `Free plan storage full - ${usedMb} MB of ${limitGb} GB. New mail will bounce until you free space.`
+      : `Free plan storage ${Math.round(pct)}% full - ${usedMb} MB of ${limitGb} GB.`;
+  }
+
+  function updateFolderExtras() {
+    const drafts = allEmails.filter((m) => m.folder === "drafts").length;
+    const btn = document.querySelector('.folder-btn[data-folder="drafts"]');
+    if (btn) {
+      let badge = btn.querySelector(".count");
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "count";
+        btn.appendChild(badge);
+      }
+      badge.textContent = drafts;
+      badge.classList.toggle("hidden", drafts === 0);
+    }
+    const empty = document.getElementById("emptyTrashBtn");
+    if (empty) empty.classList.toggle("hidden", currentFolder !== "trash");
+  }
+
+  function updateUnreadBadge() {
+    const n = allEmails.filter((m) => m.folder === "inbox" && !m.read).length;
+    const b = document.getElementById("unreadBadge");
+    b.textContent = pageIsFull ? `${n}+` : String(n);
+    b.classList.toggle("hidden", n === 0);
+  }
+
+  /* ---------- selection / bulk ---------- */
+  function syncSelectAll() {
+    const ids = visibleIds;
+    const master = document.getElementById("selectAll");
+    const text = document.getElementById("selectAllText");
+    const clear = document.getElementById("clearSel");
+    const chosen = ids.filter((id) => selected.has(id)).length;
+
+    // Hidden until the person ticks something, as asked.
+    document.getElementById("selRow").classList.toggle("hidden", chosen === 0);
+    master.checked = ids.length > 0 && chosen === ids.length;
+    master.indeterminate = chosen > 0 && chosen < ids.length;
+
+    text.textContent = chosen === ids.length
+      ? `All ${ids.length} selected`
+      : `${chosen} of ${ids.length} selected`;
+
+    const allBtn = document.getElementById("selectAllBtn");
+    allBtn.textContent = `Select all ${ids.length}`;
+    allBtn.classList.toggle("hidden", !(chosen > 0 && chosen < ids.length));
+
+    clear.classList.toggle("hidden", chosen === 0);
+  }
+
+  function updateBulkBar() {
+    const bar = document.getElementById("bulkBar");
+    bar.classList.toggle("hidden", selected.size === 0);
+
+    // Each folder gets the actions that make sense there.
+    const inTrash = currentFolder === "trash";
+    const inSpam = currentFolder === "spam";
+    bar.querySelectorAll("[data-only]").forEach((btn) => {
+      let wanted;
+      if (btn.dataset.only === "trash") wanted = inTrash;
+      else if (btn.dataset.only === "spam") wanted = inSpam;
+      else wanted = !inTrash;                 // normal: Spam and Trash are offered
+      if (btn.dataset.bulk === "spam") wanted = !inTrash && !inSpam;
+      btn.classList.toggle("hidden", !wanted);
+    });
+  }
+
+  async function bulk(action) {
+    if (action === "clear") { selected.clear(); renderList(); return; }
+    const ids = [...selected];
+    if (!ids.length) return;
+    const picked = allEmails.filter((m) => ids.includes(m.id));
+
+    if (action === "spam" || action === "notspam") {
+      const folder = action === "spam" ? "spam" : "inbox";
+      const previous = picked.map((m) => ({ id: m.id, folder: m.folder }));
+      picked.forEach((m) => {
+        const live = allEmails.find((x) => x.id === m.id);
+        if (live) live.folder = folder;
+      });
+      selected.clear();
+      renderList();
+      toast(folder === "spam" ? "Marked as spam" : "Moved back to Inbox", async () => {
+        for (const p of previous) {
+          const live = allEmails.find((x) => x.id === p.id);
+          if (live) live.folder = p.folder;
+          await writeMail(p.id, { folder: p.folder }, "Could not undo.");
+        }
+        renderList();
+      });
+      for (const m of picked) await writeMail(m.id, { folder }, "Could not move the mail.");
+      return;
+    }
+
+    if (action === "trash") {
+      selected.clear();
+      await moveToTrash(picked);
+      return;
+    }
+
+    if (action === "restore") {
+      selected.clear();
+      await restoreFromTrash(picked);
+      return;
+    }
+
+    if (action === "forever") {
+      selected.clear();
+      await deleteForever(picked);
+      return;
+    }
+
+    const patch = action === "read" ? { read: true } : action === "unread" ? { read: false } : { starred: true };
+    try {
+      const batch = writeBatch(db);
+      ids.forEach((id) => batch.update(doc(db, "users", currentUser.uid, "emails", id), patch));
+      await batch.commit();
+      toast(`${ids.length} message${ids.length === 1 ? "" : "s"} updated`);
+    } catch (err) {
+      toast("Could not update the selected messages.");
+    }
+    selected.clear();
+    renderList();
+  }
+
+  document.querySelectorAll("[data-bulk]").forEach((b) => b.addEventListener("click", () => bulk(b.dataset.bulk)));
+
+  document.getElementById("quotaFixBtn").addEventListener("click", () => {
+    settingsModal.classList.remove("hidden");
+    document.querySelectorAll("#setNav button").forEach((x) => x.classList.toggle("on", x.dataset.sec === "storage"));
+    document.querySelectorAll(".setpane").forEach((p) => p.classList.toggle("hidden", p.dataset.pane !== "storage"));
+    renderNotifyState();
+  });
+
+  document.getElementById("emptyTrashBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("emptyTrashBtn");
+    const count = allEmails.filter((m) => m.folder === "trash").length;
+    if (!count) { toast("Trash is already empty"); return; }
+    if (prefs.confirmDelete !== false &&
+        !window.confirm(`Delete all ${count} messages in Trash forever? This cannot be undone.`)) return;
+
+    btn.disabled = true;
+    btn.textContent = "Emptying...";
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/messages/empty-trash`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Could not empty Trash.");
+      toast(`Deleted ${data.deleted} message${data.deleted === 1 ? "" : "s"}`);
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Empty trash";
+    }
+  });
+
+  document.getElementById("loadMoreBtn").addEventListener("click", loadMore);
+
+  document.getElementById("selectAll").addEventListener("change", (e) => {
+    if (e.target.checked) visibleIds.forEach((id) => selected.add(id));
+    else selected.clear();
+    renderList();
+  });
+
+  document.getElementById("selectAllBtn").addEventListener("click", () => {
+    visibleIds.forEach((id) => selected.add(id));
+    renderList();
+  });
+
+  document.getElementById("clearSel").addEventListener("click", () => {
+    selected.clear();
+    renderList();
+  });
+
+  /* ---------- reader ---------- */
+  function openEmail(id) {
+    const draft = allEmails.find((x) => x.id === id);
+    if (draft && draft.folder === "drafts") {
+      draftDocId = draft.id;
+      openCompose(draft.to || "", draft.subject || "", draft.body || "", "Draft",
+                  (draft.cc || []).join(", "), (draft.bcc || []).join(", "));
+      document.getElementById("draftState").textContent = "editing draft";
+      return;
+    }
+
+    selectedEmailId = id;
+    const m = allEmails.find((x) => x.id === id);
+    if (!m) return;
+    renderList();
+    renderDetail(m);
+    appEl.classList.remove("rail-open");
+    appEl.classList.add("reader-open");
+    if (!m.read) updateDoc(doc(db, "users", currentUser.uid, "emails", id), { read: true }).catch(() => {});
+  }
+
+  function renderDetail(m) {
+    emptyReader.classList.add("hidden");
+    mailDetail.classList.remove("hidden");
+
+    const mine = m.from === currentUser.email;
+    const who = mine ? (m.to || "") : (m.from || "");
+
+    document.getElementById("detailSubject").textContent = m.subject || "(No Subject)";
+    document.getElementById("detailFromName").textContent =
+      mine ? `To: ${m.toName || m.to}` : (m.fromName || m.from);
+    document.getElementById("detailAvatar").textContent = initials(mine ? (m.to || "?") : (m.fromName || m.from));
+    document.getElementById("detailAvatar").style.cssText = avatarStyle(who);
+
+    // Two labelled rows: who sent it, and who received it.
+    const rows = [
+      ["From", `${escapeHtml(m.fromName || m.from || "")} &lt;${escapeHtml(m.from || "")}&gt;`],
+      ["To", escapeHtml(m.to || "")],
+    ];
+    if (m.cc && m.cc.length) rows.push(["Cc", escapeHtml(m.cc.join(", "))]);
+    document.getElementById("detailAddresses").innerHTML = rows
+      .map(([k, v]) => `<span class="lbl">${k}</span><span class="val">${v}</span>`).join("");
+    document.getElementById("detailDate").textContent = fmtFull(m.createdAt);
+
+    const parts = splitQuoted(m.body);
+    document.getElementById("detailBody").textContent = parts.main || "(empty message)";
+
+    const quoteBox = document.getElementById("quoteBox");
+    if (parts.quote) {
+      quoteBox.classList.remove("hidden");
+      quoteBox.open = false;
+      document.getElementById("quoteSummary").textContent =
+        parts.header ? `Earlier message \u00b7 ${parts.header}` : "Show the earlier message";
+      document.getElementById("quoteBody").textContent = parts.quote;
+    } else {
+      quoteBox.classList.add("hidden");
+    }
+
+    document.getElementById("starBtn").textContent = m.starred ? "Starred" : "Star";
+    document.getElementById("deleteBtn").textContent = m.folder === "trash" ? "Delete forever" : "Trash";
+
+    // The conversation, newest first, each line saying which way it went.
+    const base = String(m.subject || "").replace(/^(re|fwd):\s*/i, "").trim().toLowerCase();
+    const thread = allEmails
+      .filter((x) => String(x.subject || "").replace(/^(re|fwd):\s*/i, "").trim().toLowerCase() === base)
+      .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+
+    const box = document.getElementById("threadBox");
+    if (thread.length > 1) {
+      box.classList.remove("hidden");
+      document.getElementById("threadList").innerHTML = thread.slice(0, 8).map((t) => {
+        const out = t.from === currentUser.email;
+        const person = out ? (t.to || "") : (t.fromName || t.from || "");
+        return `<div class="thread-item ${t.id === m.id ? "now" : ""}" data-thread="${t.id}">
+          <div class="thread-top">
+            <span class="dir ${out ? "out" : ""}">${out ? "Sent" : "Received"}</span>
+            <b>${escapeHtml(person)}</b>
+            <span class="at">${escapeHtml(fmtFull(t.createdAt))}</span>
+          </div>
+          <div class="thread-sub">${escapeHtml(t.subject || "(No Subject)")}${t.id === m.id ? " \u00b7 open now" : ""}</div>
+          <div class="thread-snip">${escapeHtml(t.snippet || "")}</div>
+        </div>`;
+      }).join("");
+      document.querySelectorAll("[data-thread]").forEach((el) =>
+        el.addEventListener("click", () => openEmail(el.dataset.thread)));
+    } else {
+      box.classList.add("hidden");
+    }
+  }
+
+  function closeReader() {
+    appEl.classList.remove("reader-open");
+    emptyReader.classList.remove("hidden");
+    mailDetail.classList.add("hidden");
+    selectedEmailId = null;
+    renderList();
+  }
+
+  /* ---------- actions ---------- */
+  // One place for every Firestore write, so a rejected rule shows a message
+  // instead of failing silently.
+  async function writeMail(id, patch, errMsg) {
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid, "emails", id), patch);
+      return true;
+    } catch (err) {
+      toast(errMsg || "Could not update this message. Check your connection.");
+      return false;
+    }
+  }
+
+  function dropFromList(id) {
+    allEmails = allEmails.filter((m) => m.id !== id);
+    selected.delete(id);
+    renderList();
+  }
+
+  async function moveToTrash(mails) {
+    if (!mails.length) return;
+    const prev = mails.map((m) => ({ id: m.id, folder: m.folder || "inbox", snapshot: m }));
+
+    // Optimistic: take them out of the current view straight away
+    mails.forEach((m) => { m.folder = "trash"; });
+    if (selectedEmailId && mails.some((m) => m.id === selectedEmailId)) closeReader();
+    else renderList();
+
+    let failed = 0;
+    for (const m of mails) {
+      const ok = await writeMail(m.id, { folder: "trash" }, "Could not move to Trash.");
+      if (!ok) failed += 1;
+    }
+    if (failed) {
+      // put the failed ones back
+      for (const p of prev) { const live = allEmails.find((x) => x.id === p.id); if (live) live.folder = p.folder; }
+      renderList();
+      return;
+    }
+
+    toast(`Moved ${mails.length} to Trash`, async () => {
+      for (const p of prev) {
+        const live = allEmails.find((x) => x.id === p.id);
+        if (live) live.folder = p.folder;          // instant, then the snapshot confirms
+        await writeMail(p.id, { folder: p.folder }, "Could not undo.");
+      }
+      renderList();
+      toast("Restored");
+    });
+  }
+
+  async function restoreFromTrash(mails) {
+    if (!mails.length) return;
+    let failed = 0;
+    mails.forEach((m) => { m.folder = "inbox"; });
+    renderList();
+    for (const m of mails) {
+      const ok = await writeMail(m.id, { folder: "inbox" }, "Could not restore this message.");
+      if (!ok) failed += 1;
+    }
+    if (failed) {
+      mails.forEach((m) => { m.folder = "trash"; });
+      renderList();
+      return;
+    }
+    toast(`${mails.length} message${mails.length === 1 ? "" : "s"} back in Inbox`);
+  }
+
+  async function deleteForever(mails) {
+    if (!mails.length) return;
+    const ok = window.confirm(
+      mails.length === 1
+        ? "Delete this message permanently? This cannot be undone."
+        : `Delete ${mails.length} messages permanently? This cannot be undone.`
+    );
+    if (!ok) return;
+
+    const removed = mails.map((m) => ({ ...m }));
+    const ids = removed.map((m) => m.id);
+
+    mails.forEach((m) => dropFromList(m.id));
+    closeReader();
+
+    try {
+      // The server owns the delete, so a browser rule cannot half-do it,
+      // and it gives us the storage back.
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/messages/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ ids })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Delete failed.");
+
+      toast(data.deleted === 1 ? "Deleted permanently" : `${data.deleted} messages deleted`);
+      if (currentUser) loadProfile(currentUser);
+    } catch (err) {
+      // Put them back so nothing disappears silently
+      allEmails = allEmails.concat(removed);
+      allEmails.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+      renderList();
+      toast(err.message || "Could not delete. Nothing was removed.");
+    }
+  }
+
+  document.getElementById("starBtn").addEventListener("click", async () => {
+    const m = allEmails.find((x) => x.id === selectedEmailId);
+    if (!m) return;
+    await writeMail(m.id, { starred: !m.starred }, "Could not star this message.");
+  });
+
+  document.getElementById("deleteBtn").addEventListener("click", async () => {
+    const m = allEmails.find((x) => x.id === selectedEmailId);
+    if (!m) return;
+    const btn = document.getElementById("deleteBtn");
+    if (btn.disabled) return;
+    btn.disabled = true;
+    try {
+      if (m.folder === "trash") await deleteForever([m]);
+      else await moveToTrash([m]);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("backToListBtn").addEventListener("click", () => {
+    appEl.classList.remove("reader-open");
+  });
+
+  document.getElementById("readerMenuBtn").addEventListener("click", () => appEl.classList.add("rail-open"));
+  document.getElementById("scrim").addEventListener("click", () => appEl.classList.remove("rail-open"));
+
+  /* ---------- compose ---------- */
+  const composeModal = document.getElementById("composeModal");
+  const composeForm = document.getElementById("composeForm");
+  const composeAlert = document.getElementById("composeAlert");
+  const DRAFT_KEY = "eyemail_draft";
+
+  function fillContacts() {
+    const set = new Set();
+    allEmails.forEach((m) => { if (m.from) set.add(m.from); if (m.to) set.add(m.to); });
+    document.getElementById("contactList").innerHTML = [...set].slice(0, 60)
+      .map((e) => `<option value="${escapeHtml(e)}"></option>`).join("");
+  }
+
+  function openCompose(to = "", subject = "", body = "", title = "New message", cc = "", bcc = "") {
+    composeAlert.classList.add("hidden");
+    document.getElementById("composeTitle").textContent = title;
+    document.getElementById("composeTo").value = to;
+    document.getElementById("composeCc").value = cc;
+    document.getElementById("composeBcc").value = bcc;
+    const showCc = Boolean(cc || bcc);
+    document.getElementById("ccRow").classList.toggle("hidden", !showCc);
+    document.getElementById("bccRow").classList.toggle("hidden", !showCc);
+    document.getElementById("composeSubject").value = subject;
+    const sig = prefs.signature ? `\n\n${prefs.signature}` : "";
+    document.getElementById("composeBody").value = body + sig;
+    composeModal.classList.remove("hidden");
+    fillContacts();
+    document.getElementById("composeTo").focus();
+  }
+
+  let draftDocId = null;      // the Firestore draft this composer is editing
+
+  async function saveDraftToMailbox() {
+    const to = document.getElementById("composeTo").value.trim();
+    const cc = document.getElementById("composeCc").value.trim();
+    const bcc = document.getElementById("composeBcc").value.trim();
+    const subject = document.getElementById("composeSubject").value.trim();
+    const body = document.getElementById("composeBody").value;
+    if (!to && !subject && !body.trim()) return null;
+
+    const payload = {
+      from: currentUser.email,
+      fromName: prefs.displayName || currentUser.displayName || currentUser.email.split("@")[0],
+      to, cc: cc ? cc.split(",").map((x) => x.trim()).filter(Boolean) : [],
+      bcc: bcc ? bcc.split(",").map((x) => x.trim()).filter(Boolean) : [],
+      subject, body,
+      snippet: body.replace(/\s+/g, " ").slice(0, 120),
+      folder: "drafts", read: true, starred: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      if (draftDocId) {
+        await updateDoc(doc(db, "users", currentUser.uid, "emails", draftDocId), payload);
+      } else {
+        const ref = await addDoc(collection(db, "users", currentUser.uid, "emails"), payload);
+        draftDocId = ref.id;
+      }
+      document.getElementById("draftState").textContent = "saved to Drafts";
+      return draftDocId;
+    } catch (_) {
+      document.getElementById("draftState").textContent = "could not save draft";
+      return null;
+    }
+  }
+
+  function draftSave() {
+    const d = {
+      to: document.getElementById("composeTo").value,
+      cc: document.getElementById("composeCc").value,
+      bcc: document.getElementById("composeBcc").value,
+      subject: document.getElementById("composeSubject").value,
+      body: document.getElementById("composeBody").value
+    };
+    if (d.to || d.subject || d.body) localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    document.getElementById("draftState").textContent = (d.to || d.subject || d.body) ? "draft saved" : "";
+  }
+  let draftTimer = null;
+  ["composeTo", "composeCc", "composeBcc", "composeSubject", "composeBody"].forEach((id) =>
+    document.getElementById(id).addEventListener("input", () => {
+      draftSave();
+      clearTimeout(draftTimer);
+      draftTimer = setTimeout(() => { saveDraftToMailbox(); }, 1200);
+    }));
+
+  document.getElementById("saveDraftBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("saveDraftBtn");
+    btn.disabled = true;
+    await saveDraftToMailbox();
+    btn.disabled = false;
+  });
+
+  document.getElementById("composeBtn").addEventListener("click", () => {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d.to || d.subject || d.body) {
+        openCompose(d.to || "", d.subject || "", d.body || "", "Draft", d.cc || "", d.bcc || "");
+        return;
+      }
+    }
+    openCompose();
+  });
+
+  document.getElementById("replyBtn").addEventListener("click", () => {
+    const m = allEmails.find((x) => x.id === selectedEmailId);
+    if (!m) return;
+    const to = m.from === currentUser.email ? m.to : m.from;
+    const subj = /^re:/i.test(m.subject || "") ? m.subject : `Re: ${m.subject || ""}`;
+    openCompose(to, subj, "", "Reply");
+  });
+
+  document.getElementById("ccToggle").addEventListener("click", () => {
+    const hidden = document.getElementById("ccRow").classList.contains("hidden");
+    document.getElementById("ccRow").classList.toggle("hidden", !hidden);
+    document.getElementById("bccRow").classList.toggle("hidden", !hidden);
+    if (hidden) document.getElementById("composeCc").focus();
+  });
+
+  document.getElementById("replyAllBtn").addEventListener("click", () => {
+    const m = allEmails.find((x) => x.id === selectedEmailId);
+    if (!m) return;
+    const others = new Set([m.from, ...(m.cc || [])]);
+    others.delete(currentUser.email);
+    others.delete(m.from === currentUser.email ? m.from : "");
+    const [first, ...rest] = [...others].filter(Boolean);
+    const to = first || (m.from === currentUser.email ? m.to : m.from);
+    const cc = rest.filter((a) => a !== to).join(", ");
+    const subj = /^re:/i.test(m.subject || "") ? m.subject : `Re: ${m.subject || ""}`;
+    openCompose(to, subj, "", "Reply all", cc, "");
+  });
+
+  document.getElementById("forwardBtn").addEventListener("click", () => {
+    const m = allEmails.find((x) => x.id === selectedEmailId);
+    if (!m) return;
+    const subj = /^fwd:/i.test(m.subject || "") ? m.subject : `Fwd: ${m.subject || ""}`;
+    const quoted = `\n\n---------- Forwarded message ----------\nFrom: ${m.from}\nDate: ${fmtDate(m.createdAt)}\nSubject: ${m.subject}\n\n${m.body || ""}`;
+    openCompose("", subj, quoted, "Forward");
+  });
+
+  document.getElementById("closeComposeBtn").addEventListener("click", () => composeModal.classList.add("hidden"));
+  document.getElementById("cancelComposeBtn").addEventListener("click", async () => {
+    // Closing the composer keeps the draft in Drafts, it does not throw it away.
+    await saveDraftToMailbox();
+    composeModal.classList.add("hidden");
+    document.getElementById("draftState").textContent = "";
+    draftDocId = null;
+  });
+
+  function parseAddrs(raw) {
+    return String(raw || "").split(/[,;\s]+/).map((x) => x.trim().toLowerCase()).filter(Boolean);
+  }
+
+  async function sendMail(to, subject, body, cc = [], bcc = []) {
+    if (storageUsed >= storageLimit) {
+      throw new Error("Your mailbox is full. Empty Trash or delete some mail to send again.");
+    }
+    const token = await currentUser.getIdToken();
+    const res = await fetch(`${BACKEND_URL}/api/send-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ to, subject, body, cc, bcc })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Failed to send email");
+    return data;
+  }
+
+  composeForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    composeAlert.classList.add("hidden");
+    const btn = document.getElementById("sendMailBtn");
+    btn.disabled = true; btn.textContent = "Sending...";
+    try {
+      const holdFor = (prefs.undoSeconds || 0) * 1000;
+      if (holdFor > 0) {
+        let cancelled = false;
+        toast(`Sending in ${prefs.undoSeconds}s`, () => {
+          cancelled = true;
+          btn.disabled = false;
+          btn.textContent = "Send";
+          toast("Sending cancelled");
+        });
+        await new Promise((resolve) => setTimeout(resolve, holdFor));
+        if (cancelled) return;
+      }
+
+      await sendMail(
+        document.getElementById("composeTo").value.trim(),
+        document.getElementById("composeSubject").value.trim(),
+        document.getElementById("composeBody").value.trim(),
+        parseAddrs(document.getElementById("composeCc").value),
+        parseAddrs(document.getElementById("composeBcc").value)
+      );
+      localStorage.removeItem(DRAFT_KEY);
+      if (draftDocId) {
+        try { await deleteDoc(doc(db, "users", currentUser.uid, "emails", draftDocId)); } catch (_) {}
+        draftDocId = null;
+      }
+      composeModal.classList.add("hidden");
+      document.getElementById("draftState").textContent = "";
+      loadProfile(currentUser);
+      toast("Message sent");
+    } catch (err) {
+      composeAlert.textContent = err.message;
+      composeAlert.classList.remove("hidden");
+    } finally {
+      btn.disabled = false; btn.textContent = "Send";
+    }
+  });
+
+  document.getElementById("quickReplyBtn").addEventListener("click", async () => {
+    const input = document.getElementById("quickReplyInput");
+    const text = input.value.trim();
+    const m = allEmails.find((x) => x.id === selectedEmailId);
+    if (!text || !m) return;
+    const btn = document.getElementById("quickReplyBtn");
+    btn.disabled = true; btn.textContent = "...";
+    try {
+      await sendMail(m.from, /^re:/i.test(m.subject || "") ? m.subject : `Re: ${m.subject || ""}`, text);
+      input.value = "";
+      toast("Reply sent");
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = "Send";
+    }
+  });
+
+  /* ---------- labels modal ---------- */
+  const labelModal = document.getElementById("labelModal");
+  document.getElementById("labelBtn").addEventListener("click", () => {
+    const m = allEmails.find((x) => x.id === selectedEmailId);
+    if (!m) return;
+    renderLabelPicker(m);
+    labelModal.classList.remove("hidden");
+  });
+  document.getElementById("closeLabelBtn").addEventListener("click", () => labelModal.classList.add("hidden"));
+
+  function renderLabelPicker(m) {
+    const box = document.getElementById("labelPicker");
+    if (!labels.length) { box.innerHTML = `<div class="empty" style="padding:6px;text-align:left">No labels yet. Add one below.</div>`; return; }
+    box.innerHTML = labels.map((l) => `
+      <label style="display:flex;align-items:center;gap:8px;font-size:12.6px;color:var(--text-2)">
+        <input type="checkbox" data-label-pick="${escapeHtml(l)}" ${(m.labels || []).includes(l) ? "checked" : ""} />
+        <span class="labeldot" style="background:${labelColor(l)}"></span>${escapeHtml(l)}
+      </label>`).join("");
+    box.querySelectorAll("[data-label-pick]").forEach((cb) => cb.addEventListener("change", async () => {
+      const cur = new Set(m.labels || []);
+      cb.checked ? cur.add(cb.dataset.labelPick) : cur.delete(cb.dataset.labelPick);
+      await updateDoc(doc(db, "users", currentUser.uid, "emails", m.id), { labels: [...cur] });
+    }));
+  }
+
+  document.getElementById("createLabelBtn").addEventListener("click", async () => {
+    const input = document.getElementById("newLabelInput");
+    const name = input.value.trim();
+    if (!name) return;
+    if (!labels.includes(name)) labels.push(name);
+    input.value = "";
+    renderLabelNav();
+    const m = allEmails.find((x) => x.id === selectedEmailId);
+    if (m) {
+      const cur = new Set(m.labels || []);
+      cur.add(name);
+      await updateDoc(doc(db, "users", currentUser.uid, "emails", m.id), { labels: [...cur] });
+    }
+    toast(`Label "${name}" added`);
+  });
+
+  document.getElementById("addLabelBtn").addEventListener("click", () => {
+    document.getElementById("labelModal").classList.remove("hidden");
+    const m = allEmails.find((x) => x.id === selectedEmailId);
+    if (m) renderLabelPicker(m); else document.getElementById("labelPicker").innerHTML = "";
+  });
+
+  /* ---------- domain ---------- */
+  const domainModal = document.getElementById("domainModal");
+  document.getElementById("openDomainBtn").addEventListener("click", () => domainModal.classList.remove("hidden"));
+  document.getElementById("closeDomainBtn").addEventListener("click", () => domainModal.classList.add("hidden"));
+
+  document.getElementById("domainForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const box = document.getElementById("dnsResultBox");
+    box.classList.remove("hidden");
+    box.textContent = "Generating DNS records...";
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/domains/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ domain: document.getElementById("domainInput").value.trim() })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Failed to add domain");
+      box.innerHTML = data.domainInfo.dnsRecords.map((r) =>
+        `<div class="dnsrow"><b>${escapeHtml(r.type)}</b> ${escapeHtml(r.host)}<code>${escapeHtml(r.value)}</code></div>`).join("");
+    } catch (err) {
+      box.innerHTML = `<div class="alert">${escapeHtml(err.message)}</div>`;
+    }
+  });
+
+  /* ---------- settings ---------- */
+  const settingsModal = document.getElementById("settingsModal");
+  document.getElementById("openSettingsBtn").addEventListener("click", () => {
+    renderNotifyState();
+    settingsModal.classList.remove("hidden");
+  });
+  document.getElementById("closeSettingsBtn").addEventListener("click", () => settingsModal.classList.add("hidden"));
+
+  // Clicking the empty space around a window closes it, like the x button.
+  // mousedown, not click, so a drag that starts inside does not close it.
+  [settingsModal, domainModal, labelModal, document.getElementById("shortcutModal")]
+    .filter(Boolean)
+    .forEach((overlay) => {
+      overlay.addEventListener("mousedown", (e) => {
+        if (e.target === overlay) overlay.classList.add("hidden");
+      });
+    });
+  document.getElementById("userChip").addEventListener("click", (e) => {
+    if (e.target.closest("#logoutBtn")) return;
+    settingsModal.classList.remove("hidden");
+  });
+  // section switching
+  document.querySelectorAll("#setNav button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll("#setNav button").forEach((x) => x.classList.toggle("on", x === b));
+    document.querySelectorAll(".setpane").forEach((p) => p.classList.toggle("hidden", p.dataset.pane !== b.dataset.sec));
+  }));
+
+  // delete confirmation preference
+  document.querySelectorAll("#confirmSeg button").forEach((b) => b.addEventListener("click", () => {
+    prefs.confirmDelete = b.dataset.confirm === "yes";
+    savePrefs();
+    document.querySelectorAll("#confirmSeg button").forEach((x) => x.classList.toggle("on", x === b));
+  }));
+
+  // password reset from inside settings
+  /* ---------- notifications ---------- */
+  function notifySupported() {
+    return "Notification" in window;
+  }
+
+  function renderNotifyState() {
+    const btn = document.getElementById("notifyBtn");
+    const status = document.getElementById("notifyStatus");
+    if (!btn || !status) return;
+
+    if (!notifySupported()) {
+      btn.classList.add("hidden");
+      status.textContent = "This browser does not support notifications.";
+      return;
+    }
+    const permission = Notification.permission;
+    if (permission === "granted" && prefs.notifications) {
+      btn.textContent = "Turn off";
+      status.textContent = "On. You will be told about new mail while Eyemail is open.";
+    } else if (permission === "granted") {
+      btn.textContent = "Enable notifications";
+      status.textContent = "Allowed by the browser, but switched off here.";
+    } else if (permission === "denied") {
+      btn.textContent = "Blocked by the browser";
+      btn.disabled = true;
+      status.textContent = "The browser is blocking alerts for this site. Allow them in the site settings, then reload.";
+    } else {
+      btn.textContent = "Enable notifications";
+      status.textContent = "Not asked yet.";
+    }
+  }
+
+  document.getElementById("notifyBtn").addEventListener("click", async () => {
+    if (!notifySupported()) return;
+    if (prefs.notifications && Notification.permission === "granted") {
+      prefs.notifications = false;
+      savePrefs();
+      renderNotifyState();
+      return;
+    }
+    try {
+      const permission = await Notification.requestPermission();
+      prefs.notifications = permission === "granted";
+      savePrefs();
+      if (permission === "granted") {
+        new Notification("Eyemail notifications are on", {
+          body: "You will be told here when a new mail arrives.",
+          tag: "eyemail-test",
+        });
+      }
+    } catch (_) {
+      prefs.notifications = false;
+      savePrefs();
+    }
+    renderNotifyState();
+  });
+
+  function announceNewMail(mails) {
+    const fresh = mails.filter((m) => m.folder === "inbox" && !m.read && !announced.has(m.id));
+    mails.forEach((m) => announced.add(m.id));
+    if (firstLoad) { firstLoad = false; return; }
+    if (!prefs.notifications || !notifySupported() || Notification.permission !== "granted") return;
+    if (!document.hidden) return;                  // the person is looking at the list already
+    fresh.slice(0, 3).forEach((m) => {
+      const note = new Notification(m.fromName || m.from || "New mail", {
+        body: `${m.subject || "(No Subject)"}\n${m.snippet || ""}`,
+        tag: `eyemail-${m.id}`,
+      });
+      note.onclick = () => {
+        window.focus();
+        openEmail(m.id);
+        note.close();
+      };
+    });
+  }
+
+  // change recovery email, proved with a code
+  document.getElementById("changeRecoveryBtn").addEventListener("click", () => {
+    document.getElementById("recoveryForm").classList.toggle("hidden");
+  });
+
+  document.getElementById("sendRecoveryCodeBtn").addEventListener("click", async () => {
+    const status = document.getElementById("recoveryStatus");
+    const btn = document.getElementById("sendRecoveryCodeBtn");
+    const email = document.getElementById("newRecoveryEmail").value.trim();
+    if (!email || !email.includes("@")) { status.textContent = "Type the new address first."; return; }
+    btn.disabled = true;
+    status.textContent = "Sending...";
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/auth/send-recovery-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ recovery_email: email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Could not send the code.");
+      status.textContent = `Code sent to ${data.maskedRecoveryEmail}.`;
+      document.getElementById("recoveryCodeRow").classList.remove("hidden");
+    } catch (err) {
+      status.textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("verifyRecoveryBtn").addEventListener("click", async () => {
+    const status = document.getElementById("recoveryStatus");
+    const btn = document.getElementById("verifyRecoveryBtn");
+    const otp = document.getElementById("recoveryCodeInput").value.trim();
+    btn.disabled = true;
+    status.textContent = "Checking...";
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/auth/verify-recovery-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ otp }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "That code is not correct.");
+      status.textContent = "Recovery email updated.";
+      document.getElementById("settingRecovery").textContent = data.recoveryEmail;
+      document.getElementById("recoveryCodeRow").classList.add("hidden");
+      document.getElementById("recoveryCodeInput").value = "";
+    } catch (err) {
+      status.textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // sign out everywhere
+  document.getElementById("signOutAllBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("signOutAllBtn");
+    if (!window.confirm("Sign out of every device, including this one?")) return;
+    btn.disabled = true;
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/auth/sign-out-all`, {
+        method: "POST", headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error((await res.json()).detail || "Could not sign out the other devices.");
+      await signOut(auth);
+      window.location.href = "login.html";
+    } catch (err) {
+      toast(err.message);
+      btn.disabled = false;
+    }
+  });
+
+  // delete the account
+  document.getElementById("deleteAccountBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("deleteAccountBtn");
+    const typed = window.prompt(
+      `This deletes ${currentUser.email}, every mail in it, and the login.\nType your address to confirm.`);
+    if (!typed) return;
+    if (typed.trim().toLowerCase() !== currentUser.email.toLowerCase()) {
+      toast("Address did not match. Nothing was deleted.");
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = "Deleting...";
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${BACKEND_URL}/api/auth/delete-account`, {
+        method: "POST", headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Could not delete the account.");
+      await signOut(auth);
+      window.location.href = "signup.html";
+    } catch (err) {
+      toast(err.message);
+      btn.disabled = false;
+      btn.textContent = "Delete account";
+    }
+  });
+
+  // undo send preference
+  document.querySelectorAll("#undoSeg button").forEach((b) => b.addEventListener("click", () => {
+    prefs.undoSeconds = Number(b.dataset.undo);
+    savePrefs();
+    applyPrefs();
+  }));
+
+  document.getElementById("changePasswordBtn").addEventListener("click", async () => {
+    const status = document.getElementById("pwStatus");
+    const btn = document.getElementById("changePasswordBtn");
+    btn.disabled = true;
+    status.textContent = "Sending...";
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eyemail: currentUser.email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Could not send the link.");
+      status.textContent = `Reset link sent to ${data.maskedRecoveryEmail}. Check Inbox and Spam.`;
+    } catch (err) {
+      status.textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("settingName").addEventListener("input", (e) => {
+    prefs.displayName = e.target.value.trim();
+    savePrefs();
+    document.getElementById("userNameLabel").textContent = prefs.displayName || profile.name || "You";
+    document.getElementById("userInitials").textContent = initials(prefs.displayName || profile.name || "You");
+  });
+  document.getElementById("settingSignature").addEventListener("input", (e) => {
+    prefs.signature = e.target.value;
+    savePrefs();
+  });
+  document.querySelectorAll("#themeSeg button").forEach((b) => b.addEventListener("click", () => {
+    prefs.theme = b.dataset.themeVal; savePrefs(); applyPrefs();
+  }));
+  document.querySelectorAll("#densitySeg button").forEach((b) => b.addEventListener("click", () => {
+    prefs.density = b.dataset.densityVal; savePrefs(); applyPrefs();
+  }));
+
+  /* ---------- command palette ---------- */
+  const palette = document.getElementById("palette");
+  const paletteInput = document.getElementById("paletteInput");
+  const paletteList = document.getElementById("paletteList");
+  let paletteItems = [], paletteIdx = 0;
+
+  const COMMANDS = [
+    { label: "Compose new message", hint: "C", run: () => document.getElementById("composeBtn").click() },
+    { label: "Go to Inbox", hint: "G I", run: () => goFolder("inbox") },
+    { label: "Go to Starred", hint: "", run: () => goFolder("starred") },
+    { label: "Go to Sent", hint: "G S", run: () => goFolder("sent") },
+    { label: "Go to Trash", hint: "", run: () => goFolder("trash") },
+    { label: "Toggle theme", hint: "", run: () => { prefs.theme = prefs.theme === "light" ? "dark" : "light"; savePrefs(); applyPrefs(); } },
+    { label: "Toggle compact density", hint: "", run: () => { prefs.density = prefs.density === "compact" ? "comfortable" : "compact"; savePrefs(); applyPrefs(); } },
+    { label: "Custom domain", hint: "", run: () => document.getElementById("openDomainBtn").click() },
+    { label: "Settings", hint: "", run: () => settingsModal.classList.remove("hidden") },
+    { label: "Keyboard shortcuts", hint: "?", run: () => document.getElementById("shortcutModal").classList.remove("hidden") },
+    { label: "Sign out", hint: "", run: () => document.getElementById("logoutBtn").click() }
+  ];
+
+  function openPalette() {
+    palette.classList.remove("hidden");
+    paletteInput.value = "";
+    renderPalette("");
+    paletteInput.focus();
+  }
+  function closePalette() { palette.classList.add("hidden"); }
+  function renderPalette(q) {
+    const term = q.toLowerCase();
+    paletteItems = COMMANDS.filter((c) => c.label.toLowerCase().includes(term));
+    if (!paletteItems.length) paletteItems = [];
+    paletteIdx = 0;
+    paletteList.innerHTML = paletteItems.map((c, i) =>
+      `<div class="pitem ${i === 0 ? "sel" : ""}" data-p="${i}">${escapeHtml(c.label)}<span class="hint">${c.hint}</span></div>`).join("")
+      || `<div class="empty">No command found</div>`;
+    paletteList.querySelectorAll("[data-p]").forEach((el) => {
+      el.addEventListener("click", () => { paletteItems[+el.dataset.p].run(); closePalette(); });
+    });
+  }
+  paletteInput.addEventListener("input", (e) => renderPalette(e.target.value));
+  paletteInput.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { paletteIdx = Math.min(paletteIdx + 1, paletteItems.length - 1); paintPalette(); e.preventDefault(); }
+    if (e.key === "ArrowUp") { paletteIdx = Math.max(paletteIdx - 1, 0); paintPalette(); e.preventDefault(); }
+    if (e.key === "Enter" && paletteItems[paletteIdx]) { paletteItems[paletteIdx].run(); closePalette(); }
+  });
+  function paintPalette() {
+    paletteList.querySelectorAll(".pitem").forEach((el, i) => el.classList.toggle("sel", i === paletteIdx));
+    const el = paletteList.querySelectorAll(".pitem")[paletteIdx];
+    if (el) el.scrollIntoView({ block: "nearest" });
+  }
+  palette.addEventListener("click", (e) => { if (e.target === palette) closePalette(); });
+
+  /* ---------- folder nav ---------- */
+  function goFolder(f) {
+    currentFolder = f;
+    currentLabel = null;
+    selected.clear();
+    document.querySelectorAll(".folder-btn").forEach((b) => b.classList.toggle("active", b.dataset.folder === f));
+    renderLabelNav();
+    closeReader();
+    appEl.classList.remove("rail-open");
+    renderList();
+  }
+  document.querySelectorAll(".folder-btn").forEach((b) => b.addEventListener("click", () => goFolder(b.dataset.folder)));
+
+  document.querySelectorAll("[data-filter]").forEach((c) => c.addEventListener("click", () => {
+    document.querySelectorAll("[data-filter]").forEach((x) => x.classList.remove("on"));
+    c.classList.add("on");
+    activeFilter = c.dataset.filter;
+    renderList();
+  }));
+
+  document.getElementById("searchInput").addEventListener("input", (e) => {
+    searchQuery = e.target.value.trim();
+    renderList();
+  });
+
+  function toggleRail() {
+    if (window.matchMedia("(max-width:860px)").matches) {
+      appEl.classList.toggle("rail-open");
+    } else {
+      document.documentElement.dataset.rail =
+        document.documentElement.dataset.rail === "expanded" ? "collapsed" : "expanded";
+    }
+  }
+  document.getElementById("menuToggle").addEventListener("click", toggleRail);
+  document.getElementById("railMenuBtn").addEventListener("click", toggleRail);
+  // leaving the mobile drawer open while rotating to desktop must not leave a stuck rail
+  window.addEventListener("resize", () => {
+    if (!window.matchMedia("(max-width:860px)").matches) appEl.classList.remove("rail-open");
+  });
+
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    prefs.theme = prefs.theme === "light" ? "dark" : "light";
+    savePrefs(); applyPrefs();
+  });
+
+  document.getElementById("refreshBtn").addEventListener("click", () => {
+    renderList();
+    if (currentUser) loadProfile(currentUser);
+    toast("Refreshed");
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await signOut(auth);
+    window.location.href = "login.html";
+  });
+
+  /* ---------- keyboard ---------- */
+  let lastG = 0;
+  document.addEventListener("keydown", (e) => {
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openPalette(); return; }
+    if (e.key === "Escape") {
+      closePalette();
+      [settingsModal, domainModal, labelModal, document.getElementById("shortcutModal")].forEach((m) => m.classList.add("hidden"));
+      if (!composeModal.classList.contains("hidden")) composeModal.classList.add("hidden");
+      return;
+    }
+    if (typing) return;
+
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
+      e.preventDefault();
+      filteredEmails().forEach((m) => selected.add(m.id));
+      renderList();
+      return;
+    }
+    if (e.key === "/") { e.preventDefault(); document.getElementById("searchInput").focus(); return; }
+    if (e.key === "?") { document.getElementById("shortcutModal").classList.remove("hidden"); return; }
+    if (e.key.toLowerCase() === "c") { document.getElementById("composeBtn").click(); return; }
+    if (e.key.toLowerCase() === "r" && selectedEmailId) { document.getElementById("replyBtn").click(); return; }
+    if (e.key.toLowerCase() === "s" && selectedEmailId) { document.getElementById("starBtn").click(); return; }
+    if (e.key.toLowerCase() === "e" && selectedEmailId) { document.getElementById("deleteBtn").click(); return; }
+    if (e.key.toLowerCase() === "j" || e.key.toLowerCase() === "k") {
+      if (!visibleIds.length) return;
+      const i = visibleIds.indexOf(selectedEmailId);
+      const next = e.key.toLowerCase() === "j" ? Math.min(i + 1, visibleIds.length - 1) : Math.max(i - 1, 0);
+      openEmail(visibleIds[i === -1 ? 0 : next]);
+      return;
+    }
+    if (e.key.toLowerCase() === "g") { lastG = Date.now(); return; }
+    if (e.key.toLowerCase() === "i" && Date.now() - lastG < 900) { goFolder("inbox"); return; }
+    if (e.key.toLowerCase() === "s" && Date.now() - lastG < 900) { goFolder("sent"); return; }
+  });
+
+  document.getElementById("closeShortcutBtn").addEventListener("click", () =>
+    document.getElementById("shortcutModal").classList.add("hidden"));
+
+  /* ---------- boot ---------- */
+  applyPrefs();
+</script>
+</body>
+</html>
