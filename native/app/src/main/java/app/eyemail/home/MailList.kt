@@ -2,7 +2,7 @@ package app.eyemail.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,13 +30,17 @@ import app.eyemail.settings.SettingsStore
 import app.eyemail.home.Mail
 
 /** The rows of a folder: sender, subject, snippet, time, and the unread dot. */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun MailList(
     mails: List<Mail>,
     emptyText: String,
     onOpen: (Mail) -> Unit,
     modifier: Modifier = Modifier,
+    selected: Set<String> = emptySet(),
+    onToggle: (String) -> Unit = {},
 ) {
+    val selecting = selected.isNotEmpty()
     if (mails.isEmpty()) {
         Box(modifier = modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
             Text(emptyText, fontSize = 12.5.sp, color = Ey.Text3)
@@ -48,7 +52,10 @@ fun MailList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onOpen(mail) }
+                    .combinedClickable(
+                        onClick = { if (selecting) onToggle(mail.id) else onOpen(mail) },
+                        onLongClick = { onToggle(mail.id) },
+                    )
                     .background(if (mail.read) Ey.Surface else Ey.AccentSoft.copy(alpha = 0.45f))
                     .padding(
                         horizontal = 14.dp,
@@ -57,6 +64,33 @@ fun MailList(
                     ),
                 verticalAlignment = Alignment.Top,
             ) {
+                if (selecting) {
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 6.dp)
+                            .size(18.dp)
+                            .background(
+                                if (selected.contains(mail.id)) Ey.Accent else Ey.Surface,
+                                RoundedCornerShape(4.dp),
+                            )
+                            .border(
+                                1.5.dp,
+                                if (selected.contains(mail.id)) Ey.Accent else Ey.BorderStrong,
+                                RoundedCornerShape(4.dp),
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (selected.contains(mail.id)) {
+                            Text(
+                                "✓",
+                                color = androidx.compose.ui.graphics.Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.width(10.dp))
+                }
                 Box(
                     modifier = Modifier
                         .padding(top = 1.dp)
