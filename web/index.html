@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<link rel="icon" type="image/png" sizes="32x32" href="../branding/app-icons/eyemail-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="../branding/app-icons/eyemail-180.png" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="theme-color" content="#1857b8" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Eyemail" />
+<meta name="color-scheme" content="light dark" />
+
+<title>Eyemail — business mail on your own domain</title>
+<meta name="description" content="Free business email on @eyemail.in. Unlimited addresses, 1 GB storage, spam protection and a real inbox, with no card." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Azeret+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#f7f9fb; --surface-3:#eef2f7;
+    --border:#e3e8ef; --border-strong:#cbd5e1;
+    --text:#0f1a2b; --text-2:#44536b; --text-3:#7b8798;
+    --accent:#1857b8; --accent-2:#0f3d86; --accent-soft:#e8effb;
+    --gold:#b45309;
+    --r-lg:16px; --r-xl:22px;
+    --shadow-md:0 1px 2px rgba(15,26,43,.05), 0 10px 26px rgba(15,26,43,.07);
+    --shadow-lg:0 2px 6px rgba(15,26,43,.06), 0 24px 60px rgba(15,26,43,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Plus Jakarta Sans",-apple-system,"Segoe UI",sans-serif;
+    color:var(--text); background:
+      radial-gradient(1000px 560px at 12% -10%, rgba(24,87,184,.12), transparent 62%),
+      radial-gradient(760px 420px at 92% 4%, rgba(180,83,9,.10), transparent 60%),
+      var(--bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+
+  /* top bar */
+  header{position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);
+    background:rgba(238,241,244,.82);border-bottom:1px solid var(--border)}
+  .bar{display:flex;align-items:center;gap:12px;height:64px}
+  .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(160deg,var(--accent),var(--accent-2));
+    display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px rgba(24,87,184,.28);flex:0 0 34px}
+  .name{font-weight:800;font-size:15px;letter-spacing:-.01em;line-height:1.1}
+  .name span{display:block;font:500 9.5px/1.4 "Azeret Mono",monospace;color:var(--text-3);letter-spacing:.14em;text-transform:uppercase}
+  .bar nav{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .bar nav a.lnk{font-size:13px;font-weight:600;color:var(--text-2);padding:8px 10px;border-radius:9px}
+  .bar nav a.lnk:hover{background:var(--surface-3);color:var(--text)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;
+    border-radius:11px;padding:11px 18px;font:700 13.5px/1 inherit;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease}
+  .btn.primary{background:linear-gradient(170deg,var(--accent),var(--accent-2));color:#fff;
+    box-shadow:0 10px 24px rgba(24,87,184,.28)}
+  .btn.primary:hover{transform:translateY(-1px);box-shadow:0 14px 30px rgba(24,87,184,.34)}
+  .btn.ghost{background:var(--surface);border-color:var(--border);color:var(--text);box-shadow:var(--shadow-md)}
+  .btn.ghost:hover{border-color:var(--border-strong)}
+  .btn.small{padding:9px 14px;font-size:12.5px}
+
+  /* hero */
+  .hero{padding:64px 0 30px;display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);
+    border-radius:99px;padding:7px 13px;font:600 11.5px/1 "Azeret Mono",monospace;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--text-2);box-shadow:var(--shadow-md)}
+  .pill i{width:6px;height:6px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.18)}
+  h1{margin:18px 0 0;font-size:46px;line-height:1.06;letter-spacing:-.03em;font-weight:800}
+  h1 em{font-style:normal;color:var(--accent)}
+  .lede{margin:16px 0 0;font-size:15.5px;line-height:1.65;color:var(--text-2);max-width:33em}
+  .cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+  .under{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;font-size:12px;color:var(--text-3)}
+  .under b{color:var(--text-2)}
+
+  /* mock inbox card */
+  .shot{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);
+    overflow:hidden;transform:rotate(-.4deg)}
+  .shot .top{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--border-strong)}
+  .shot .top .title{margin-left:8px;font:600 11.5px/1 "Azeret Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+  .rows{padding:6px 0}
+  .row{display:flex;gap:11px;padding:12px 15px;border-bottom:1px solid var(--border)}
+  .row:last-child{border-bottom:0}
+  .av{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px;flex:0 0 32px}
+  .a1{background:linear-gradient(160deg,#1d5fc4,#123f85)}
+  .a2{background:linear-gradient(160deg,#0f766e,#134e4a)}
+  .a3{background:linear-gradient(160deg,#b45309,#7c2d12)}
+  .row b{font-size:12.5px;display:block}
+  .row .sub{font-size:11.5px;color:var(--text-2);margin-top:2px}
+  .row .snip{font-size:11px;color:var(--text-3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .t{margin-left:auto;font:500 10px/1 "Azeret Mono",monospace;color:var(--text-3);white-space:nowrap}
+  .unread{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:6px;flex:0 0 7px}
+
+  /* sections */
+  section.block{padding:54px 0}
+  .head{max-width:44em}
+  h2{margin:0;font-size:27px;letter-spacing:-.02em;font-weight:800}
+  .head p{margin:10px 0 0;color:var(--text-2);font-size:14.5px;line-height:1.65}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow-md)}
+  .card .ic{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin-bottom:13px}
+  .card h3{margin:0 0 6px;font-size:14.5px;letter-spacing:-.01em}
+  .card p{margin:0;font-size:12.8px;line-height:1.6;color:var(--text-2)}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+  .step{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
+  .step .n{font:700 11px/1 "Azeret Mono",monospace;color:var(--accent);letter-spacing:.1em}
+  .step h3{margin:10px 0 6px;font-size:14px}
+  .step p{margin:0;font-size:12.6px;line-height:1.6;color:var(--text-2)}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow-md)}
+  .panel h3{margin:0 0 10px;font-size:15px}
+  .panel ul{margin:0;padding-left:18px;font-size:13px;line-height:1.9;color:var(--text-2)}
+  .panel ul b{color:var(--text)}
+  .panel.soon{border-style:dashed;background:var(--surface-2)}
+  .tag{display:inline-block;font:600 9.5px/1 "Azeret Mono",monospace;letter-spacing:.08em;text-transform:uppercase;
+    padding:4px 7px;border-radius:5px;background:var(--accent-soft);color:var(--accent);margin-left:8px;vertical-align:2px}
+
+  .quote{background:linear-gradient(170deg,var(--accent),var(--accent-2));color:#fff;border-radius:var(--r-xl);
+    padding:30px;margin-top:10px;box-shadow:0 24px 60px rgba(24,87,184,.28)}
+  .quote p{margin:0;font-size:17px;line-height:1.6;font-weight:600;max-width:38em}
+  .quote span{display:block;margin-top:14px;font:500 11.5px/1 "Azeret Mono",monospace;letter-spacing:.1em;text-transform:uppercase;opacity:.8}
+
+  .final{text-align:center;padding:56px 0 30px}
+  .final h2{font-size:30px}
+  .final p{margin:12px auto 0;color:var(--text-2);font-size:14.5px;max-width:34em;line-height:1.65}
+  .final .cta{justify-content:center}
+
+  .pwrline{margin:22px 0 0;font:500 11.5px/1 "Azeret Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+  .pwrline b{color:var(--text-2);font-weight:600}
+  footer{border-top:1px solid var(--border);margin-top:40px;padding:22px 0 40px}
+  .foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:12px;color:var(--text-3)}
+  .foot .pwr{color:var(--text-3)}
+  .foot .pwr b{color:var(--text-2);font-weight:700}
+  .foot .r{margin-left:auto;display:flex;gap:16px}
+
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;gap:30px;padding:38px 0 10px}
+    h1{font-size:34px}
+    .grid,.steps{grid-template-columns:1fr 1fr}
+    .split{grid-template-columns:1fr}
+  }
+  @media (max-width:620px){
+    .grid,.steps{grid-template-columns:1fr}
+    h1{font-size:30px}
+    .bar nav a.lnk{display:none}
+    section.block{padding:38px 0}
+    h2{font-size:22px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <div class="mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 8 7.1 4.7a2 2 0 0 0 2.2 0L20 8"/></svg>
+    </div>
+    <div class="name">Eyemail<span>eyemail.in</span></div>
+    <nav>
+      <a class="lnk" href="#features">Features</a>
+      <a class="lnk" href="#how">How it works</a>
+      <a class="btn ghost small" href="login.html">Sign in</a>
+      <a class="btn primary small" href="signup.html">Create account</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <div>
+      <span class="pill"><i></i> Free plan · no card</span>
+      <h1>Business mail on<br/>your own domain,<br/><em>without the bill.</em></h1>
+      <p class="lede">Get <b>yourname@eyemail.in</b> and as many addresses as your team needs.
+        A real inbox that talks to Gmail and Yahoo, spam kept out of the way, and 1 GB of storage free.</p>
+      <div class="cta">
+        <a class="btn primary" href="signup.html">Create your account</a>
+        <a class="btn ghost" href="login.html">Sign in</a>
+      </div>
+      <div class="under">
+        <span><b>1 GB</b> free storage</span>
+        <span><b>50</b> outside mails a day</span>
+        <span><b>No card</b> ever</span>
+      </div>
+    </div>
+
+    <div class="shot" aria-hidden="true">
+      <div class="top"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="title">Inbox</span></div>
+      <div class="rows">
+        <div class="row">
+          <div class="av a1">R</div>
+          <div style="min-width:0">
+            <b>Razorpay Settlements</b>
+            <div class="sub">Settlement credited to your account</div>
+            <div class="snip">Your settlement for this week has been processed</div>
+          </div>
+          <span class="t">10:02</span><span class="unread"></span>
+        </div>
+        <div class="row">
+          <div class="av a2">A</div>
+          <div style="min-width:0">
+            <b>Ananya</b>
+            <div class="sub">Re: Domain records</div>
+            <div class="snip">MX and SPF are live, please re-run the check</div>
+          </div>
+          <span class="t">09:41</span><span class="unread"></span>
+        </div>
+        <div class="row">
+          <div class="av a3">S</div>
+          <div style="min-width:0">
+            <b>Support</b>
+            <div class="sub">Your ticket is closed</div>
+            <div class="snip">Thanks for the details, everything is sorted</div>
+          </div>
+          <span class="t">Yesterday</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="features">
+    <div class="head">
+      <h2>Everything a small team needs, nothing it does not</h2>
+      <p>Built for businesses that want a proper address instead of a personal one, without paying per seat.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
+        <h3>Compose that gets out of the way</h3>
+        <p>Cc and Bcc, reply all, signature, drafts saved as you type, and an undo window before a mail really leaves.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v5"/><path d="M12 17.5h.01"/></svg></div>
+        <h3>Spam kept out of your inbox</h3>
+        <p>Incoming mail is scored before it reaches you. Obvious junk goes to Spam, and one click moves anything back.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div>
+        <h3>Search that understands you</h3>
+        <p>Type <b>from:razorpay is:unread</b> and it finds it. Filters for unread, starred and this month, labels you make.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
+        <h3>Built for the phone too</h3>
+        <p>The same inbox on a laptop and a phone browser, with a drawer, big tap targets and desktop notifications.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <h3>One account, real control</h3>
+        <p>Recovery mail proved with a code, password reset by link, sign out everywhere, and a delete that really deletes.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></div>
+        <h3>Storage you can see</h3>
+        <p>A meter that tells the truth, a Trash you can empty in one click, and a limit that is applied, not just printed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="how">
+    <div class="head">
+      <h2>Three steps and you are in</h2>
+      <p>No sales call, no card, no waiting for approval.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="n">STEP 1</div><h3>Pick your address</h3><p>Choose the name you want. It is checked live, so you know at once whether it is free.</p></div>
+      <div class="step"><div class="n">STEP 2</div><h3>Prove your recovery mail</h3><p>A six digit code goes to your other mailbox. That is where a password reset will always reach you.</p></div>
+      <div class="step"><div class="n">STEP 3</div><h3>Start mailing</h3><p>Your inbox opens with a welcome mail. Send to Gmail, Yahoo, or anyone else on eyemail.in, free.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="split">
+      <div class="panel">
+        <h3>What the free plan gives</h3>
+        <ul>
+          <li><b>1 GB</b> of mail storage</li>
+          <li><b>50</b> mails a day to addresses outside eyemail.in</li>
+          <li><b>20</b> recipients in one message</li>
+          <li><b>Unlimited</b> mail inside eyemail.in</li>
+          <li><b>No card</b>, no trial clock</li>
+        </ul>
+      </div>
+      <div class="panel soon">
+        <h3>Coming next<span class="tag">in the works</span></h3>
+        <ul>
+          <li>Attachments, stored outside the mailbox</li>
+          <li>Your own company domain, verified automatically</li>
+          <li>Install on the phone, alerts when it is closed</li>
+          <li>Contacts, print, and keyboard shortcuts on screen</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="quote" style="margin-top:22px">
+      <p>One address that looks like a business, on a mailbox that does not cost like one.</p>
+      <span>Eyemail · eyemail.in</span>
+    </div>
+  </section>
+
+  <section class="final">
+    <h2>Ready when you are</h2>
+    <p>Create your account in a minute. If you already have one, sign in and your mail is where you left it.</p>
+    <div class="cta">
+      <a class="btn primary" href="signup.html">Create your account</a>
+      <a class="btn ghost" href="login.html">Sign in</a>
+    </div>
+    <p class="pwrline">Powered by <b>Indo Workspace</b></p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>Eyemail · business mail on eyemail.in</span>
+    <span class="pwr">Powered by <b>Indo Workspace</b></span>
+    <span class="r">
+      <a href="login.html">Sign in</a>
+      <a href="signup.html">Create account</a>
+    </span>
+  </div>
+</footer>
+
+</body>
+</html>
