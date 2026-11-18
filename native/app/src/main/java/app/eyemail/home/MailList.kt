@@ -59,6 +59,7 @@ fun MailList(
             ) {
                 Box(
                     modifier = Modifier
+                        .padding(top = 1.dp)
                         .size(32.dp)
                         .background(Ey.Accent, RoundedCornerShape(9.dp)),
                     contentAlignment = Alignment.Center,
