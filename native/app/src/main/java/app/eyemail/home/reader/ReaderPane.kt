@@ -37,6 +37,7 @@ import app.eyemail.home.parseIso
 @Composable
 fun ReaderPane(
     mail: Mail,
+    folderTitle: String,
     onBack: () -> Unit,
     onStar: () -> Unit,
     onTrash: () -> Unit,
@@ -60,6 +61,13 @@ fun ReaderPane(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             IconChip(Icons.AutoMirrored.Filled.ArrowBack, "Back", onBack)
+            Text(
+                folderTitle,
+                fontSize = 11.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Ey.Text3,
+                modifier = Modifier.padding(start = 2.dp),
+            )
             ActionChip(if (mail.starred) "Starred" else "Star", onStar)
             ActionChip("Spam", onSpam)
             ActionChip("Trash", onTrash)
@@ -93,10 +101,38 @@ fun ReaderPane(
             Spacer(Modifier.height(16.dp))
             Box(Modifier.fillMaxWidth().height(1.dp).background(Ey.Border))
             Spacer(Modifier.height(16.dp))
-            Text(mail.body.ifBlank { mail.snippet }, fontSize = 13.5.sp, lineHeight = 22.sp, color = Ey.Text)
+            Text(
+                readableBody(mail.body).ifBlank { mail.snippet },
+                fontSize = 13.5.sp,
+                lineHeight = 22.sp,
+                color = Ey.Text,
+            )
             Spacer(Modifier.height(40.dp))
         }
     }
+}
+
+/**
+ * Mail arrives as HTML, and the screenshot showed it as raw source. This turns it into
+ * words: drops head, style and script, turns breaks into new lines, and unwraps entities.
+ */
+internal fun readableBody(raw: String): String {
+    if (raw.isBlank()) return ""
+    if (!raw.contains("<")) return raw
+    var text = raw
+    text = text.replace(Regex("(?is)<(script|style|head)[^>]*>.*?</\\1>"), " ")
+    text = text.replace(Regex("(?i)<br\\s*/?>"), "\n")
+    text = text.replace(Regex("(?i)</(p|div|tr|li|h[1-6])>"), "\n")
+    text = text.replace(Regex("<[^>]+>"), "")
+    text = text.replace("&nbsp;", " ")
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&#39;", "'")
+    text = text.replace(Regex("[ \\t]+"), " ")
+    text = text.replace(Regex("\\n\\s*\\n\\s*\\n+"), "\n\n")
+    return text.trim()
 }
 
 /** The web writes a full readable date in the reader, so the app does the same. */

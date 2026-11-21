@@ -140,6 +140,7 @@ fun HomeScreen(
 
         openMail != null -> ReaderPane(
             mail = openMail,
+            folderTitle = titleFor(state.folder),
             onBack = viewModel::close,
             onStar = { viewModel.toggleStar(openMail) },
             onTrash = {
@@ -653,7 +654,8 @@ private fun MenuRow(
     }
 }
 
-private fun titleFor(folder: String): String = when (folder) {
+/** Every row in the panel has a title here; nothing is allowed to fall back silently. */
+internal fun titleFor(folder: String): String = when (folder) {
     "inbox" -> "Inbox"
     "starred" -> "Starred"
     "sent" -> "Sent"
@@ -662,5 +664,6 @@ private fun titleFor(folder: String): String = when (folder) {
     "trash" -> "Trash"
     "labels" -> "Labels"
     "domain" -> "Custom domain"
-    else -> "Inbox"
+    "settings" -> "Settings"
+    else -> folder.replaceFirstChar { it.uppercase() }
 }
