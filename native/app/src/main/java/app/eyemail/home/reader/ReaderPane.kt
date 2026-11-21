@@ -21,6 +21,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -70,9 +72,19 @@ fun ReaderPane(
                 color = Ey.Text3,
                 modifier = Modifier.padding(start = 2.dp),
             )
-            ActionChip(if (mail.starred) "Starred" else "Star", onStar)
+            IconChip(
+                icon = Icons.Filled.Star,
+                label = if (mail.starred) "Starred" else "Star",
+                tint = if (mail.starred) Ey.Accent else Ey.Text2,
+                onClick = onStar,
+            )
             ActionChip("Spam", onSpam)
-            ActionChip("Trash", onTrash)
+            IconChip(
+                icon = Icons.Filled.Delete,
+                label = "Trash",
+                tint = Ey.Text2,
+                onClick = onTrash,
+            )
             ActionChip("Reply", onReply)
         }
 
@@ -202,6 +214,7 @@ private fun IconChip(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     onClick: () -> Unit,
+    tint: androidx.compose.ui.graphics.Color = Ey.Text2,
 ) {
     Box(
         modifier = Modifier
@@ -213,7 +226,7 @@ private fun IconChip(
         Icon(
             icon,
             contentDescription = label,
-            tint = Ey.Text2,
+            tint = tint,
             modifier = Modifier.width(18.dp),
         )
     }
