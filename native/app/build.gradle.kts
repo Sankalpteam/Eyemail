@@ -29,6 +29,8 @@ android {
         buildConfigField("String", "BACKEND_URL", "\"${prop("BACKEND_URL", "https://eyemail-backend.onrender.com")}\"")
         buildConfigField("String", "FIREBASE_API_KEY", "\"${prop("FIREBASE_API_KEY", "")}\"")
         buildConfigField("String", "DOMAIN_NAME", "\"eyemail.in\"")
+        // The short commit this build came from, so the phone can say which build it runs.
+        buildConfigField("String", "GIT_SHA", "\"${System.getenv("GITHUB_SHA")?.take(7) ?: "local"}\"")
         buildConfigField("String", "FIRESTORE_PROJECT", "\"${prop("FIRESTORE_PROJECT", "eyemail-c3398")}\"")
     }
 
