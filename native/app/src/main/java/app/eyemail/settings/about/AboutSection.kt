@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.eyemail.Ey
 import app.eyemail.settings.SectionTitle
 import app.eyemail.settings.SettingRow
 import app.eyemail.settings.Tag
