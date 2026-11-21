@@ -35,6 +35,14 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.Drafts
+import androidx.compose.material.icons.outlined.MarkEmailRead
+import androidx.compose.material.icons.outlined.MarkEmailUnread
+import androidx.compose.material.icons.outlined.Report
+import androidx.compose.material.icons.outlined.Restore
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
@@ -303,6 +311,12 @@ fun HomeScreen(
     }
 }
 
+private data class BulkAction(
+    val key: String,
+    val label: String,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+)
+
 /** The web's bulk bar: the count, Select all, and the actions for this folder. */
 @Composable
 private fun BulkBar(
@@ -314,14 +328,21 @@ private fun BulkBar(
     onAction: (String) -> Unit,
 ) {
     val actions = when (folder) {
-        "trash" -> listOf("restore" to "Restore", "forever" to "Delete forever")
-        "spam" -> listOf("notspam" to "Not spam", "read" to "Mark read", "trash" to "Trash")
+        "trash" -> listOf(
+            BulkAction("restore", "Restore", Icons.Outlined.Restore),
+            BulkAction("forever", "Delete forever", Icons.Outlined.DeleteForever),
+        )
+        "spam" -> listOf(
+            BulkAction("notspam", "Not spam", Icons.Outlined.MarkEmailRead),
+            BulkAction("read", "Mark read", Icons.Outlined.Drafts),
+            BulkAction("trash", "Trash", Icons.Outlined.Delete),
+        )
         else -> listOf(
-            "read" to "Mark read",
-            "unread" to "Unread",
-            "star" to "Star",
-            "spam" to "Spam",
-            "trash" to "Trash",
+            BulkAction("read", "Mark read", Icons.Outlined.MarkEmailRead),
+            BulkAction("unread", "Mark unread", Icons.Outlined.MarkEmailUnread),
+            BulkAction("star", "Star", Icons.Outlined.StarBorder),
+            BulkAction("spam", "Spam", Icons.Outlined.Report),
+            BulkAction("trash", "Trash", Icons.Outlined.Delete),
         )
     }
 
@@ -354,18 +375,21 @@ private fun BulkBar(
                 .padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            actions.forEach { (key, label) ->
-                Text(
-                    label,
-                    fontSize = 11.5.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (key == "forever") Ey.Danger else Ey.Text2,
+            actions.forEach { action ->
+                Box(
                     modifier = Modifier
-                        .background(Ey.Surface, RoundedCornerShape(8.dp))
-                        .border(1.dp, Ey.Border, RoundedCornerShape(8.dp))
-                        .clickable { onAction(key) }
-                        .padding(horizontal = 10.dp, vertical = 7.dp),
-                )
+                        .background(Ey.Surface, RoundedCornerShape(9.dp))
+                        .border(1.dp, Ey.Border, RoundedCornerShape(9.dp))
+                        .clickable { onAction(action.key) }
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                ) {
+                    Icon(
+                        action.icon,
+                        contentDescription = action.label,
+                        tint = if (action.key == "forever") Ey.Danger else Ey.Text2,
+                        modifier = Modifier.width(18.dp),
+                    )
+                }
             }
         }
     }
