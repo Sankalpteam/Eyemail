@@ -21,8 +21,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.automirrored.outlined.Reply
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Report
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,19 +76,26 @@ fun ReaderPane(
                 modifier = Modifier.padding(start = 2.dp),
             )
             IconChip(
-                icon = Icons.Filled.Star,
+                icon = if (mail.starred) Icons.Filled.Star else Icons.Outlined.StarBorder,
                 label = if (mail.starred) "Starred" else "Star",
-                tint = if (mail.starred) Ey.Accent else Ey.Text2,
+                tint = if (mail.starred) Ey.Text else Ey.Text2,
                 onClick = onStar,
             )
-            ActionChip("Spam", onSpam)
             IconChip(
-                icon = Icons.Filled.Delete,
+                icon = Icons.Outlined.Report,
+                label = "Spam",
+                onClick = onSpam,
+            )
+            IconChip(
+                icon = Icons.Outlined.Delete,
                 label = "Trash",
-                tint = Ey.Text2,
                 onClick = onTrash,
             )
-            ActionChip("Reply", onReply)
+            IconChip(
+                icon = Icons.AutoMirrored.Outlined.Reply,
+                label = "Reply",
+                onClick = onReply,
+            )
         }
 
         Column(
@@ -218,10 +228,10 @@ private fun IconChip(
 ) {
     Box(
         modifier = Modifier
-            .background(Ey.Surface, RoundedCornerShape(8.dp))
-            .border(1.dp, Ey.Border, RoundedCornerShape(8.dp))
+            .background(Ey.Surface, RoundedCornerShape(9.dp))
+            .border(1.dp, Ey.Border, RoundedCornerShape(9.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 9.dp, vertical = 6.dp),
+            .padding(horizontal = 10.dp, vertical = 8.dp),
     ) {
         Icon(
             icon,
