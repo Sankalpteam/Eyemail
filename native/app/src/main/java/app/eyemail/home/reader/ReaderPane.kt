@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.eyemail.Ey
 import app.eyemail.home.Mail
+import app.eyemail.home.initials
 import app.eyemail.home.parseIso
 
 /** One mail, read the way the web reader shows it: who, when, then the body. */
@@ -78,61 +80,114 @@ fun ReaderPane(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 14.dp, vertical = 14.dp),
         ) {
             Text(
-                mail.subject,
+                mail.subject.ifBlank { "(no subject)" },
                 fontSize = 21.sp,
                 lineHeight = 27.sp,
                 letterSpacing = (-0.5).sp,
                 fontWeight = FontWeight.Bold,
                 color = Ey.Text,
             )
-            Spacer(Modifier.height(10.dp))
-            Text("FROM", fontSize = 9.5.sp, letterSpacing = 1.sp, color = Ey.Text3)
-            Text(mail.fromName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Ey.Text)
-            Text(mail.from, fontSize = 11.5.sp, color = Ey.Text2)
-            Spacer(Modifier.height(8.dp))
-            Text("TO", fontSize = 9.5.sp, letterSpacing = 1.sp, color = Ey.Text3)
-            Text(mail.to, fontSize = 11.5.sp, color = Ey.Text2)
-            Spacer(Modifier.height(8.dp))
-            Text("RECEIVED", fontSize = 9.5.sp, letterSpacing = 1.sp, color = Ey.Text3)
-            Text(longDate(mail.createdAt), fontSize = 11.5.sp, color = Ey.Text2)
+            Spacer(Modifier.height(12.dp))
+
+            // Who it is from, the way our own app draws a row: square avatar, name, time.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Ey.Surface2, RoundedCornerShape(12.dp))
+                    .border(1.dp, Ey.Border, RoundedCornerShape(12.dp))
+                    .padding(12.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .background(Ey.Accent, RoundedCornerShape(9.dp)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        initials(mail.fromName.ifBlank { mail.from }),
+                        color = androidx.compose.ui.graphics.Color.White,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        mail.fromName.ifBlank { mail.from },
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Ey.Text,
+                    )
+                    Text(mail.from, fontSize = 11.5.sp, color = Ey.Text2)
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "TO  ${mail.to}",
+                        fontSize = 10.5.sp,
+                        color = Ey.Text3,
+                        maxLines = 1,
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(longDate(mail.createdAt), fontSize = 10.5.sp, color = Ey.Text3)
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "Star",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (mail.starred) Ey.Accent else Ey.Text3,
+                        modifier = Modifier
+                            .clickable(onClick = onStar)
+                            .padding(4.dp),
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            // The mail itself, on white, in our type. Light, never dark.
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Ey.Surface, RoundedCornerShape(12.dp))
+                    .border(1.dp, Ey.Border, RoundedCornerShape(12.dp))
+                    .padding(16.dp),
+            ) {
+                val body = MailHtml.toText(mail.body, Ey.Accent)
+                if (body.text.isBlank()) {
+                    Text(mail.snippet, fontSize = 13.5.sp, lineHeight = 22.sp, color = Ey.Text2)
+                } else {
+                    Text(
+                        body,
+                        fontSize = 13.5.sp,
+                        lineHeight = 22.sp,
+                        color = Ey.Text,
+                    )
+                }
+            }
+
             Spacer(Modifier.height(16.dp))
-            Box(Modifier.fillMaxWidth().height(1.dp).background(Ey.Border))
-            Spacer(Modifier.height(16.dp))
-            Text(
-                readableBody(mail.body).ifBlank { mail.snippet },
-                fontSize = 13.5.sp,
-                lineHeight = 22.sp,
-                color = Ey.Text,
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Ey.AccentSoft, RoundedCornerShape(12.dp))
+                    .clickable(onClick = onReply)
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "Reply to ${mail.fromName.ifBlank { mail.from }}",
+                    fontSize = 12.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Ey.Accent,
+                )
+            }
             Spacer(Modifier.height(40.dp))
         }
     }
-}
-
-/**
- * Mail arrives as HTML, and the screenshot showed it as raw source. This turns it into
- * words: drops head, style and script, turns breaks into new lines, and unwraps entities.
- */
-internal fun readableBody(raw: String): String {
-    if (raw.isBlank()) return ""
-    if (!raw.contains("<")) return raw
-    var text = raw
-    text = text.replace(Regex("(?is)<(script|style|head)[^>]*>.*?</\\1>"), " ")
-    text = text.replace(Regex("(?i)<br\\s*/?>"), "\n")
-    text = text.replace(Regex("(?i)</(p|div|tr|li|h[1-6])>"), "\n")
-    text = text.replace(Regex("<[^>]+>"), "")
-    text = text.replace("&nbsp;", " ")
-        .replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&#39;", "'")
-    text = text.replace(Regex("[ \\t]+"), " ")
-    text = text.replace(Regex("\\n\\s*\\n\\s*\\n+"), "\n\n")
-    return text.trim()
 }
 
 /** The web writes a full readable date in the reader, so the app does the same. */
