@@ -331,6 +331,23 @@ object MailRepository {
         }
     }
 
+    /** Tell the server to stop sending to this phone, for this account. */
+    suspend fun fcmUnsubscribe(token: String, fcmToken: String) {
+        withContext(Dispatchers.IO) {
+            val body = JSONObject().put("token", fcmToken)
+            val request = Request.Builder()
+                .url("${BuildConfig.BACKEND_URL}/api/push/fcm-unsubscribe")
+                .header("Authorization", "Bearer $token")
+                .post(body.toString().toRequestBody(JSON))
+                .build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw ApiError(readError(response.body?.string().orEmpty()))
+                }
+            }
+        }
+    }
+
     data class PushTestResult(val tokens: Int, val sent: Int, val error: String)
 
     /** Ask the server to notify this phone, so a silent failure can be named. */

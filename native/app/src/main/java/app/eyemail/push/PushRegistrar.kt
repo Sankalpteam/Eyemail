@@ -47,6 +47,27 @@ object PushRegistrar {
         ensureChannel(context.applicationContext)
     }
 
+    /**
+     * Signing out must also stop the notifications. Otherwise the phone keeps buzzing for
+     * an account nobody is signed in to, which is the worst kind of leak.
+     */
+    fun unregister(context: Context, onDone: () -> Unit = {}) {
+        SettingsStore.init(context)
+        val deviceToken = SettingsStore.deviceToken()
+        val idToken = AuthSessionStore.token().orEmpty()
+        if (deviceToken.isBlank() || idToken.isBlank()) {
+            SettingsStore.setPushState(false, "signed out")
+            onDone()
+            return
+        }
+        scope.launch {
+            runCatching { MailRepository.fcmUnsubscribe(idToken, deviceToken) }
+            SettingsStore.setDeviceToken("")
+            SettingsStore.setPushState(false, "signed out")
+            onDone()
+        }
+    }
+
     /** The context kept at init, so callers without one can still ask for a retry. */
     fun appContext(): Context = appContext ?: throw IllegalStateException("PushRegistrar.init was not called")
 

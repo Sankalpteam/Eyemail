@@ -109,6 +109,9 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    // Entering the mailbox checks whose mail this is before showing anything.
+    androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.ensureAccount() }
     var composing by remember { mutableStateOf(false) }
     var composeTo by remember { mutableStateOf("") }
     var composeSubject by remember { mutableStateOf("") }
@@ -268,7 +271,11 @@ fun HomeScreen(
 
         openMail != null -> ReaderPane(
             mail = openMail,
-            folderTitle = titleFor(state.folder),
+            folderTitle = if (state.folder == "labels" && state.selectedLabel != null) {
+                state.selectedLabel ?: titleFor(state.folder)
+            } else {
+                titleFor(state.folder)
+            },
             onBack = viewModel::close,
             onStar = { viewModel.toggleStar(openMail) },
             onTrash = {

@@ -17,7 +17,22 @@ class HomeViewModel : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
+    /** Which account the state belongs to, so a second sign in never sees the first one. */
+    private var loadedFor: String = ""
+
     init {
+        ensureAccount()
+    }
+
+    /**
+     * Called every time the mailbox screen appears. If the account changed, everything
+     * from the previous one is thrown away before anything is loaded.
+     */
+    fun ensureAccount() {
+        val who = AuthSessionStore.uid().orEmpty()
+        if (who == loadedFor && loadedFor.isNotBlank()) return
+        loadedFor = who
+        _state.value = HomeState()
         load()
         loadProfile()
         registerPush()
@@ -102,6 +117,8 @@ class HomeViewModel : ViewModel() {
     }
 
     fun openFolder(folder: String) {
+        // Picking the Labels row itself means "all labels", not the one picked last time.
+        if (folder == "labels") _state.update { it.copy(selectedLabel = null) }
         _state.update {
             it.copy(
                 folder = folder,

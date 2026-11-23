@@ -126,6 +126,9 @@ private fun EyemailApp() {
 
         Screen.SignedIn -> HomeScreen(
             onSignOut = {
+                // Stop the notifications first: they belong to the account being left.
+                // The unsubscribe needs the token, so the session is cleared after it.
+                app.eyemail.push.PushRegistrar.unregister(appContext)
                 AuthSessionStore.clear()
                 sessionEmail = ""
                 screen = Screen.Login
