@@ -39,37 +39,16 @@ class SettingsViewModel(
                     confirmDelete = SettingsStore.confirmDelete(),
                 ),
                 notifications = it.notifications.copy(
-                    // The phone already allowed it, so it is on. Without this the switch
-                    // said "Turn on" even after the person had just allowed the popup.
-                    enabled = SettingsStore.notifications() || NotificationPermission.isGranted(),
+                    enabled = SettingsStore.notifications(),
                     permissionGranted = NotificationPermission.isGranted(),
                 ),
                 about = AboutState(version = "1.0", domain = BuildConfig.DOMAIN_NAME),
             )
         }
-        if (NotificationPermission.isGranted()) SettingsStore.setNotifications(true)
         loadProfile()
     }
 
-    fun select(section: SettingsState.Section) {
-        _state.update { it.copy(section = section) }
-        if (section == SettingsState.Section.Notifications) refreshNotifications()
-    }
-
-    /** Ask the phone again, every time the section is opened. */
-    fun refreshNotifications() {
-        val granted = NotificationPermission.isGranted()
-        if (granted && !SettingsStore.notifications()) SettingsStore.setNotifications(true)
-        _state.update {
-            it.copy(
-                notifications = it.notifications.copy(
-                    enabled = granted || SettingsStore.notifications(),
-                    permissionGranted = granted,
-                    blocked = false,
-                ),
-            )
-        }
-    }
+    fun select(section: SettingsState.Section) = _state.update { it.copy(section = section) }
 
     private fun loadProfile() {
         _state.update { it.copy(loading = true, error = "") }
@@ -157,34 +136,6 @@ class SettingsViewModel(
                         testResult = text,
                     ),
                 )
-            }
-        }
-    }
-
-    /** Ask the server what it did with the last real mail, and say it plainly. */
-    fun checkLastPush() {
-        _state.update { it.copy(notifications = it.notifications.copy(testing = true, testResult = "")) }
-        viewModelScope.launch {
-            val last = runCatching { MailRepository.lastPushStatus(AuthSessionStore.token().orEmpty()) }
-            val text = last.fold(
-                onSuccess = { status ->
-                    when {
-                        status.at.isBlank() ->
-                            "No mail has arrived since this feature was switched on. Send yourself one, then check again."
-                        status.sent > 0 ->
-                            "Last mail: sent to ${status.sent} phone. If it did not show, the phone blocked it."
-                        status.error.isNotBlank() ->
-                            "Last mail: the server failed. ${status.error}"
-                        status.phones == 0 ->
-                            "Last mail: the server has no phone for this account."
-                        else ->
-                            "Last mail: nothing was sent. ${status.phones} phone registered."
-                    }
-                },
-                onFailure = { error -> error.message ?: "The server could not be reached." },
-            )
-            _state.update {
-                it.copy(notifications = it.notifications.copy(testing = false, testResult = text, testOk = false))
             }
         }
     }

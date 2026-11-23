@@ -48,24 +48,6 @@ class MainActivity : ComponentActivity() {
         app.eyemail.settings.notifications.NotificationPermission.init(this)
         app.eyemail.home.Notifier.init(this)
 
-        // Coming back to the app is the moment a person expects mail to be live, so the
-        // token is offered to the server again every time the app is brought forward.
-        lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
-            override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
-                val idToken = AuthSessionStore.token().orEmpty()
-                val uid = AuthSessionStore.uid().orEmpty()
-                if (idToken.isBlank() || uid.isBlank()) return
-                runCatching {
-                    com.google.firebase.messaging.FirebaseMessaging.getInstance().token
-                        .addOnSuccessListener { deviceToken ->
-                            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                                runCatching { app.eyemail.home.MailRepository.registerPushToken(uid, idToken, deviceToken) }
-                            }
-                        }
-                }
-            }
-        })
-
         // Ask Firebase for this device's push token once we know who is signed in.
         runCatching {
             com.google.firebase.messaging.FirebaseMessaging.getInstance().token

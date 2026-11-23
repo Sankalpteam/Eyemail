@@ -22,8 +22,6 @@ fun NotificationsSection(
     state: NotificationsState,
     onChange: (enabled: Boolean, granted: Boolean, blocked: Boolean) -> Unit,
     onTest: () -> Unit = {},
-    onRefresh: () -> Unit = {},
-    onCheckLast: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     // Android 13 and up ask at runtime; below that the permission is given at install.
@@ -31,10 +29,7 @@ fun NotificationsSection(
         contract = ActivityResultContracts.RequestPermission(),
     ) { granted ->
         onChange(granted, granted, !granted)
-        onRefresh()
     }
-
-    androidx.compose.runtime.LaunchedEffect(Unit) { onRefresh() }
 
     Column(modifier = modifier.fillMaxWidth().padding(14.dp)) {
         SectionTitle("Notifications")
@@ -46,8 +41,9 @@ fun NotificationsSection(
             SmallButton(
                 text = when {
                     state.blocked -> "Blocked by the phone"
-                    state.enabled || state.permissionGranted -> "Turn off"
-                    else -> "Turn on"
+                    state.enabled -> "Turn off"
+                    state.permissionGranted -> "Turn on"
+                    else -> "Enable notifications"
                 },
                 enabled = !state.blocked,
                 onClick = {
@@ -76,14 +72,6 @@ fun NotificationsSection(
                 text = if (state.testing) "Sending..." else "Send test",
                 enabled = !state.testing,
                 onClick = { onTest() },
-            )
-        }
-
-        SettingRow("Last real mail", "What the server did when mail last arrived") {
-            SmallButton(
-                text = "Check",
-                enabled = !state.testing,
-                onClick = { onCheckLast() },
             )
         }
 

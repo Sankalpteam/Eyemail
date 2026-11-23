@@ -286,35 +286,6 @@ object MailRepository {
         }
     }
 
-    data class LastPush(
-        val at: String,
-        val subject: String,
-        val sent: Int,
-        val error: String,
-        val phones: Int,
-    )
-
-    /** What the server did the last time real mail arrived for this account. */
-    suspend fun lastPushStatus(token: String): LastPush = withContext(Dispatchers.IO) {
-        val request = Request.Builder()
-            .url("${BuildConfig.BACKEND_URL}/api/push/last-status")
-            .header("Authorization", "Bearer $token")
-            .get()
-            .build()
-        client.newCall(request).execute().use { response ->
-            val raw = response.body?.string().orEmpty()
-            if (!response.isSuccessful) throw ApiError(readError(raw))
-            val body = runCatching { JSONObject(raw) }.getOrDefault(JSONObject())
-            LastPush(
-                at = body.optString("at"),
-                subject = body.optString("subject"),
-                sent = body.optInt("fcmSent", 0),
-                error = body.optString("fcmError"),
-                phones = body.optInt("phones", 0),
-            )
-        }
-    }
-
     data class PushTestResult(val tokens: Int, val sent: Int, val error: String)
 
     /** Ask the server to notify this phone, so a silent failure can be named. */
