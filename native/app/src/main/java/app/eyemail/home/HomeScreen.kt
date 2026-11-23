@@ -119,6 +119,8 @@ fun HomeScreen(
     var newLabel by remember { mutableStateOf("") }
     var composeError by remember { mutableStateOf("") }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+
     // Android 13 asks at runtime; without this the notification never shows.
     val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
@@ -133,7 +135,6 @@ fun HomeScreen(
         }
     }
 
-    val context = androidx.compose.ui.platform.LocalContext.current
     val drawer = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val openMail = state.openMail
