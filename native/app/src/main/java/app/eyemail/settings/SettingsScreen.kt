@@ -141,6 +141,7 @@ fun SettingsScreen(
                 SettingsState.Section.Notifications -> NotificationsSection(
                     state = state.notifications,
                     onChange = viewModel::setNotifications,
+                    onTest = viewModel::testPush,
                 )
 
                 SettingsState.Section.Storage -> StorageSection(state = state.storage)

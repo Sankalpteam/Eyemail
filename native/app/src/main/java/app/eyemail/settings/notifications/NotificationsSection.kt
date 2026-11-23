@@ -21,6 +21,7 @@ import app.eyemail.settings.SmallButton
 fun NotificationsSection(
     state: NotificationsState,
     onChange: (enabled: Boolean, granted: Boolean, blocked: Boolean) -> Unit,
+    onTest: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     // Android 13 and up ask at runtime; below that the permission is given at install.
@@ -58,12 +59,30 @@ fun NotificationsSection(
         }
 
         Text(
-            "Alerts arrive while the app is open. Alerts with the app fully closed need the push service, " +
-                "which is not connected yet.",
+            "Alerts arrive even when the app is closed. If one does not come, tap the test below " +
+                "and the answer will tell you which side is at fault.",
             fontSize = 11.sp,
             lineHeight = 16.sp,
             color = Ey.Text3,
             modifier = Modifier.padding(top = 4.dp),
         )
+
+        SettingRow("Test push", "Ask the server to notify this phone right now") {
+            SmallButton(
+                text = if (state.testing) "Sending..." else "Send test",
+                enabled = !state.testing,
+                onClick = { onTest() },
+            )
+        }
+
+        if (state.testResult.isNotBlank()) {
+            Text(
+                state.testResult,
+                fontSize = 11.sp,
+                lineHeight = 16.sp,
+                color = if (state.testOk) Ey.Text2 else Ey.Danger,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
     }
 }

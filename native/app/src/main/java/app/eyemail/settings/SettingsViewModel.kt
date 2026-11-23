@@ -104,6 +104,42 @@ class SettingsViewModel(
         _state.update { it.copy(mail = it.mail.copy(confirmDelete = value)) }
     }
 
+    /** Ask the server to notify this phone, and report exactly what it answered. */
+    fun testPush() {
+        _state.update { it.copy(notifications = it.notifications.copy(testing = true, testResult = "")) }
+        viewModelScope.launch {
+            val result = runCatching { MailRepository.pushTest(token()) }.getOrElse { error ->
+                _state.update {
+                    it.copy(
+                        notifications = it.notifications.copy(
+                            testing = false,
+                            testOk = false,
+                            testResult = error.message ?: "The server could not be reached.",
+                        ),
+                    )
+                }
+                return@launch
+            }
+            val text = when {
+                result.tokens == 0 ->
+                    "The server has no phone registered for this account. The app never sent its token."
+                result.sent > 0 ->
+                    "Sent to ${result.sent} device. If nothing appeared, the phone is blocking it."
+                else ->
+                    "The server has ${result.tokens} device but sending failed: ${result.error}"
+            }
+            _state.update {
+                it.copy(
+                    notifications = it.notifications.copy(
+                        testing = false,
+                        testOk = result.sent > 0,
+                        testResult = text,
+                    ),
+                )
+            }
+        }
+    }
+
     fun setNotifications(enabled: Boolean, granted: Boolean, blocked: Boolean) {
         SettingsStore.setNotifications(enabled)
         _state.update {

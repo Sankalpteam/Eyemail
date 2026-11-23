@@ -286,6 +286,27 @@ object MailRepository {
         }
     }
 
+    data class PushTestResult(val tokens: Int, val sent: Int, val error: String)
+
+    /** Ask the server to notify this phone, so a silent failure can be named. */
+    suspend fun pushTest(token: String): PushTestResult = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url("${BuildConfig.BACKEND_URL}/api/push/fcm-test")
+            .header("Authorization", "Bearer $token")
+            .post(JSONObject().toString().toRequestBody(JSON))
+            .build()
+        client.newCall(request).execute().use { response ->
+            val raw = response.body?.string().orEmpty()
+            if (!response.isSuccessful) throw ApiError(readError(raw))
+            val body = runCatching { JSONObject(raw) }.getOrDefault(JSONObject())
+            PushTestResult(
+                tokens = body.optInt("tokens", 0),
+                sent = body.optInt("sent", 0),
+                error = body.optString("error", ""),
+            )
+        }
+    }
+
     /** Empty trash in one call, the same endpoint the web uses. */
     suspend fun emptyTrash(token: String): Int = withContext(Dispatchers.IO) {
         val request = Request.Builder()
