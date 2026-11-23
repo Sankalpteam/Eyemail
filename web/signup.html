@@ -232,7 +232,7 @@
     checkTimer = setTimeout(async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/check-username/${encodeURIComponent(val)}`);
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         if (res.ok && data.available) {
           usernameHint.textContent = `${data.email} is available`;
           usernameHint.className = "hint good";
@@ -262,7 +262,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, name, recovery_email: recovery, password })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Could not create the account.");
 
       pending = { email: data.email, password, name, recovery };
@@ -334,7 +334,7 @@
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ recovery_email: pending.recovery })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Could not resend the code.");
       showAlert(`New code sent to ${data.maskedRecoveryEmail}.`, false);
     } catch (err) {
