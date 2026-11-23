@@ -1045,7 +1045,7 @@
       const token = await user.getIdToken();
       const res = await fetch(`${BACKEND_URL}/api/user/profile`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) return;
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       profile = data.profile || {};
       const name = prefs.displayName || profile.name || user.email.split("@")[0];
       document.getElementById("userNameLabel").textContent = name;
@@ -1491,8 +1491,8 @@
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Could not empty Trash.");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || `Could not empty Trash (HTTP ${res.status}).`);
       toast(`Deleted ${data.deleted} message${data.deleted === 1 ? "" : "s"}`);
     } catch (err) {
       toast(err.message);
@@ -1712,7 +1712,7 @@
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ ids })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Delete failed.");
 
       toast(data.deleted === 1 ? "Deleted permanently" : `${data.deleted} messages deleted`);
@@ -2047,7 +2047,7 @@
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ domain: document.getElementById("domainInput").value.trim() })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Failed to add domain");
       box.innerHTML = data.domainInfo.dnsRecords.map((r) =>
         `<div class="dnsrow"><b>${escapeHtml(r.type)}</b> ${escapeHtml(r.host)}<code>${escapeHtml(r.value)}</code></div>`).join("");
@@ -2279,7 +2279,7 @@
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ recovery_email: email }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Could not send the code.");
       status.textContent = `Code sent to ${data.maskedRecoveryEmail}.`;
       document.getElementById("recoveryCodeRow").classList.remove("hidden");
@@ -2303,7 +2303,7 @@
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ otp }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "That code is not correct.");
       status.textContent = "Recovery email updated.";
       document.getElementById("settingRecovery").textContent = data.recoveryEmail;
@@ -2352,7 +2352,7 @@
       const res = await fetch(`${BACKEND_URL}/api/auth/delete-account`, {
         method: "POST", headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Could not delete the account.");
       await signOut(auth);
       window.location.href = "signup.html";
@@ -2381,7 +2381,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ eyemail: currentUser.email }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Could not send the link.");
       status.textContent = `Reset link sent to ${data.maskedRecoveryEmail}. Check Inbox and Spam.`;
     } catch (err) {
