@@ -16,6 +16,7 @@ data class HomeState(
     val pageSize: Int = 50,
     val canLoadMore: Boolean = false,
     val searching: Boolean = false,
+    val pushRegistered: Boolean = false,
 ) {
     val selecting: Boolean get() = selected.isNotEmpty()
 

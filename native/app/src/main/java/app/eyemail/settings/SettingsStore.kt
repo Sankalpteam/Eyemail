@@ -53,6 +53,13 @@ object SettingsStore {
         }
     }
 
+    /** Whether the server has this phone's push token, so About can say so. */
+    fun setPushRegistered(value: Boolean) {
+        prefs?.edit()?.putBoolean("pushRegistered", value)?.apply()
+    }
+
+    fun pushRegistered(): Boolean = prefs?.getBoolean("pushRegistered", false) ?: false
+
     fun notifications(): Boolean = prefs?.getBoolean("notifications", false) ?: false
     fun setNotifications(value: Boolean) = prefs?.edit()?.putBoolean("notifications", value)?.apply()
 }
