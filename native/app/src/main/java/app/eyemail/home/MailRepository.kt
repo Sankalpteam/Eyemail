@@ -25,6 +25,7 @@ data class Mail(
     val starred: Boolean,
     val createdAt: String,
     val labels: List<String>,
+    val cc: String = "",
 )
 
 /**
@@ -80,6 +81,7 @@ object MailRepository {
             starred = boolValue(fields, "starred"),
             createdAt = value(fields, "createdAt"),
             labels = labels(fields),
+            cc = fields.optJSONObject("cc")?.optString("stringValue").orEmpty(),
         )
     }
 
@@ -239,12 +241,19 @@ object MailRepository {
     }
 
     /** Send through the backend, the same endpoint the web composer uses. */
-    suspend fun send(token: String, to: String, subject: String, body: String): Unit =
+    suspend fun send(
+        token: String,
+        to: String,
+        subject: String,
+        body: String,
+        cc: List<String> = emptyList(),
+    ): Unit =
         withContext(Dispatchers.IO) {
             val payload = JSONObject()
                 .put("to", to)
                 .put("subject", subject)
                 .put("body", body)
+                .put("cc", org.json.JSONArray(cc))
             val request = Request.Builder()
                 .url("${BuildConfig.BACKEND_URL}/api/send-email")
                 .header("Authorization", "Bearer $token")

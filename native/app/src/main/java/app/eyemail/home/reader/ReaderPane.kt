@@ -21,7 +21,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Forward
 import androidx.compose.material.icons.automirrored.outlined.Reply
+import androidx.compose.material.icons.automirrored.outlined.ReplyAll
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Report
@@ -50,6 +52,8 @@ fun ReaderPane(
     onTrash: () -> Unit,
     onSpam: () -> Unit,
     onReply: () -> Unit,
+    onReplyAll: () -> Unit,
+    onForward: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -95,6 +99,16 @@ fun ReaderPane(
                 icon = Icons.AutoMirrored.Outlined.Reply,
                 label = "Reply",
                 onClick = onReply,
+            )
+            IconChip(
+                icon = Icons.AutoMirrored.Outlined.ReplyAll,
+                label = "Reply all",
+                onClick = onReplyAll,
+            )
+            IconChip(
+                icon = Icons.AutoMirrored.Outlined.Forward,
+                label = "Forward",
+                onClick = onForward,
             )
         }
 
@@ -213,7 +227,7 @@ fun ReaderPane(
 }
 
 /** The web writes a full readable date in the reader, so the app does the same. */
-private fun longDate(iso: String): String {
+internal fun longDate(iso: String): String {
     val parsed = parseIso(iso) ?: return iso
     return java.text.SimpleDateFormat("d MMM yyyy, HH:mm", java.util.Locale.getDefault()).format(parsed)
 }

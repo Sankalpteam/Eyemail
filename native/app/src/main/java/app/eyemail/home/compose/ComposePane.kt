@@ -39,7 +39,8 @@ fun ComposePane(
     initialTo: String = "",
     initialSubject: String = "",
     initialBody: String = "",
-    onSend: (to: String, subject: String, body: String) -> Unit,
+    initialCc: List<String> = emptyList(),
+    onSend: (to: String, subject: String, body: String, cc: List<String>) -> Unit,
     onCancel: () -> Unit,
     error: String = "",
     busy: Boolean = false,
@@ -49,6 +50,7 @@ fun ComposePane(
     var waiting by remember { mutableStateOf(0) }
 
     var to by remember { mutableStateOf(initialTo) }
+    var cc by remember { mutableStateOf(initialCc.joinToString(", ")) }
     var subject by remember { mutableStateOf(initialSubject) }
     // The web appends the saved signature to a new mail; the app does the same.
     var body by remember {
@@ -66,7 +68,12 @@ fun ComposePane(
         if (waiting <= 0) return@LaunchedEffect
         kotlinx.coroutines.delay(1000)
         waiting -= 1
-        if (waiting == 0) onSend(to.trim(), subject.trim(), body)
+        if (waiting == 0) onSend(
+                            to.trim(),
+                            subject.trim(),
+                            body,
+                            cc.split(",", ";").map { it.trim() }.filter { it.contains("@") },
+                        )
     }
 
     Column(
@@ -81,6 +88,8 @@ fun ComposePane(
         Spacer(Modifier.height(14.dp))
 
         ComposeField("To", to, { to = it }, "name@example.com", KeyboardType.Email, ImeAction.Next)
+        Spacer(Modifier.height(10.dp))
+        ComposeField("Cc", cc, { cc = it }, "comma separated, optional", KeyboardType.Email, ImeAction.Next)
         Spacer(Modifier.height(10.dp))
         ComposeField("Subject", subject, { subject = it }, "Subject", KeyboardType.Text, ImeAction.Next)
         Spacer(Modifier.height(10.dp))
@@ -123,7 +132,12 @@ fun ComposePane(
                 enabled = to.contains("@") && subject.isNotBlank() && body.isNotBlank() && !busy,
                 onClick = {
                     if (undoSeconds <= 0) {
-                        onSend(to.trim(), subject.trim(), body)
+                        onSend(
+                            to.trim(),
+                            subject.trim(),
+                            body,
+                            cc.split(",", ";").map { it.trim() }.filter { it.contains("@") },
+                        )
                     } else {
                         waiting = undoSeconds
                     }

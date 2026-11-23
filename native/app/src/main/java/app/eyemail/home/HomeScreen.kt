@@ -70,7 +70,9 @@ import app.eyemail.home.customdomain.CustomDomainScreen
 import app.eyemail.home.drafts.DraftsScreen
 import app.eyemail.home.inbox.InboxScreen
 import app.eyemail.home.labels.LabelsScreen
+import app.eyemail.home.reader.MailHtml
 import app.eyemail.home.reader.ReaderPane
+import app.eyemail.home.reader.longDate
 import app.eyemail.home.sent.SentScreen
 import app.eyemail.home.spam.SpamScreen
 import app.eyemail.home.starred.StarredScreen
@@ -110,6 +112,8 @@ fun HomeScreen(
     var composing by remember { mutableStateOf(false) }
     var composeTo by remember { mutableStateOf("") }
     var composeSubject by remember { mutableStateOf("") }
+    var composeCc by remember { mutableStateOf<List<String>>(emptyList()) }
+    var composeBody by remember { mutableStateOf("") }
     var composeBusy by remember { mutableStateOf(false) }
     var composeError by remember { mutableStateOf("") }
 
@@ -130,16 +134,18 @@ fun HomeScreen(
         composing -> ComposePane(
             initialTo = composeTo,
             initialSubject = composeSubject,
+            initialBody = composeBody,
+            initialCc = composeCc,
             busy = composeBusy,
             error = composeError,
             onCancel = {
                 composing = false
                 composeError = ""
             },
-            onSend = { to, subject, body ->
+            onSend = { to, subject, body, cc ->
                 composeBusy = true
                 composeError = ""
-                viewModel.send(to, subject, body) { error ->
+                viewModel.send(to, subject, body, cc) { error ->
                     composeBusy = false
                     if (error == null) composing = false else composeError = error
                 }
@@ -161,10 +167,48 @@ fun HomeScreen(
             },
             onReply = {
                 composeTo = openMail.from
+                composeCc = emptyList()
                 composeSubject = if (openMail.subject.startsWith("Re:", true)) {
                     openMail.subject
                 } else {
                     "Re: ${openMail.subject}"
+                }
+                composeError = ""
+                composing = true
+            },
+            onReplyAll = {
+                // Everyone who was on the mail, minus ourselves, so a customer and a
+                // colleague both see the answer.
+                val me = AuthSessionStore.email().orEmpty().lowercase()
+                composeTo = openMail.from
+                composeCc = (openMail.cc + listOf(openMail.to))
+                    .flatMap { it.split(",", ";") }
+                    .map { it.trim() }
+                    .filter { it.contains("@") && it.lowercase() != me && it.lowercase() != openMail.from.lowercase() }
+                    .distinct()
+                composeSubject = if (openMail.subject.startsWith("Re:", true)) {
+                    openMail.subject
+                } else {
+                    "Re: ${openMail.subject}"
+                }
+                composeError = ""
+                composing = true
+            },
+            onForward = {
+                // Forward keeps the original underneath, so the new person has the context.
+                composeTo = ""
+                composeCc = emptyList()
+                composeSubject = if (openMail.subject.startsWith("Fwd:", true)) {
+                    openMail.subject
+                } else {
+                    "Fwd: ${openMail.subject}"
+                }
+                composeBody = buildString {
+                    append("\n\n---------- Forwarded message ----------\n")
+                    append("From: ${openMail.fromName} <${openMail.from}>\n")
+                    append("Date: ${longDate(openMail.createdAt)}\n")
+                    append("Subject: ${openMail.subject}\n\n")
+                    append(MailHtml.toText(openMail.body, Ey.Text).text)
                 }
                 composeError = ""
                 composing = true

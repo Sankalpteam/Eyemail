@@ -210,10 +210,16 @@ class HomeViewModel : ViewModel() {
         _state.update { it.copy(selectedLabel = name) }
     }
 
-    fun send(to: String, subject: String, body: String, onDone: (String?) -> Unit) {
+    fun send(
+        to: String,
+        subject: String,
+        body: String,
+        cc: List<String> = emptyList(),
+        onDone: (String?) -> Unit,
+    ) {
         viewModelScope.launch {
             try {
-                MailRepository.send(token(), to, subject, body)
+                MailRepository.send(token(), to, subject, body, cc)
                 load()
                 loadProfile()
                 onDone(null)
