@@ -52,9 +52,9 @@ class MainActivity : ComponentActivity() {
         runCatching {
             com.google.firebase.messaging.FirebaseMessaging.getInstance().token
                 .addOnSuccessListener { token ->
-                    val idToken = AuthSessionStore.token()
-                    val uid = AuthSessionStore.uid()
-                    if (!idToken.isBlank() && !uid.isNullOrBlank()) {
+                    val idToken = AuthSessionStore.token().orEmpty()
+                    val uid = AuthSessionStore.uid().orEmpty()
+                    if (idToken.isNotBlank() && uid.isNotBlank()) {
                         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
                             runCatching { app.eyemail.home.MailRepository.registerPushToken(uid, idToken, token) }
                         }

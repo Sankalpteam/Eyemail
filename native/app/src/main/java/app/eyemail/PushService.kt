@@ -22,9 +22,9 @@ class PushService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         // The token changes over time; the server must always have the current one.
-        val uid = app.eyemail.authentication.AuthSessionStore.uid() ?: return
-        val idToken = app.eyemail.authentication.AuthSessionStore.token()
-        if (idToken.isBlank()) return
+        val uid = app.eyemail.authentication.AuthSessionStore.uid().orEmpty()
+        val idToken = app.eyemail.authentication.AuthSessionStore.token().orEmpty()
+        if (idToken.isBlank() || uid.isBlank()) return
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 app.eyemail.home.MailRepository.registerPushToken(uid, idToken, token)
