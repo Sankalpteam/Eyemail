@@ -102,7 +102,9 @@ class HomeViewModel : ViewModel() {
     }
 
     fun openFolder(folder: String) {
-        _state.update { it.copy(folder = folder, openMailId = null, query = "", mails = emptyList()) }
+        _state.update {
+            it.copy(folder = folder, openMailId = null, openMailCopy = null, query = "", mails = emptyList())
+        }
         // The domain screen has no mail; every other row does.
         if (folder != "domain") load()
     }
@@ -258,11 +260,13 @@ class HomeViewModel : ViewModel() {
     }
 
     fun open(mail: Mail) {
-        _state.update { it.copy(openMailId = mail.id) }
+        // The copy is what the reader draws, so a refresh cannot pull it out from under
+        // the person while they are reading.
+        _state.update { it.copy(openMailId = mail.id, openMailCopy = mail) }
         if (!mail.read) setRead(mail, true)
     }
 
-    fun close() = _state.update { it.copy(openMailId = null) }
+    fun close() = _state.update { it.copy(openMailId = null, openMailCopy = null) }
 
     fun setRead(mail: Mail, read: Boolean) {
         optimistic(mail.id) { it.copy(read = read) }
@@ -332,9 +336,34 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /** Abandoned mail is kept, not thrown away: that is what Drafts is for. */
+    fun saveDraft(
+        to: String,
+        subject: String,
+        body: String,
+        cc: List<String> = emptyList(),
+        onDone: (String?) -> Unit = {},
+    ) {
+        if (to.isBlank() && subject.isBlank() && body.isBlank()) {
+            onDone(null)
+            return
+        }
+        viewModelScope.launch {
+            val outcome = runCatching {
+                MailRepository.saveDraft(uid(), token(), to, subject, body, cc)
+            }
+            if (outcome.isSuccess && _state.value.folder == "drafts") load()
+            onDone(outcome.exceptionOrNull()?.message)
+        }
+    }
+
     private fun optimistic(mailId: String, change: (Mail) -> Mail) {
         _state.update { current ->
-            current.copy(mails = current.mails.map { if (it.id == mailId) change(it) else it })
+            current.copy(
+                mails = current.mails.map { if (it.id == mailId) change(it) else it },
+                // The reader sees the same change at once, not after a reload.
+                openMailCopy = current.openMailCopy?.let { if (it.id == mailId) change(it) else it },
+            )
         }
     }
 }

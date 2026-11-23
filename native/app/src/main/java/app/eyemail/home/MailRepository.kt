@@ -45,6 +45,14 @@ object MailRepository {
 
     class ApiError(message: String) : Exception(message)
 
+    /** ISO 8601 in UTC, made with the classes API 24 has, not java.time. */
+    private fun isoNow(): String {
+        val pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        val format = java.text.SimpleDateFormat(pattern, java.util.Locale.US)
+        format.timeZone = java.util.TimeZone.getTimeZone("UTC")
+        return format.format(java.util.Date())
+    }
+
     private fun docsUrl(uid: String, tail: String = ""): String {
         val project = BuildConfig.FIRESTORE_PROJECT
         val base = "https://firestore.googleapis.com/v1/projects/$project/databases/(default)/documents"
@@ -238,6 +246,43 @@ object MailRepository {
 
     suspend fun deleteForever(uid: String, token: String, mailId: String) {
         delete(docsUrl(uid, "/$mailId"), token)
+    }
+
+    /**
+     * A draft is a mail in the drafts folder, marked as not sent. It is stored the same
+     * way the web stores one, so it appears on both sides.
+     */
+    suspend fun saveDraft(
+        uid: String,
+        token: String,
+        to: String,
+        subject: String,
+        body: String,
+        cc: List<String> = emptyList(),
+    ) {
+        val fields = JSONObject()
+            .put("from", JSONObject().put("stringValue", uid))
+            .put("fromName", JSONObject().put("stringValue", "Me"))
+            .put("to", JSONObject().put("stringValue", to))
+            .put("cc", JSONObject().put("stringValue", cc.joinToString(", ")))
+            .put("subject", JSONObject().put("stringValue", subject))
+            .put("body", JSONObject().put("stringValue", body))
+            .put("snippet", JSONObject().put("stringValue", body.take(120)))
+            .put("folder", JSONObject().put("stringValue", "drafts"))
+            .put("read", JSONObject().put("booleanValue", true))
+            .put("starred", JSONObject().put("booleanValue", false))
+            .put("createdAt", JSONObject().put("stringValue", isoNow()))
+
+        val request = Request.Builder()
+            .url(docsUrl(uid, ""))
+            .header("Authorization", "Bearer $token")
+            .post(JSONObject().put("fields", fields).toString().toRequestBody(JSON))
+            .build()
+        withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw ApiError(readError(response.body?.string().orEmpty()))
+            }
+        }
     }
 
     /** Send through the backend, the same endpoint the web composer uses. */

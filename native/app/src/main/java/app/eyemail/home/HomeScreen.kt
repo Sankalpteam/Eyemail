@@ -219,15 +219,29 @@ fun HomeScreen(
             busy = composeBusy,
             error = composeError,
             onCancel = {
+                // Abandoned mail goes to Drafts instead of vanishing, like the web.
+                viewModel.saveDraft(composeTo, composeSubject, composeBody, composeCc)
                 composing = false
                 composeError = ""
+                composeTo = ""
+                composeSubject = ""
+                composeBody = ""
+                composeCc = emptyList()
             },
             onSend = { to, subject, body, cc ->
                 composeBusy = true
                 composeError = ""
                 viewModel.send(to, subject, body, cc) { error ->
                     composeBusy = false
-                    if (error == null) composing = false else composeError = error
+                    if (error == null) {
+                        composing = false
+                        composeTo = ""
+                        composeSubject = ""
+                        composeBody = ""
+                        composeCc = emptyList()
+                    } else {
+                        composeError = error
+                    }
                 }
             },
         )

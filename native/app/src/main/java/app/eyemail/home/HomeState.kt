@@ -6,6 +6,7 @@ data class HomeState(
     val mails: List<Mail> = emptyList(),
     val query: String = "",
     val openMailId: String? = null,
+    val openMailCopy: Mail? = null,
     val loading: Boolean = false,
     val error: String = "",
     val storageUsed: Long = 0,
@@ -25,7 +26,8 @@ data class HomeState(
             val base = mails.filter { mail ->
                 when (folder) {
                     "starred" -> mail.starred && mail.folder != "trash"
-                    "labels" -> mail.labels.isNotEmpty() && mail.folder != "trash"
+                    "labels" -> mail.folder != "trash" && mail.labels.isNotEmpty() &&
+                        (selectedLabel == null || mail.labels.contains(selectedLabel))
                     else -> mail.folder == folder
                 }
             }
@@ -35,7 +37,7 @@ data class HomeState(
         }
 
     val openMail: Mail?
-        get() = mails.firstOrNull { it.id == openMailId }
+        get() = openMailCopy ?: mails.firstOrNull { it.id == openMailId }
 
     val unreadCount: Int
         get() = mails.count { it.folder == "inbox" && !it.read }
