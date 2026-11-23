@@ -89,8 +89,18 @@ object MailRepository {
             starred = boolValue(fields, "starred"),
             createdAt = value(fields, "createdAt"),
             labels = labels(fields),
-            cc = fields.optJSONObject("cc")?.optString("stringValue").orEmpty(),
+            cc = readCc(fields),
         )
+    }
+
+    /** The server writes Cc twice: a list for the web, a joined string for the phone. */
+    private fun readCc(fields: JSONObject?): String {
+        val node = fields?.optJSONObject("cc") ?: return ""
+        node.optString("stringValue").takeIf { it.isNotBlank() }?.let { return it }
+        val values = node.optJSONObject("arrayValue")?.optJSONArray("values") ?: return ""
+        return (0 until values.length()).mapNotNull { index ->
+            values.optJSONObject(index)?.optString("stringValue")?.takeIf { it.isNotBlank() }
+        }.joinToString(", ")
     }
 
     private suspend fun get(url: String, token: String): JSONObject = withContext(Dispatchers.IO) {
