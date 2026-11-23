@@ -30,11 +30,15 @@ class PushService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-        val title = message.data["title"]
-            ?: message.notification?.title
+        // When the app is open the system does not draw the notification block, so this
+        // is the only copy. When the app is closed the system draws it and this is not
+        // called at all. Both paths land on the same channel, so nothing is missed and
+        // nothing is doubled.
+        val title = message.notification?.title
+            ?: message.data["title"]
             ?: "Eyemail"
-        val body = message.data["body"]
-            ?: message.notification?.body
+        val body = message.notification?.body
+            ?: message.data["body"]
             ?: "New mail"
         show(title, body)
     }
