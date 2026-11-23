@@ -2061,6 +2061,18 @@
     return "Notification" in window;
   }
 
+  /* The worker is registered at load, not only when notifications are enabled,
+     because it is also what keeps a copy of the app for a dead connection. */
+  async function registerShellWorker() {
+    if (!("serviceWorker" in navigator)) return null;
+    try {
+      return await navigator.serviceWorker.register("./sw.js");
+    } catch (_) {
+      return null;
+    }
+  }
+  registerShellWorker();
+
   /* Push, so the notification arrives with the app closed. The browser keeps a
      subscription, the server keeps a copy, and the service worker draws it. */
   let pushRegistration = null;
@@ -2068,7 +2080,7 @@
   async function pushRegistrationOrNull() {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return null;
     try {
-      pushRegistration = pushRegistration || await navigator.serviceWorker.register("./sw.js");
+      pushRegistration = pushRegistration || await registerShellWorker();
       return pushRegistration;
     } catch (_) {
       return null;

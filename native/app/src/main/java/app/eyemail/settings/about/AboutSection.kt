@@ -39,6 +39,16 @@ fun AboutSection(
                 color = if (app.eyemail.settings.SettingsStore.pushRegistered()) Ey.Text2 else Ey.Danger,
             )
         }
+        val reason = app.eyemail.settings.SettingsStore.pushReason()
+        if (reason.isNotBlank() && !app.eyemail.settings.SettingsStore.pushRegistered()) {
+            Text(
+                reason,
+                fontSize = 10.5.sp,
+                lineHeight = 14.sp,
+                color = Ey.Danger,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+            )
+        }
         SettingRow("Build", "The commit this app was built from") {
             Text(
                 app.eyemail.BuildConfig.GIT_SHA,

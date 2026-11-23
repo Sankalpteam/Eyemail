@@ -33,15 +33,17 @@ class HomeViewModel : ViewModel() {
         com.google.firebase.messaging.FirebaseMessaging.getInstance().token
             .addOnSuccessListener { deviceToken ->
                 viewModelScope.launch {
-                    val ok = runCatching {
+                    val outcome = runCatching {
                         MailRepository.registerPushToken(who, idToken, deviceToken)
-                    }.isSuccess
-                    SettingsStore.setPushRegistered(ok)
+                    }
+                    val ok = outcome.isSuccess
+                    val reason = outcome.exceptionOrNull()?.message.orEmpty()
+                    SettingsStore.setPushRegistered(ok, reason)
                     _state.update { it.copy(pushRegistered = ok) }
                 }
             }
-            .addOnFailureListener {
-                SettingsStore.setPushRegistered(false)
+            .addOnFailureListener { error ->
+                SettingsStore.setPushRegistered(false, "firebase: ${error.message}")
                 _state.update { it.copy(pushRegistered = false) }
             }
     }
@@ -79,6 +81,8 @@ class HomeViewModel : ViewModel() {
                         canLoadMore = mails.size >= size,
                     )
                 }
+                // Cheap and idempotent: if the token was lost, this puts it back.
+                if (!_state.value.pushRegistered) registerPush()
                 if (folder == "inbox") Notifier.announce(mails)
             } catch (e: Exception) {
                 _state.update { it.copy(loading = false, error = e.message ?: "Could not load the mailbox.") }
