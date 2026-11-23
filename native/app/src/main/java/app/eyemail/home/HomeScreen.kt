@@ -181,7 +181,7 @@ fun HomeScreen(
                 // colleague both see the answer.
                 val me = AuthSessionStore.email().orEmpty().lowercase()
                 composeTo = openMail.from
-                composeCc = (openMail.cc + listOf(openMail.to))
+                composeCc = listOf(openMail.cc, openMail.to)
                     .flatMap { it.split(",", ";") }
                     .map { it.trim() }
                     .filter { it.contains("@") && it.lowercase() != me && it.lowercase() != openMail.from.lowercase() }
