@@ -336,6 +336,18 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /** A draft that has been sent is no longer a draft. */
+    fun deleteDraft(mailId: String, onDone: () -> Unit = {}) {
+        if (mailId.isBlank()) {
+            onDone()
+            return
+        }
+        viewModelScope.launch {
+            runCatching { MailRepository.deleteForever(uid(), token(), mailId) }
+            onDone()
+        }
+    }
+
     /** Abandoned mail is kept, not thrown away: that is what Drafts is for. */
     fun saveDraft(
         to: String,

@@ -52,28 +52,24 @@ fun ComposePane(
     var to by remember { mutableStateOf(initialTo) }
     var cc by remember { mutableStateOf(initialCc.joinToString(", ")) }
     var subject by remember { mutableStateOf(initialSubject) }
-    // The web appends the saved signature to a new mail; the app does the same.
-    var body by remember {
-        mutableStateOf(
-            if (initialBody.isBlank()) {
-                val sig = SettingsStore.signature()
-                if (sig.isBlank()) "" else "\n\n$sig"
-            } else {
-                initialBody
-            },
-        )
-    }
+    // The signature is added when the mail is sent, never into the box. Putting it in
+    // the box made an empty mail look written, so Send was enabled with nothing to say.
+    var body by remember { mutableStateOf(initialBody) }
+    val signature = remember { SettingsStore.signature() }
+
+    fun withSignature(text: String): String =
+        if (signature.isBlank() || text.contains(signature)) text else "$text\n\n$signature"
 
     LaunchedEffect(waiting) {
         if (waiting <= 0) return@LaunchedEffect
         kotlinx.coroutines.delay(1000)
         waiting -= 1
         if (waiting == 0) onSend(
-                            to.trim(),
-                            subject.trim(),
-                            body,
-                            cc.split(",", ";").map { it.trim() }.filter { it.contains("@") },
-                        )
+            to.trim(),
+            subject.trim(),
+            withSignature(body),
+            cc.split(",", ";").map { it.trim() }.filter { it.contains("@") },
+        )
     }
 
     Column(
@@ -135,7 +131,7 @@ fun ComposePane(
                         onSend(
                             to.trim(),
                             subject.trim(),
-                            body,
+                            withSignature(body),
                             cc.split(",", ";").map { it.trim() }.filter { it.contains("@") },
                         )
                     } else {
@@ -146,7 +142,7 @@ fun ComposePane(
         }
         Spacer(Modifier.height(6.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
-            TextButton(onClick = onCancel, enabled = !busy) {
+            TextButton(onClick = onCancel, enabled = !busy && waiting == 0) {
                 Text("Cancel", fontSize = 12.5.sp, color = Ey.Text3)
             }
         }

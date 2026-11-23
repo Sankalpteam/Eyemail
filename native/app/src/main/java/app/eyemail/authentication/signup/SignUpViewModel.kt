@@ -93,15 +93,16 @@ class SignUpViewModel : ViewModel() {
                     recoveryEmail = current.recovery.trim().lowercase(),
                     idToken = current.pendingToken,
                 )
-                // The token from step one is already valid, so there is no second sign in
-                // to fail after the account has been created.
-                AuthSessionStore.save(
-                    EyemailAuthService.Session(
-                        uid = EyemailAuthService.uidFromToken(current.pendingToken),
-                        email = current.pendingEmail,
-                        idToken = current.pendingToken,
-                    ),
+                // A fresh sign in, so the session carries a refresh token. Without it the
+                // new account would stop working an hour later, with no way to renew.
+                val session = runCatching {
+                    EyemailAuthService.signIn(current.pendingEmail, current.password)
+                }.getOrNull() ?: EyemailAuthService.Session(
+                    uid = EyemailAuthService.uidFromToken(current.pendingToken),
+                    email = current.pendingEmail,
+                    idToken = current.pendingToken,
                 )
+                AuthSessionStore.save(session)
                 _state.update { it.copy(busy = false) }
                 _signedIn.value = true
             } catch (e: Exception) {

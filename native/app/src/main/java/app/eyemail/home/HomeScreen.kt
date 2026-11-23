@@ -114,6 +114,7 @@ fun HomeScreen(
     var composeSubject by remember { mutableStateOf("") }
     var composeCc by remember { mutableStateOf<List<String>>(emptyList()) }
     var composeBody by remember { mutableStateOf("") }
+    var composeDraftId by remember { mutableStateOf("") }
     var composeBusy by remember { mutableStateOf(false) }
     var labelling by remember { mutableStateOf(false) }
     var newLabel by remember { mutableStateOf("") }
@@ -234,6 +235,10 @@ fun HomeScreen(
                 viewModel.send(to, subject, body, cc) { error ->
                     composeBusy = false
                     if (error == null) {
+                        if (composeDraftId.isNotBlank()) {
+                            viewModel.deleteDraft(composeDraftId)
+                            composeDraftId = ""
+                        }
                         composing = false
                         composeTo = ""
                         composeSubject = ""
@@ -245,6 +250,21 @@ fun HomeScreen(
                 }
             },
         )
+
+        openMail != null && state.folder == "drafts" -> {
+            // A draft is not something to read, it is something to finish.
+            androidx.compose.runtime.LaunchedEffect(openMail.id) {
+                composeTo = openMail.to
+                composeCc = openMail.cc.split(",", ";").map { it.trim() }.filter { it.contains("@") }
+                composeSubject = openMail.subject
+                composeBody = openMail.body
+                composeDraftId = openMail.id
+                composeError = ""
+                viewModel.close()
+                composing = true
+            }
+            Box(Modifier.fillMaxSize().background(Ey.Bg))
+        }
 
         openMail != null -> ReaderPane(
             mail = openMail,
