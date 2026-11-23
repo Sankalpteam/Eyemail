@@ -942,6 +942,7 @@
   let currentLabel = null;
   let selectedEmailId = null;
   let searchQuery = "";
+  let openMailCopy = null;
   let activeFilter = "all";
   let selected = new Set();
   let profile = {};
@@ -1100,7 +1101,10 @@
       updateFolderExtras();
       if (selectedEmailId) {
         const m = allEmails.find((x) => x.id === selectedEmailId);
-        if (m) renderDetail(m);
+        // The mail being read is kept, so a page change or a move to Trash cannot leave
+        // the reader showing something that is no longer in the list.
+        if (m) { openMailCopy = m; renderDetail(m); }
+        else if (openMailCopy && openMailCopy.id === selectedEmailId) renderDetail(openMailCopy);
       }
     }, () => {
       emailListEl.innerHTML = `<div class="empty">Could not load mail. Check your connection.</div>`;
@@ -1530,6 +1534,7 @@
     selectedEmailId = id;
     const m = allEmails.find((x) => x.id === id);
     if (!m) return;
+    openMailCopy = m;
     renderList();
     renderDetail(m);
     appEl.classList.remove("rail-open");
@@ -1611,6 +1616,7 @@
     emptyReader.classList.remove("hidden");
     mailDetail.classList.add("hidden");
     selectedEmailId = null;
+    openMailCopy = null;
     renderList();
   }
 
