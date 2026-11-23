@@ -86,6 +86,7 @@ fun TrashScreen(
             onToggle = onToggle,
             canLoadMore = canLoadMore,
             onLoadMore = onLoadMore,
+            showRecipient = false,
             emptyText = "Trash is empty.",
             onOpen = onOpen,
         )

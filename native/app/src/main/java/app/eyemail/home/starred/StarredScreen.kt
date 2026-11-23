@@ -25,6 +25,7 @@ fun StarredScreen(
             onToggle = onToggle,
             canLoadMore = canLoadMore,
             onLoadMore = onLoadMore,
+            showRecipient = false,
             emptyText = "Nothing starred yet.",
             onOpen = onOpen,
         )

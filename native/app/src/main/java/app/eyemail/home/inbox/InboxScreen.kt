@@ -25,6 +25,7 @@ fun InboxScreen(
             onToggle = onToggle,
             canLoadMore = canLoadMore,
             onLoadMore = onLoadMore,
+            showRecipient = false,
             emptyText = "No mail here yet.",
             onOpen = onOpen,
         )

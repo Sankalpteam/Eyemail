@@ -25,6 +25,7 @@ fun SpamScreen(
             onToggle = onToggle,
             canLoadMore = canLoadMore,
             onLoadMore = onLoadMore,
+            showRecipient = false,
             emptyText = "No spam. Good.",
             onOpen = onOpen,
         )

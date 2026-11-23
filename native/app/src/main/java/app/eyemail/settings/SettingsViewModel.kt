@@ -160,7 +160,7 @@ class SettingsViewModel(
     }
 
     fun setDensity(value: String) {
-        SettingsStore.setDensity(value)
+        ThemeState.setDensity(value)
         _state.update { it.copy(appearance = it.appearance.copy(density = value)) }
     }
 

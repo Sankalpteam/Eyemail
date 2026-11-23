@@ -12,12 +12,22 @@ object ThemeState {
     var dark by mutableStateOf(false)
         private set
 
+    /** Compact rows or comfortable ones. State, so the list redraws the moment it changes. */
+    var compact by mutableStateOf(false)
+        private set
+
     fun load() {
         dark = SettingsStore.theme() == "dark"
+        compact = SettingsStore.density() == "compact"
     }
 
     fun set(value: String) {
         SettingsStore.setTheme(value)
         dark = value == "dark"
+    }
+
+    fun setDensity(value: String) {
+        SettingsStore.setDensity(value)
+        compact = value == "compact"
     }
 }

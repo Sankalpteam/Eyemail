@@ -11,6 +11,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.eyemail.Ey
@@ -75,6 +76,8 @@ fun AccountSection(
             )
         }
 
+        var confirmDelete by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
         SettingRow(
             "Delete my account",
             "Removes the mailbox, its mail and the login. Cannot be undone.",
@@ -82,7 +85,36 @@ fun AccountSection(
             SmallButton(
                 text = if (state.deleting) "Deleting..." else "Delete account",
                 enabled = !state.deleting && !state.signingOutAll,
-                onClick = onDelete,
+                onClick = { confirmDelete = true },
+            )
+        }
+
+        if (confirmDelete) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { confirmDelete = false },
+                title = {
+                    Text("Delete this account?", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Ey.Text)
+                },
+                text = {
+                    Text(
+                        "The mailbox, every mail in it, and the login are removed for good. " +
+                            "This cannot be undone, and no copy is kept.",
+                        fontSize = 12.5.sp,
+                        lineHeight = 18.sp,
+                        color = Ey.Text2,
+                    )
+                },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = {
+                        confirmDelete = false
+                        onDelete()
+                    }) { Text("Delete for good", color = Ey.Danger) }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(onClick = { confirmDelete = false }) {
+                        Text("Keep it", color = Ey.Text3)
+                    }
+                },
             )
         }
 

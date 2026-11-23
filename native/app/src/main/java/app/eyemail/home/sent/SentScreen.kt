@@ -25,6 +25,7 @@ fun SentScreen(
             onToggle = onToggle,
             canLoadMore = canLoadMore,
             onLoadMore = onLoadMore,
+            showRecipient = true,
             emptyText = "Nothing sent yet.",
             onOpen = onOpen,
         )

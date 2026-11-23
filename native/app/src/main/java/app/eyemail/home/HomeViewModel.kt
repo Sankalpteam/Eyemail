@@ -103,7 +103,15 @@ class HomeViewModel : ViewModel() {
 
     fun openFolder(folder: String) {
         _state.update {
-            it.copy(folder = folder, openMailId = null, openMailCopy = null, query = "", mails = emptyList())
+            it.copy(
+                folder = folder,
+                openMailId = null,
+                openMailCopy = null,
+                query = "",
+                mails = emptyList(),
+                // Ticks made in another folder would act on mail you cannot see.
+                selected = emptySet(),
+            )
         }
         // The domain screen has no mail; every other row does.
         if (folder != "domain") load()
@@ -116,7 +124,7 @@ class HomeViewModel : ViewModel() {
     private var searchJob: kotlinx.coroutines.Job? = null
 
     fun search(query: String) {
-        _state.update { it.copy(query = query) }
+        _state.update { it.copy(query = query, selected = emptySet()) }
         // Every keystroke used to fire five network calls. One query, one search.
         searchJob?.cancel()
         if (query.isBlank()) {

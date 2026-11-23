@@ -36,6 +36,8 @@ import app.eyemail.home.Mail
 fun MailList(
     mails: List<Mail>,
     emptyText: String,
+    /** Sent and Drafts read better as "to whom", every other folder as "from whom". */
+    showRecipient: Boolean = false,
     onOpen: (Mail) -> Unit,
     modifier: Modifier = Modifier,
     selected: Set<String> = emptySet(),
@@ -63,7 +65,7 @@ fun MailList(
                     .padding(
                         horizontal = 14.dp,
                         // Density is a real setting: compact rows lose four points of height.
-                        vertical = (if (SettingsStore.density() == "compact") 8 else Ey.RowPad).dp,
+                        vertical = (if (app.eyemail.settings.ThemeState.compact) 8 else Ey.RowPad).dp,
                     ),
                 verticalAlignment = Alignment.Top,
             ) {
@@ -102,7 +104,7 @@ fun MailList(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        initials(mail.fromName),
+                        initials(if (showRecipient) mail.to else mail.fromName),
                         color = androidx.compose.ui.graphics.Color.White,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
@@ -112,7 +114,7 @@ fun MailList(
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            mail.fromName,
+                            if (showRecipient) mail.to.ifBlank { "(no recipient)" } else mail.fromName,
                             fontSize = 12.5.sp,
                             fontWeight = if (mail.read) FontWeight.Medium else FontWeight.Bold,
                             color = Ey.Text,

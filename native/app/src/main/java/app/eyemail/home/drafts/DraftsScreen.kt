@@ -25,6 +25,7 @@ fun DraftsScreen(
             onToggle = onToggle,
             canLoadMore = canLoadMore,
             onLoadMore = onLoadMore,
+            showRecipient = true,
             emptyText = "No drafts yet.",
             onOpen = onOpen,
         )
