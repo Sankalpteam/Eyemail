@@ -3,6 +3,7 @@
   "short_name": "Eyemail",
   "description": "Business mail on your own domain, free on the free plan.",
   "start_url": "./app.html",
+  "serviceworker": { "src": "./sw.js", "scope": "./" },
   "scope": "./",
   "display": "standalone",
   "background_color": "#eef1f4",
