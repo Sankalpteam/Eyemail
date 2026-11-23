@@ -268,6 +268,24 @@ object MailRepository {
             }
         }
 
+    /** The phone's Firebase token, so the server can reach this device when mail lands. */
+    suspend fun registerPushToken(uid: String, token: String, fcmToken: String) {
+        withContext(Dispatchers.IO) {
+            val body = JSONObject().put("token", fcmToken)
+            val request = Request.Builder()
+                .url("${BuildConfig.BACKEND_URL}/api/push/fcm-subscribe")
+                .header("Authorization", "Bearer $token")
+                .post(body.toString().toRequestBody(JSON))
+                .build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    val raw = response.body?.string().orEmpty()
+                    throw ApiError(readError(raw))
+                }
+            }
+        }
+    }
+
     /** Empty trash in one call, the same endpoint the web uses. */
     suspend fun emptyTrash(token: String): Int = withContext(Dispatchers.IO) {
         val request = Request.Builder()

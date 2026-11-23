@@ -2,6 +2,7 @@ package app.eyemail
 
 import android.os.Bundle
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import kotlinx.coroutines.launch
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -46,6 +47,20 @@ class MainActivity : ComponentActivity() {
         ThemeState.load()
         app.eyemail.settings.notifications.NotificationPermission.init(this)
         app.eyemail.home.Notifier.init(this)
+
+        // Ask Firebase for this device's push token once we know who is signed in.
+        runCatching {
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+                .addOnSuccessListener { token ->
+                    val idToken = AuthSessionStore.token()
+                    val uid = AuthSessionStore.uid()
+                    if (!idToken.isBlank() && !uid.isNullOrBlank()) {
+                        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                            runCatching { app.eyemail.home.MailRepository.registerPushToken(uid, idToken, token) }
+                        }
+                    }
+                }
+        }
         enableEdgeToEdge()
         setContent {
             EyemailTheme {

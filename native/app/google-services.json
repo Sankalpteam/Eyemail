@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "722592118925",
+    "firebase_url": "https://eyemail-c3398-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "eyemail-c3398",
+    "storage_bucket": "eyemail-c3398.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:722592118925:android:ed83448dc2b6bf830ecac4",
+        "android_client_info": {
+          "package_name": "in.eyemail.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDT3Rqff0ivvQBBUE_gPGiD2qyelH_3hkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
