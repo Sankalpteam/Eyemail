@@ -22,6 +22,7 @@ fun NotificationsSection(
     state: NotificationsState,
     onChange: (enabled: Boolean, granted: Boolean, blocked: Boolean) -> Unit,
     onTest: () -> Unit = {},
+    onRefresh: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     // Android 13 and up ask at runtime; below that the permission is given at install.
@@ -29,7 +30,10 @@ fun NotificationsSection(
         contract = ActivityResultContracts.RequestPermission(),
     ) { granted ->
         onChange(granted, granted, !granted)
+        onRefresh()
     }
+
+    androidx.compose.runtime.LaunchedEffect(Unit) { onRefresh() }
 
     Column(modifier = modifier.fillMaxWidth().padding(14.dp)) {
         SectionTitle("Notifications")

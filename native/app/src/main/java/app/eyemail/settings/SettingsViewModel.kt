@@ -51,7 +51,25 @@ class SettingsViewModel(
         loadProfile()
     }
 
-    fun select(section: SettingsState.Section) = _state.update { it.copy(section = section) }
+    fun select(section: SettingsState.Section) {
+        _state.update { it.copy(section = section) }
+        if (section == SettingsState.Section.Notifications) refreshNotifications()
+    }
+
+    /** Ask the phone again, every time the section is opened. */
+    fun refreshNotifications() {
+        val granted = NotificationPermission.isGranted()
+        if (granted && !SettingsStore.notifications()) SettingsStore.setNotifications(true)
+        _state.update {
+            it.copy(
+                notifications = it.notifications.copy(
+                    enabled = granted || SettingsStore.notifications(),
+                    permissionGranted = granted,
+                    blocked = false,
+                ),
+            )
+        }
+    }
 
     private fun loadProfile() {
         _state.update { it.copy(loading = true, error = "") }

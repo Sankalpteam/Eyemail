@@ -25,6 +25,13 @@ fun AboutSection(
         SettingRow("Built by", "Powered by Indo Workspace") { Tag("INDO") }
         SettingRow("Free plan", "1 GB storage, 50 outside mails a day, 20 recipients a message") { Tag("NO CARD") }
         SettingRow("Not supported yet", "Attachments, and sending as a customer domain") { Tag("LATER") }
+        SettingRow("Permission", "What Android says about notifications") {
+            Text(
+                if (app.eyemail.settings.notifications.NotificationPermission.isGranted()) "allowed" else "not allowed",
+                fontSize = 11.5.sp,
+                color = if (app.eyemail.settings.notifications.NotificationPermission.isGranted()) Ey.Text2 else Ey.Danger,
+            )
+        }
         SettingRow("Push", "Whether this phone can be told when mail arrives") {
             Text(
                 if (app.eyemail.settings.SettingsStore.pushRegistered()) "registered" else "not yet",
