@@ -1179,14 +1179,43 @@
     return tokens;
   }
 
+  /* Searching asks Firestore for a much wider set than the page on screen, and ignores
+     the folder. Looking for an old invoice should not depend on whether it happens to be
+     in the first fifty mails, or on which folder you were standing in. */
+  let searchResults = null;
+  let searchRun = 0;
+
+  async function runSearch(text) {
+    if (!text) {
+      searchResults = null;
+      renderList();
+      return;
+    }
+    const mine = ++searchRun;
+    try {
+      const wide = query(collection(db, "users", currentUser.uid, "emails"),
+                         orderBy("createdAt", "desc"), limit(300));
+      const snap = await getDocs(wide);
+      if (mine !== searchRun) return;   // a newer search has started; this one is stale
+      searchResults = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    } catch (_) {
+      if (mine === searchRun) searchResults = [];
+    }
+    renderList();
+  }
+
   function filteredEmails() {
     const q = parseQuery(searchQuery);
-    return allEmails.filter((m) => {
+    // While a search is active the folder is not a filter, the words are.
+    const source = searchResults || allEmails;
+    return source.filter((m) => {
+      if (!searchResults) {
       if (currentFolder === "label") {
         if (!(m.labels || []).includes(currentLabel) || m.folder === "trash") return false;
       } else if (currentFolder === "starred") {
         if (!m.starred || m.folder === "trash") return false;
       } else if (m.folder !== currentFolder) return false;
+      }
 
       if (activeFilter === "unread" && m.read) return false;
       if (activeFilter === "starred" && !m.starred) return false;
@@ -1882,8 +1911,8 @@
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
       body: JSON.stringify({ to, subject, body, cc, bcc })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Failed to send email");
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || `Could not send the mail (HTTP ${res.status}).`);
     return data;
   }
 
@@ -2445,9 +2474,12 @@
     renderList();
   }));
 
+  let searchTimer = null;
   document.getElementById("searchInput").addEventListener("input", (e) => {
     searchQuery = e.target.value.trim();
-    renderList();
+    clearTimeout(searchTimer);
+    // One search per pause, not one per keystroke.
+    searchTimer = setTimeout(() => runSearch(searchQuery), 300);
   });
 
   function toggleRail() {
