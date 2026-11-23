@@ -22,29 +22,11 @@ class HomeViewModel : ViewModel() {
         registerPush()
     }
 
-    /**
-     * Tell the server this phone's push token. Done here, not at startup, because the
-     * mailbox only exists after sign in, and at startup there is no session yet.
-     */
-    fun registerPush() {
-        val idToken = token()
-        val who = uid()
-        if (idToken.isBlank() || who.isBlank()) return
-        com.google.firebase.messaging.FirebaseMessaging.getInstance().token
-            .addOnSuccessListener { deviceToken ->
-                viewModelScope.launch {
-                    val ok = runCatching {
-                        MailRepository.registerPushToken(who, idToken, deviceToken)
-                    }.isSuccess
-                    SettingsStore.setPushRegistered(ok)
-                    _state.update { it.copy(pushRegistered = ok) }
-                }
-            }
-            .addOnFailureListener {
-                SettingsStore.setPushRegistered(false)
-                _state.update { it.copy(pushRegistered = false) }
-            }
-    }
+    /** Push is owned by PushRegistrar, so this only asks it to make sure. */
+    fun registerPush() = app.eyemail.push.PushRegistrar.ensureRegistered(
+        context = app.eyemail.push.PushRegistrar.appContext(),
+        reason = "mailbox",
+    )
 
     private fun token(): String = AuthSessionStore.token().orEmpty()
 

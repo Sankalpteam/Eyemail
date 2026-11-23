@@ -39,11 +39,16 @@ object PushRegistrar {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var inFlight: Job? = null
+    private var appContext: Context? = null
 
     fun init(context: Context) {
+        appContext = context.applicationContext
         SettingsStore.init(context)
         ensureChannel(context.applicationContext)
     }
+
+    /** The context kept at init, so callers without one can still ask for a retry. */
+    fun appContext(): Context = appContext ?: throw IllegalStateException("PushRegistrar.init was not called")
 
     /** The channel must exist before the first message, so this runs at app start. */
     fun ensureChannel(context: Context) {
