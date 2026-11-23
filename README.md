@@ -1,58 +1,84 @@
-# native/ — the Eyemail Android app
+# Eyemail
 
-Kotlin + Jetpack Compose, package `in.eyemail.app`, minSdk 24, targetSdk 35.
+Business mail on `@eyemail.in`. Free on the free plan: 1 GB storage, unlimited addresses on
+the domain, 50 mails a day to outside addresses, and spam kept out.
 
-The screens must match the web app exactly: same blue, same spacing, same words.
+This repository holds three things that work together.
 
-## What is in this first push
-
-Three screens, wired to the same endpoints the web app calls:
-
-| Screen | File | Calls |
+| Folder | What it is | Where it runs |
 |---|---|---|
-| Sign in | `ui/screens/LoginScreen.kt` | Firebase sign-in over REST |
-| Create account | `ui/screens/SignupScreen.kt` | `/api/auth/signup`, sign-in, `/api/auth/verify-signup-otp`, `/api/auth/register-mailbox`, `/api/auth/send-signup-otp` |
-| Reset password | `ui/screens/ForgotPasswordScreen.kt` | `/api/auth/forgot-password` |
+| `web/` | the site: landing page, sign in, sign up, reset, and the mailbox | GitHub Pages, which also serves eyemail.in |
+| `native/` | the Android app, Kotlin and Jetpack Compose | built by GitHub Actions, installed from the artifact |
+| `branding/` | the icon, in every size, made by one script | read by both of the above |
 
-One folder per screen, the way Sankalp's `android/authentication/` does it. The shared
-auth files sit in `authentication/` itself and each screen owns its own folder:
+The server is a separate repository, `Sankalpteam/Eyemail-Backend`: a single FastAPI service
+that sends mail through Brevo, writes inbound mail into Firestore, and holds the account
+endpoints. It runs on Render.
 
-```
-app/src/main/java/in/eyemail/app/
-  MainActivity.kt                     the switch between screens, and back handling
-  Theme.kt                            colour and type tokens
-  authentication/
-    AuthComponents.kt                 field, buttons, alert, brand header, mark
-    AuthSessionStore.kt               the token and account, in memory and on disk
-    EyemailAuthService.kt             every endpoint call
-    login/                            LoginScreen, LoginState, LoginViewModel
-    signup/                           SignUpScreen, SignUpState, SignUpViewModel
-    forgot/                           ForgotPasswordScreen, State, ViewModel
-```
-
-The six digit code step is not its own folder: it lives inside `signup/`, as the second
-step in `SignUpState.Step`, because it is part of creating the account, not a screen of its own.
-
-The folder is `signup/`, not `sign-up/`, because a dash is not legal in a Kotlin package name.
-
-## Build it
-
-1. Open the `native/` folder in Android Studio (it is the project root).
-2. Create `native/local.properties` next to this file with:
+## How the three fit
 
 ```
-sdk.dir=/path/to/Android/sdk
-BACKEND_URL=https://eyemail-backend.onrender.com
-FIREBASE_API_KEY=<the apiKey from firebase-config.js in the repository root>
+Cloudflare Email Routing  ->  worker.js  ->  POST /webhook/inbound  ->  Firestore
+browser or app            ->  POST /api/send-email  ->  Brevo  ->  the world
+browser or app            ->  Firestore directly, for reading and moving mail
 ```
 
-The key is read from `local.properties`, never committed, so nothing secret sits in the repo.
+A person signs in with Firebase Auth. Their uid is their address, so `yashwanth@eyemail.in`
+is both the login and the mailbox. The app and the web both read mail straight from
+Firestore, which is why the security rules in `firestore.rules` matter.
 
-3. Run on a phone or an emulator with Android 7 or newer.
+## Run the web locally
 
-## Not done yet, on purpose
+Any static server works, because there is no build step:
 
-- The inbox, reader and settings screens. Signing in lands on a plain screen that says so.
-- A signed release build. It needs a keystore, which the owner holds, and the Android SDK,
-  which this repository does not carry.
-- Play Store listing: account, privacy policy page, screenshots, data safety form.
+    cd web
+    python3 -m http.server 5500
+
+Then open http://localhost:5500. The pages call the live backend; nothing else is needed.
+
+## Build the app
+
+The GitHub Actions workflow builds on every push that touches `native/`, and uploads
+`eyemail-debug-apk` as an artifact. To build by hand, open `native/` in Android Studio.
+
+The app needs three values at build time, read from `native/local.properties` or from the
+environment, so nothing secret is ever committed:
+
+| Name | What it is |
+|---|---|
+| `BACKEND_URL` | `https://eyemail-backend.onrender.com` |
+| `FIREBASE_API_KEY` | the public web key from `web/firebase-config.js` |
+| `FIRESTORE_PROJECT` | `eyemail-c3398` |
+
+In CI these come from repository secrets of the same names. The app shows the commit it was
+built from in Settings, About, Build, so an install can always be identified.
+
+## The server
+
+Environment variables, set on Render, never in the repository:
+
+| Name | What it is |
+|---|---|
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | the whole service account file, not only the private key |
+| `FIREBASE_DATABASE_URL` | the Realtime Database URL |
+| `BREVO_API_KEY` | outbound mail |
+| `INTERNAL_API_SECRET` | the key Indo Account sends with `/api/internal/send-mail` |
+| `WEBHOOK_SECRET` | the secret Cloudflare sends with `/webhook/inbound` |
+| `ALLOWED_ORIGINS` | comma separated list of sites allowed to call the API |
+| `DAILY_EXTERNAL_LIMIT` | outside mails per day, per account |
+
+## Security
+
+`firestore.rules` is the only thing between one customer's mail and another's. Read
+`FIRESTORE_RULES.md` before changing it, and deploy it in the Firebase console under
+Firestore Database, Rules. `firestore.rules.test.md` lists the cases it must answer.
+
+## House rules
+
+- The look must match on the web and in the app: same blue, same spacing, same words.
+- Never commit `serviceAccountKey.json`, `local.properties`, or any key. The public web key
+  is the one exception, and it belongs in `web/firebase-config.js`.
+- The free plan wording is part of the product: a limit is a free plan limit, and the reason
+  is spam and abuse, never that mail is short.
+- A change to mail behaviour is a change in `main.py` or `worker.js`. A change to how a
+  screen looks is a change in `web/` and in `native/`, both, or it is half done.

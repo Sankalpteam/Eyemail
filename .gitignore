@@ -1,0 +1,16 @@
+# Secrets and machine specific files. None of these belong in the repository.
+serviceAccountKey.json
+.env
+local.properties
+native/local.properties
+
+# Build output
+native/build/
+native/app/build/
+native/.gradle/
+.gradle/
+
+# Editor and OS noise
+.idea/
+*.iml
+.DS_Store

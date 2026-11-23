@@ -1,0 +1,9 @@
+# Copy to native/local.properties. The file is git ignored, and must never be committed.
+# The GitHub Actions build writes it from repository secrets instead.
+
+BACKEND_URL=https://eyemail-backend.onrender.com
+
+# The public web key, the same one in web/firebase-config.js. It starts with AIza.
+FIREBASE_API_KEY=
+
+FIRESTORE_PROJECT=eyemail-c3398
