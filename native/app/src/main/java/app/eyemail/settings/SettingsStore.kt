@@ -54,12 +54,6 @@ object SettingsStore {
     }
 
     /** Whether the server has this phone's push token, so About can say so. */
-    fun setPushRegistered(value: Boolean) {
-        prefs?.edit()?.putBoolean("pushRegistered", value)?.apply()
-    }
-
-    fun pushRegistered(): Boolean = prefs?.getBoolean("pushRegistered", false) ?: false
-
     fun setPushState(registered: Boolean, reason: String = "") {
         prefs?.edit()?.putBoolean("pushRegistered", registered)?.putString("pushReason", reason)?.apply()
     }
