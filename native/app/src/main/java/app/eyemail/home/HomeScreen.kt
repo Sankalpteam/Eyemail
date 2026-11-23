@@ -115,6 +115,8 @@ fun HomeScreen(
     var composeCc by remember { mutableStateOf<List<String>>(emptyList()) }
     var composeBody by remember { mutableStateOf("") }
     var composeBusy by remember { mutableStateOf(false) }
+    var labelling by remember { mutableStateOf(false) }
+    var newLabel by remember { mutableStateOf("") }
     var composeError by remember { mutableStateOf("") }
 
     val drawer = rememberDrawerState(DrawerValue.Closed)
@@ -128,6 +130,68 @@ fun HomeScreen(
         } else {
             viewModel.close()
         }
+    }
+
+    if (labelling && openMail != null) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { labelling = false },
+            title = { Text("Labels", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Ey.Text) },
+            text = {
+                Column {
+                    if (state.labels.isEmpty()) {
+                        Text(
+                            "No labels yet. Type one below.",
+                            fontSize = 12.sp,
+                            color = Ey.Text3,
+                        )
+                    }
+                    state.labels.forEach { name ->
+                        val on = openMail.labels.contains(name)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { viewModel.toggleLabel(openMail, name) }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                if (on) "✓" else "○",
+                                fontSize = 14.sp,
+                                color = if (on) Ey.Accent else Ey.Text3,
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                name,
+                                fontSize = 13.sp,
+                                fontWeight = if (on) FontWeight.Bold else FontWeight.Normal,
+                                color = if (on) Ey.Accent else Ey.Text,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newLabel,
+                        onValueChange = { newLabel = it },
+                        singleLine = true,
+                        placeholder = { Text("New label", fontSize = 12.5.sp, color = Ey.Text3) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (newLabel.isNotBlank()) {
+                        viewModel.toggleLabel(openMail, newLabel.trim())
+                        newLabel = ""
+                    }
+                }) { Text("Add", color = Ey.Accent) }
+            },
+            dismissButton = {
+                TextButton(onClick = { labelling = false; newLabel = "" }) {
+                    Text("Done", color = Ey.Text3)
+                }
+            },
+        )
     }
 
     when {
@@ -194,6 +258,7 @@ fun HomeScreen(
                 composeError = ""
                 composing = true
             },
+            onLabel = { labelling = true },
             onForward = {
                 // Forward keeps the original underneath, so the new person has the context.
                 composeTo = ""

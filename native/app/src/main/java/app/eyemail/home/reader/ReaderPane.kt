@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.outlined.Reply
 import androidx.compose.material.icons.automirrored.outlined.ReplyAll
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Icon
@@ -54,6 +55,7 @@ fun ReaderPane(
     onReply: () -> Unit,
     onReplyAll: () -> Unit,
     onForward: () -> Unit,
+    onLabel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -109,6 +111,11 @@ fun ReaderPane(
                 icon = Icons.AutoMirrored.Outlined.Forward,
                 label = "Forward",
                 onClick = onForward,
+            )
+            IconChip(
+                icon = Icons.Outlined.Label,
+                label = "Label",
+                onClick = onLabel,
             )
         }
 
@@ -179,6 +186,23 @@ fun ReaderPane(
                             .clickable(onClick = onStar)
                             .padding(4.dp),
                     )
+                }
+            }
+
+            if (mail.labels.isNotEmpty()) {
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    mail.labels.forEach { name ->
+                        Text(
+                            name,
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Ey.Accent,
+                            modifier = Modifier
+                                .background(Ey.AccentSoft, RoundedCornerShape(99.dp))
+                                .padding(horizontal = 9.dp, vertical = 4.dp),
+                        )
+                    }
                 }
             }
 

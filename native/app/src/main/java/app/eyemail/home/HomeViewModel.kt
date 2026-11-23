@@ -197,6 +197,33 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Put a label on a mail, or take it off. The label names live on the phone, the
+     * assignment lives on the mail, so the same word can be used across folders.
+     */
+    fun toggleLabel(mail: Mail, label: String) {
+        val next = if (mail.labels.contains(label)) {
+            mail.labels - label
+        } else {
+            mail.labels + label
+        }
+        SettingsStore.addLabel(label)
+        _state.update { current ->
+            current.copy(
+                mails = current.mails.map { if (it.id == mail.id) it.copy(labels = next) else it },
+                labels = SettingsStore.labels(),
+            )
+        }
+        viewModelScope.launch {
+            try {
+                MailRepository.setLabels(uid(), token(), mail.id, next)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Could not save the label.") }
+                load()
+            }
+        }
+    }
+
     fun open(mail: Mail) {
         _state.update { it.copy(openMailId = mail.id) }
         if (!mail.read) setRead(mail, true)
