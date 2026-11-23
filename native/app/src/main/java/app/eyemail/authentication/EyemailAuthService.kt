@@ -28,7 +28,13 @@ object EyemailAuthService {
     class ApiError(message: String) : Exception(message)
 
     data class SignupResult(val email: String, val maskedRecoveryEmail: String)
-    data class Session(val uid: String, val email: String, val idToken: String)
+    data class Session(
+        val uid: String,
+        val email: String,
+        val idToken: String,
+        val refreshToken: String = "",
+        val expiresInSeconds: Long = 3600,
+    )
 
     private suspend fun post(
         path: String,
@@ -114,6 +120,8 @@ object EyemailAuthService {
             uid = json.optString("localId"),
             email = json.optString("email", email),
             idToken = json.optString("idToken"),
+            refreshToken = json.optString("refreshToken"),
+            expiresInSeconds = json.optString("expiresIn").toLongOrNull() ?: 3600L,
         )
     }
 

@@ -75,17 +75,19 @@ object PushRegistrar {
      */
     fun ensureRegistered(context: Context, reason: String = "app") {
         SettingsStore.init(context)
-        val idToken = AuthSessionStore.token().orEmpty()
-        val uid = AuthSessionStore.uid().orEmpty()
-        if (idToken.isBlank() || uid.isBlank()) {
-            SettingsStore.setPushState(false, "not signed in")
-            return
-        }
         if (inFlight?.isActive == true) return
 
         inFlight = scope.launch {
+            // A live token: an expired one would make registration fail for no visible reason.
+            val idToken = app.eyemail.authentication.SessionKeeper.validToken()
+            val uid = AuthSessionStore.uid().orEmpty()
+            if (idToken.isBlank() || uid.isBlank()) {
+                SettingsStore.setPushState(false, "not signed in")
+                return@launch
+            }
             var lastError = ""
             repeat(3) { attempt ->
+                val freshId = app.eyemail.authentication.SessionKeeper.validToken()
                 val token = runCatching { FirebaseMessaging.getInstance().token.awaitToken() }
                     .getOrElse { error ->
                         lastError = "firebase: ${error.message ?: "no token"}"
@@ -94,7 +96,7 @@ object PushRegistrar {
                 if (token != null) {
                     SettingsStore.setDeviceToken(token)
                     val outcome = runCatching {
-                        MailRepository.registerPushToken(uid, idToken, token)
+                        MailRepository.registerPushToken(uid, freshId, token)
                     }
                     if (outcome.isSuccess) {
                         SettingsStore.setPushState(true, reason)

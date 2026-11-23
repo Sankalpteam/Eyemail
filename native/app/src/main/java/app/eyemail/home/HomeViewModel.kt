@@ -3,6 +3,7 @@ package app.eyemail.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.eyemail.authentication.AuthSessionStore
+import app.eyemail.authentication.SessionKeeper
 import app.eyemail.home.search.SearchQuery
 import app.eyemail.settings.SettingsStore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +29,10 @@ class HomeViewModel : ViewModel() {
         reason = "mailbox",
     )
 
-    private fun token(): String = AuthSessionStore.token().orEmpty()
+    /**
+     * A live token. Renewed when it is old, so an hour after sign in the app still works.
+     */
+    private suspend fun token(): String = SessionKeeper.validToken()
 
     private fun uid(): String = AuthSessionStore.uid().orEmpty()
 
@@ -37,13 +41,13 @@ class HomeViewModel : ViewModel() {
      * Spam are real lists and not whatever was left over from the inbox.
      */
     fun load() {
-        if (token().isBlank() || uid().isBlank()) {
-            _state.update { it.copy(error = "Sign in again.", loading = false) }
-            return
-        }
         val folder = _state.value.folder
         _state.update { it.copy(loading = true, error = "") }
         viewModelScope.launch {
+            if (token().isBlank() || uid().isBlank()) {
+                _state.update { it.copy(error = "Sign in again.", loading = false) }
+                return@launch
+            }
             try {
                 val size = _state.value.pageSize
                 val mails = when (folder) {
@@ -107,25 +111,47 @@ class HomeViewModel : ViewModel() {
      * Search looks at every folder, not only the one on screen. A person looking for an
      * invoice does not know, and should not have to know, whether it is in Sent or Trash.
      */
+    private var searchJob: kotlinx.coroutines.Job? = null
+
     fun search(query: String) {
         _state.update { it.copy(query = query) }
+        // Every keystroke used to fire five network calls. One query, one search.
+        searchJob?.cancel()
         if (query.isBlank()) {
             _state.update { it.copy(searching = false) }
             load()
             return
         }
         _state.update { it.copy(searching = true, loading = true) }
-        viewModelScope.launch {
+        searchJob = viewModelScope.launch {
+            kotlinx.coroutines.delay(350)
             try {
                 val wanted = SearchQuery.parse(query)
+                var failedFolders = 0
                 val everywhere = listOf("inbox", "sent", "drafts", "spam", "trash")
                     .flatMap { folder ->
-                        runCatching { MailRepository.list(uid(), token(), folder, 50) }.getOrDefault(emptyList())
+                        runCatching { MailRepository.list(uid(), token(), folder, 50) }
+                            .getOrElse {
+                                failedFolders += 1
+                                emptyList()
+                            }
                     }
                     .distinctBy { it.id }
                     .filter { wanted.matches(it) }
                     .sortedByDescending { it.createdAt }
-                _state.update { it.copy(mails = everywhere, loading = false, searching = true, canLoadMore = false) }
+                _state.update {
+                    it.copy(
+                        mails = everywhere,
+                        loading = false,
+                        searching = true,
+                        canLoadMore = false,
+                        error = if (failedFolders > 0) {
+                            "Searched ${5 - failedFolders} of 5 folders. The rest did not answer."
+                        } else {
+                            ""
+                        },
+                    )
+                }
             } catch (e: Exception) {
                 _state.update { it.copy(loading = false, error = e.message ?: "Could not search.") }
             }

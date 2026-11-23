@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.eyemail.BuildConfig
 import app.eyemail.authentication.AuthSessionStore
+import app.eyemail.authentication.SessionKeeper
 import app.eyemail.authentication.EyemailAuthService
 import app.eyemail.home.MailRepository
 import app.eyemail.settings.about.AboutState
@@ -73,7 +74,7 @@ class SettingsViewModel(
         _state.update { it.copy(notifications = it.notifications.copy(testing = true, testResult = "")) }
         viewModelScope.launch {
             val result = runCatching {
-                MailRepository.pushTest(AuthSessionStore.token().orEmpty())
+                MailRepository.pushTest(SessionKeeper.validToken())
             }
             val (ok, text) = result.fold(
                 onSuccess = { answer ->
@@ -99,7 +100,7 @@ class SettingsViewModel(
         _state.update { it.copy(notifications = it.notifications.copy(testing = true, testResult = "")) }
         viewModelScope.launch {
             val last = runCatching {
-                MailRepository.lastPushStatus(AuthSessionStore.token().orEmpty())
+                MailRepository.lastPushStatus(SessionKeeper.validToken())
             }
             val text = last.fold(
                 onSuccess = { status ->
@@ -128,7 +129,7 @@ class SettingsViewModel(
         _state.update { it.copy(loading = true, error = "") }
         viewModelScope.launch {
             try {
-                val profile = MailRepository.profile(AuthSessionStore.token().orEmpty())
+                val profile = MailRepository.profile(SessionKeeper.validToken())
                 _state.update {
                     it.copy(
                         loading = false,
@@ -189,7 +190,7 @@ class SettingsViewModel(
         _state.update { it.copy(account = it.account.copy(signingOutAll = true, actionNote = "", actionError = "")) }
         viewModelScope.launch {
             try {
-                EyemailAuthService.signOutAll(AuthSessionStore.token().orEmpty())
+                EyemailAuthService.signOutAll(SessionKeeper.validToken())
                 // The tokens are dead on the server, so the session here goes too.
                 AuthSessionStore.clear()
                 _state.update {
@@ -208,7 +209,7 @@ class SettingsViewModel(
         _state.update { it.copy(account = it.account.copy(deleting = true, actionNote = "", actionError = "")) }
         viewModelScope.launch {
             try {
-                EyemailAuthService.deleteAccount(AuthSessionStore.token().orEmpty())
+                EyemailAuthService.deleteAccount(SessionKeeper.validToken())
                 AuthSessionStore.clear()
                 SettingsStore.clear()
                 _state.update { it.copy(account = it.account.copy(deleting = false)) }
