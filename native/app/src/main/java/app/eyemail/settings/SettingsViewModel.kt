@@ -161,6 +161,34 @@ class SettingsViewModel(
         }
     }
 
+    /** Ask the server what it did with the last real mail, and say it plainly. */
+    fun checkLastPush() {
+        _state.update { it.copy(notifications = it.notifications.copy(testing = true, testResult = "")) }
+        viewModelScope.launch {
+            val last = runCatching { MailRepository.lastPushStatus(AuthSessionStore.token().orEmpty()) }
+            val text = last.fold(
+                onSuccess = { status ->
+                    when {
+                        status.at.isBlank() ->
+                            "No mail has arrived since this feature was switched on. Send yourself one, then check again."
+                        status.sent > 0 ->
+                            "Last mail: sent to ${status.sent} phone. If it did not show, the phone blocked it."
+                        status.error.isNotBlank() ->
+                            "Last mail: the server failed. ${status.error}"
+                        status.phones == 0 ->
+                            "Last mail: the server has no phone for this account."
+                        else ->
+                            "Last mail: nothing was sent. ${status.phones} phone registered."
+                    }
+                },
+                onFailure = { error -> error.message ?: "The server could not be reached." },
+            )
+            _state.update {
+                it.copy(notifications = it.notifications.copy(testing = false, testResult = text, testOk = false))
+            }
+        }
+    }
+
     fun setNotifications(enabled: Boolean, granted: Boolean, blocked: Boolean) {
         SettingsStore.setNotifications(enabled)
         _state.update {

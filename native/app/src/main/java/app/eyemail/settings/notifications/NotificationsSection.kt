@@ -23,6 +23,7 @@ fun NotificationsSection(
     onChange: (enabled: Boolean, granted: Boolean, blocked: Boolean) -> Unit,
     onTest: () -> Unit = {},
     onRefresh: () -> Unit = {},
+    onCheckLast: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     // Android 13 and up ask at runtime; below that the permission is given at install.
@@ -75,6 +76,14 @@ fun NotificationsSection(
                 text = if (state.testing) "Sending..." else "Send test",
                 enabled = !state.testing,
                 onClick = { onTest() },
+            )
+        }
+
+        SettingRow("Last real mail", "What the server did when mail last arrived") {
+            SmallButton(
+                text = "Check",
+                enabled = !state.testing,
+                onClick = { onCheckLast() },
             )
         }
 
