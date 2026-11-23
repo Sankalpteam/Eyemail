@@ -39,12 +39,15 @@ class SettingsViewModel(
                     confirmDelete = SettingsStore.confirmDelete(),
                 ),
                 notifications = it.notifications.copy(
-                    enabled = SettingsStore.notifications(),
+                    // The phone already allowed it, so it is on. Without this the switch
+                    // said "Turn on" even after the person had just allowed the popup.
+                    enabled = SettingsStore.notifications() || NotificationPermission.isGranted(),
                     permissionGranted = NotificationPermission.isGranted(),
                 ),
                 about = AboutState(version = "1.0", domain = BuildConfig.DOMAIN_NAME),
             )
         }
+        if (NotificationPermission.isGranted()) SettingsStore.setNotifications(true)
         loadProfile()
     }
 
