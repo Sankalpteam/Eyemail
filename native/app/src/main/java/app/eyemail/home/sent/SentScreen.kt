@@ -15,12 +15,16 @@ fun SentScreen(
     modifier: Modifier = Modifier,
     selected: Set<String> = emptySet(),
     onToggle: (String) -> Unit = {},
+    canLoadMore: Boolean = false,
+    onLoadMore: () -> Unit = {},
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         MailList(
             mails = mails,
             selected = selected,
             onToggle = onToggle,
+            canLoadMore = canLoadMore,
+            onLoadMore = onLoadMore,
             emptyText = "Nothing sent yet.",
             onOpen = onOpen,
         )

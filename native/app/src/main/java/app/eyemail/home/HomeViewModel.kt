@@ -3,6 +3,7 @@ package app.eyemail.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.eyemail.authentication.AuthSessionStore
+import app.eyemail.home.search.SearchQuery
 import app.eyemail.settings.SettingsStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,14 +38,22 @@ class HomeViewModel : ViewModel() {
         _state.update { it.copy(loading = true, error = "") }
         viewModelScope.launch {
             try {
+                val size = _state.value.pageSize
                 val mails = when (folder) {
-                    "starred" -> MailRepository.listStarred(uid(), token())
+                    "starred" -> MailRepository.listStarred(uid(), token(), size)
                     // Labels is not a folder in the database: it filters the inbox.
-                    "labels" -> MailRepository.list(uid(), token(), "inbox")
+                    "labels" -> MailRepository.list(uid(), token(), "inbox", size)
                     "domain" -> emptyList()
-                    else -> MailRepository.list(uid(), token(), folder)
+                    else -> MailRepository.list(uid(), token(), folder, size)
                 }
-                _state.update { it.copy(mails = mails, loading = false) }
+                _state.update {
+                    it.copy(
+                        mails = mails,
+                        loading = false,
+                        searching = false,
+                        canLoadMore = mails.size >= size,
+                    )
+                }
                 if (folder == "inbox") Notifier.announce(mails)
             } catch (e: Exception) {
                 _state.update { it.copy(loading = false, error = e.message ?: "Could not load the mailbox.") }
@@ -87,7 +96,41 @@ class HomeViewModel : ViewModel() {
         if (folder != "domain") load()
     }
 
-    fun search(query: String) = _state.update { it.copy(query = query) }
+    /**
+     * Search looks at every folder, not only the one on screen. A person looking for an
+     * invoice does not know, and should not have to know, whether it is in Sent or Trash.
+     */
+    fun search(query: String) {
+        _state.update { it.copy(query = query) }
+        if (query.isBlank()) {
+            _state.update { it.copy(searching = false) }
+            load()
+            return
+        }
+        _state.update { it.copy(searching = true, loading = true) }
+        viewModelScope.launch {
+            try {
+                val wanted = SearchQuery.parse(query)
+                val everywhere = listOf("inbox", "sent", "drafts", "spam", "trash")
+                    .flatMap { folder ->
+                        runCatching { MailRepository.list(uid(), token(), folder, 50) }.getOrDefault(emptyList())
+                    }
+                    .distinctBy { it.id }
+                    .filter { wanted.matches(it) }
+                    .sortedByDescending { it.createdAt }
+                _state.update { it.copy(mails = everywhere, loading = false, searching = true, canLoadMore = false) }
+            } catch (e: Exception) {
+                _state.update { it.copy(loading = false, error = e.message ?: "Could not search.") }
+            }
+        }
+    }
+
+    /** One more page of the folder on screen. */
+    fun loadMore() {
+        val next = _state.value.pageSize + 50
+        _state.update { it.copy(pageSize = next) }
+        load()
+    }
 
     /* ---------- selection, the same gestures as the web ---------- */
 

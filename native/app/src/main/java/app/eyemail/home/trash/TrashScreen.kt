@@ -32,6 +32,8 @@ fun TrashScreen(
     modifier: Modifier = Modifier,
     selected: Set<String> = emptySet(),
     onToggle: (String) -> Unit = {},
+    canLoadMore: Boolean = false,
+    onLoadMore: () -> Unit = {},
 ) {
     // Ask before deleting forever is a setting; when it is off, Empty trash goes at once.
     val mustAsk = SettingsStore.confirmDelete()
@@ -82,6 +84,8 @@ fun TrashScreen(
             mails = mails,
             selected = selected,
             onToggle = onToggle,
+            canLoadMore = canLoadMore,
+            onLoadMore = onLoadMore,
             emptyText = "Trash is empty.",
             onOpen = onOpen,
         )

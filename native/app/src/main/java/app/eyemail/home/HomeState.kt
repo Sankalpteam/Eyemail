@@ -13,6 +13,9 @@ data class HomeState(
     val labels: List<String> = emptyList(),
     val selectedLabel: String? = null,
     val selected: Set<String> = emptySet(),
+    val pageSize: Int = 50,
+    val canLoadMore: Boolean = false,
+    val searching: Boolean = false,
 ) {
     val selecting: Boolean get() = selected.isNotEmpty()
 

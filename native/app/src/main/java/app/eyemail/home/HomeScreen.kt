@@ -250,7 +250,7 @@ fun HomeScreen(
                     .statusBarsPadding(),
             ) {
                 Header(
-                    title = titleFor(state.folder),
+                    title = if (state.searching && state.query.isNotBlank()) "Search" else titleFor(state.folder),
                     count = state.visible.size,
                     loading = state.loading,
                     onMenu = { scope.launch { drawer.open() } },
@@ -314,18 +314,22 @@ fun HomeScreen(
                         "starred" -> StarredScreen(
                             mails = state.visible, onOpen = viewModel::open,
                             selected = state.selected, onToggle = viewModel::toggleSelect,
+                            canLoadMore = state.canLoadMore, onLoadMore = viewModel::loadMore,
                         )
                         "sent" -> SentScreen(
                             mails = state.visible, onOpen = viewModel::open,
                             selected = state.selected, onToggle = viewModel::toggleSelect,
+                            canLoadMore = state.canLoadMore, onLoadMore = viewModel::loadMore,
                         )
                         "drafts" -> DraftsScreen(
                             mails = state.visible, onOpen = viewModel::open,
                             selected = state.selected, onToggle = viewModel::toggleSelect,
+                            canLoadMore = state.canLoadMore, onLoadMore = viewModel::loadMore,
                         )
                         "spam" -> SpamScreen(
                             mails = state.visible, onOpen = viewModel::open,
                             selected = state.selected, onToggle = viewModel::toggleSelect,
+                            canLoadMore = state.canLoadMore, onLoadMore = viewModel::loadMore,
                         )
                         "trash" -> TrashScreen(
                             mails = state.visible,
@@ -346,6 +350,7 @@ fun HomeScreen(
                         else -> InboxScreen(
                             mails = state.visible, onOpen = viewModel::open,
                             selected = state.selected, onToggle = viewModel::toggleSelect,
+                            canLoadMore = state.canLoadMore, onLoadMore = viewModel::loadMore,
                         )
                     }
                 }

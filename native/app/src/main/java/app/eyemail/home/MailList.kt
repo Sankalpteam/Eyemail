@@ -40,6 +40,8 @@ fun MailList(
     modifier: Modifier = Modifier,
     selected: Set<String> = emptySet(),
     onToggle: (String) -> Unit = {},
+    canLoadMore: Boolean = false,
+    onLoadMore: () -> Unit = {},
 ) {
     val selecting = selected.isNotEmpty()
     if (mails.isEmpty()) {
@@ -184,6 +186,25 @@ fun FilterChips(
                     fontWeight = FontWeight.SemiBold,
                     color = if (on) androidx.compose.ui.graphics.Color.White else Ey.Text2,
                 )
+            }
+        }
+
+        if (canLoadMore) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onLoadMore)
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        "Load more",
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Ey.Accent,
+                    )
+                }
             }
         }
     }
