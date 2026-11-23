@@ -1,0 +1,60 @@
+rules_version = '2';
+
+// Eyemail — Firestore rules.
+//
+// The shape of the data, so the rules below make sense:
+//
+//   users/{uid}/emails/{mailId}      one document per mail
+//   users/{uid}/mailbox              (not used; kept closed)
+//
+// Everything a person can reach is under their own uid. Nothing else is readable,
+// not by guessing an address, not by listing the collection.
+//
+// What the app is allowed to do, and why:
+//   read, create, update, delete its own mail      the app moves mail between folders
+//   the server writes the profile, storage, plans  a phone must not be able to grant
+//                                                  itself more space or a bigger plan
+//
+// Anything not written here is refused. If a new feature needs a path, it must be
+// added here on purpose, and that is the point: a mistake breaks loudly.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Signed in, and the same person the path belongs to.
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // A mail must be stamped with the folder it belongs to and the owner it belongs
+    // to, so a client cannot park a document somewhere the app will never look.
+    function validMail() {
+      return request.resource.data.keys().hasAll(['folder', 'createdAt'])
+        && request.resource.data.folder is string
+        && request.resource.data.folder in ['inbox', 'sent', 'drafts', 'spam', 'trash'];
+    }
+
+    // Mail. The owner reads and writes it; nobody else can even see that it exists.
+    match /users/{uid}/emails/{mailId} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && validMail();
+      allow update: if isOwner(uid);
+      allow delete: if isOwner(uid);
+    }
+
+    // The profile node in Firestore, if it is ever used. Read only for the owner.
+    match /users/{uid}/profile/{docId} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+
+    // Anything else under a user is refused, so a typo cannot open a new surface.
+    match /users/{uid}/{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
