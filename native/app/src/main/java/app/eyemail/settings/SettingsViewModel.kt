@@ -108,7 +108,7 @@ class SettingsViewModel(
     fun testPush() {
         _state.update { it.copy(notifications = it.notifications.copy(testing = true, testResult = "")) }
         viewModelScope.launch {
-            val result = runCatching { MailRepository.pushTest(token()) }.getOrElse { error ->
+            val result = runCatching { MailRepository.pushTest(AuthSessionStore.token().orEmpty()) }.getOrElse { error ->
                 _state.update {
                     it.copy(
                         notifications = it.notifications.copy(
