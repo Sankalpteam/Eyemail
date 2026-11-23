@@ -76,7 +76,8 @@ fun AccountSection(
             )
         }
 
-        var confirmDelete by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+        val confirmState = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+        val confirmDelete = confirmState.value
 
         SettingRow(
             "Delete my account",
@@ -85,13 +86,13 @@ fun AccountSection(
             SmallButton(
                 text = if (state.deleting) "Deleting..." else "Delete account",
                 enabled = !state.deleting && !state.signingOutAll,
-                onClick = { confirmDelete = true },
+                onClick = { confirmState.value = true },
             )
         }
 
         if (confirmDelete) {
             androidx.compose.material3.AlertDialog(
-                onDismissRequest = { confirmDelete = false },
+                onDismissRequest = { confirmState.value = false },
                 title = {
                     Text("Delete this account?", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Ey.Text)
                 },
@@ -106,12 +107,12 @@ fun AccountSection(
                 },
                 confirmButton = {
                     androidx.compose.material3.TextButton(onClick = {
-                        confirmDelete = false
+                        confirmState.value = false
                         onDelete()
                     }) { Text("Delete for good", color = Ey.Danger) }
                 },
                 dismissButton = {
-                    androidx.compose.material3.TextButton(onClick = { confirmDelete = false }) {
+                    androidx.compose.material3.TextButton(onClick = { confirmState.value = false }) {
                         Text("Keep it", color = Ey.Text3)
                     }
                 },
