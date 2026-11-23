@@ -39,7 +39,7 @@ class SettingsViewModel(
                     confirmDelete = SettingsStore.confirmDelete(),
                 ),
                 notifications = it.notifications.copy(
-                    enabled = SettingsStore.notifications(),
+                    enabled = SettingsStore.notifications() || NotificationPermission.isGranted(),
                     permissionGranted = NotificationPermission.isGranted(),
                 ),
                 about = AboutState(version = "1.0", domain = BuildConfig.DOMAIN_NAME),
@@ -48,7 +48,81 @@ class SettingsViewModel(
         loadProfile()
     }
 
-    fun select(section: SettingsState.Section) = _state.update { it.copy(section = section) }
+    fun select(section: SettingsState.Section) {
+        _state.update { it.copy(section = section) }
+        if (section == SettingsState.Section.Notifications) refreshNotifications()
+    }
+
+    /** Ask the phone again. Called on every open, so nothing can go stale. */
+    fun refreshNotifications() {
+        val granted = NotificationPermission.isGranted()
+        if (granted && !SettingsStore.notifications()) SettingsStore.setNotifications(true)
+        _state.update {
+            it.copy(
+                notifications = it.notifications.copy(
+                    enabled = granted || SettingsStore.notifications(),
+                    permissionGranted = granted,
+                    blocked = false,
+                ),
+            )
+        }
+    }
+
+    /** Ask the server to notify this phone now, and say what it answered. */
+    fun testPush() {
+        _state.update { it.copy(notifications = it.notifications.copy(testing = true, testResult = "")) }
+        viewModelScope.launch {
+            val result = runCatching {
+                MailRepository.pushTest(AuthSessionStore.token().orEmpty())
+            }
+            val (ok, text) = result.fold(
+                onSuccess = { answer ->
+                    when {
+                        answer.tokens == 0 ->
+                            false to "The server has no phone registered for this account."
+                        answer.sent > 0 ->
+                            true to "Sent to ${answer.sent} phone. If nothing appeared, Android blocked it."
+                        else ->
+                            false to "The server has ${answer.tokens} phone but sending failed: ${answer.error}"
+                    }
+                },
+                onFailure = { error -> false to (error.message ?: "The server could not be reached.") },
+            )
+            _state.update {
+                it.copy(notifications = it.notifications.copy(testing = false, testOk = ok, testResult = text))
+            }
+        }
+    }
+
+    /** Ask the server what it did with the last real mail. */
+    fun checkLastPush() {
+        _state.update { it.copy(notifications = it.notifications.copy(testing = true, testResult = "")) }
+        viewModelScope.launch {
+            val last = runCatching {
+                MailRepository.lastPushStatus(AuthSessionStore.token().orEmpty())
+            }
+            val text = last.fold(
+                onSuccess = { status ->
+                    when {
+                        status.at.isBlank() ->
+                            "No mail has arrived since this was switched on. Send one, then check again."
+                        status.sent > 0 ->
+                            "Last mail: sent to ${status.sent} phone. If it did not show, Android blocked it."
+                        status.error.isNotBlank() ->
+                            "Last mail: the server failed. ${status.error}"
+                        status.phones == 0 ->
+                            "Last mail: the server has no phone for this account."
+                        else ->
+                            "Last mail: nothing was sent, ${status.phones} phone registered."
+                    }
+                },
+                onFailure = { error -> error.message ?: "The server could not be reached." },
+            )
+            _state.update {
+                it.copy(notifications = it.notifications.copy(testing = false, testOk = false, testResult = text))
+            }
+        }
+    }
 
     private fun loadProfile() {
         _state.update { it.copy(loading = true, error = "") }
@@ -102,42 +176,6 @@ class SettingsViewModel(
     fun setConfirmDelete(value: Boolean) {
         SettingsStore.setConfirmDelete(value)
         _state.update { it.copy(mail = it.mail.copy(confirmDelete = value)) }
-    }
-
-    /** Ask the server to notify this phone, and report exactly what it answered. */
-    fun testPush() {
-        _state.update { it.copy(notifications = it.notifications.copy(testing = true, testResult = "")) }
-        viewModelScope.launch {
-            val result = runCatching { MailRepository.pushTest(AuthSessionStore.token().orEmpty()) }.getOrElse { error ->
-                _state.update {
-                    it.copy(
-                        notifications = it.notifications.copy(
-                            testing = false,
-                            testOk = false,
-                            testResult = error.message ?: "The server could not be reached.",
-                        ),
-                    )
-                }
-                return@launch
-            }
-            val text = when {
-                result.tokens == 0 ->
-                    "The server has no phone registered for this account. The app never sent its token."
-                result.sent > 0 ->
-                    "Sent to ${result.sent} device. If nothing appeared, the phone is blocking it."
-                else ->
-                    "The server has ${result.tokens} device but sending failed: ${result.error}"
-            }
-            _state.update {
-                it.copy(
-                    notifications = it.notifications.copy(
-                        testing = false,
-                        testOk = result.sent > 0,
-                        testResult = text,
-                    ),
-                )
-            }
-        }
     }
 
     fun setNotifications(enabled: Boolean, granted: Boolean, blocked: Boolean) {

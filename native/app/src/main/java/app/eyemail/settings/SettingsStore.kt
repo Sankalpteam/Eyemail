@@ -60,6 +60,20 @@ object SettingsStore {
 
     fun pushRegistered(): Boolean = prefs?.getBoolean("pushRegistered", false) ?: false
 
+    fun setPushState(registered: Boolean, reason: String = "") {
+        prefs?.edit()?.putBoolean("pushRegistered", registered)?.putString("pushReason", reason)?.apply()
+    }
+
+    fun pushRegistered(): Boolean = prefs?.getBoolean("pushRegistered", false) ?: false
+
+    fun pushReason(): String = prefs?.getString("pushReason", "") ?: ""
+
+    fun setDeviceToken(token: String) {
+        prefs?.edit()?.putString("deviceToken", token)?.apply()
+    }
+
+    fun deviceToken(): String = prefs?.getString("deviceToken", "") ?: ""
+
     fun notifications(): Boolean = prefs?.getBoolean("notifications", false) ?: false
     fun setNotifications(value: Boolean) = prefs?.edit()?.putBoolean("notifications", value)?.apply()
 }

@@ -16,7 +16,7 @@ import app.eyemail.settings.notifications.NotificationPermission
  */
 object Notifier {
 
-    private const val CHANNEL_ID = "eyemail_mail"
+    private const val CHANNEL_ID = app.eyemail.push.PushRegistrar.CHANNEL_ID
     private var appContext: Context? = null
     private val seen = mutableSetOf<String>()
     private var firstLoad = true

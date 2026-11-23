@@ -47,20 +47,16 @@ class MainActivity : ComponentActivity() {
         ThemeState.load()
         app.eyemail.settings.notifications.NotificationPermission.init(this)
         app.eyemail.home.Notifier.init(this)
+        app.eyemail.push.PushRegistrar.init(this)
 
-        // Ask Firebase for this device's push token once we know who is signed in.
-        runCatching {
-            com.google.firebase.messaging.FirebaseMessaging.getInstance().token
-                .addOnSuccessListener { token ->
-                    val idToken = AuthSessionStore.token().orEmpty()
-                    val uid = AuthSessionStore.uid().orEmpty()
-                    if (idToken.isNotBlank() && uid.isNotBlank()) {
-                        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                            runCatching { app.eyemail.home.MailRepository.registerPushToken(uid, idToken, token) }
-                        }
-                    }
-                }
-        }
+        // Push is offered to the server at start and on every return to the app. The
+        // registrar is idempotent and retries, so one failure is never the last word.
+        app.eyemail.push.PushRegistrar.ensureRegistered(this, reason = "start")
+        lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+            override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
+                app.eyemail.push.PushRegistrar.ensureRegistered(this@MainActivity, reason = "resume")
+            }
+        })
         enableEdgeToEdge()
         setContent {
             EyemailTheme {
@@ -76,6 +72,7 @@ private enum class Screen { Login, SignUp, Forgot, SignedIn, Settings }
 
 @Composable
 private fun EyemailApp() {
+    val appContext = androidx.compose.ui.platform.LocalContext.current.applicationContext
     // A restored screen must not point at a mailbox we no longer have a session for.
     var screen by rememberSaveable {
         mutableStateOf(if (AuthSessionStore.isSignedIn()) Screen.SignedIn else Screen.Login)
@@ -93,6 +90,10 @@ private fun EyemailApp() {
             onForgot = { screen = Screen.Forgot },
             onSignedIn = {
                 sessionEmail = AuthSessionStore.email().orEmpty()
+                app.eyemail.push.PushRegistrar.ensureRegistered(
+                    appContext,
+                    reason = "signed in",
+                )
                 screen = Screen.SignedIn
             },
         )
@@ -101,6 +102,10 @@ private fun EyemailApp() {
             onSignIn = { screen = Screen.Login },
             onSignedIn = {
                 sessionEmail = AuthSessionStore.email().orEmpty()
+                app.eyemail.push.PushRegistrar.ensureRegistered(
+                    appContext,
+                    reason = "signed in",
+                )
                 screen = Screen.SignedIn
             },
         )
