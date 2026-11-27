@@ -1,0 +1,12 @@
+The address the site is served from today.
+
+    https://sankalpteam.github.io/Eyemail/
+
+This file exists because the address appears in four kinds of place: the canonical link on
+every settings page, the sitemap, robots.txt, and the four addresses inside the Android app.
+When eyemail.in is pointed at this repository and answers, change the address here first, then
+in those four places, and nothing else needs to move.
+
+Why it is not eyemail.in today: that name does not resolve. A canonical or a sitemap that
+names an address which does not answer tells a search engine the page lives somewhere that
+cannot be reached, which is worse than not being listed.

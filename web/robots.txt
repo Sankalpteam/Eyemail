@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /app.html
 
-Sitemap: https://eyemail.in/sitemap.xml
+Sitemap: https://sankalpteam.github.io/Eyemail/sitemap.xml
