@@ -3,21 +3,102 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Eyemail settings: Mail alerts on this device, a test, and the last result." />
 <meta name="robots" content="noindex" />
-<title>Notifications — Eyemail</title>
+<link rel="canonical" href="https://eyemail.in/settings/notifications.html" />
+<link rel="icon" type="image/png" sizes="32x32" href="../../branding/app-icons/eyemail-32.png" />
+<link rel="icon" type="image/svg+xml" href="../../branding/app-icons/eyemail-icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<title>Notifications — Eyemail settings</title>
 <style>
-  body{margin:0;background:#eef1f4;color:#101a2b;font:16px/1.55 "Plus Jakarta Sans",system-ui,sans-serif}
-  .wrap{max-width:720px;margin:0 auto;padding:48px 22px 80px}
-  h1{font-size:24px;margin:0 0 10px}
-  p{color:#4a5a6a;margin:0 0 14px}
-  a{color:#1857b8}
+  :root{--bg:#eef1f4;--surface:#fff;--text:#101a2b;--text-2:#4a5a6a;--text-3:#8494a3;--accent:#1857b8;--border:#e2e8ee;--danger:#b4232c;--danger-soft:#fdecec}
+  @media (prefers-color-scheme: dark){:root{--bg:#0d141d;--surface:#131c26;--text:#eaf0f5;--text-2:#a4b4c2;--text-3:#6f8290;--accent:#6fa8ff;--border:#22303d;--danger:#ff8a8a;--danger-soft:#2a1518}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 "Plus Jakarta Sans",system-ui,-apple-system,sans-serif}
+  .top{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0}
+  .top .in{max-width:760px;margin:0 auto;padding:13px 18px;display:flex;align-items:center;gap:8px}
+  .top a.back{color:var(--text);text-decoration:none;font-size:18px;line-height:1}
+  .top b{font-size:15px;letter-spacing:-.01em}
+  .wrap{max-width:760px;margin:0 auto;padding:22px 18px 70px}
+  h1{font-size:22px;line-height:1.25;letter-spacing:-.02em;margin:0 0 4px}
+  .sub{color:var(--text-3);font-size:12.5px;margin:0 0 20px}
+  h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin:26px 0 8px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)}
+  .row:last-child{border-bottom:0}
+  .row .t{flex:1;min-width:0}
+  .row .t b{display:block;font-size:13.5px;font-weight:600;color:var(--text)}
+  .row .t span{display:block;font-size:12px;color:var(--text-3);margin-top:2px}
+  .row .v{font-size:12.5px;color:var(--text-2);max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .btn{border:1px solid var(--border);background:var(--surface);color:var(--accent);font:600 12.5px inherit;padding:8px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+  .btn:hover{background:var(--bg)}
+  .btn.danger{color:var(--danger);border-color:var(--danger-soft)}
+  .seg{display:flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}
+  .seg button{border:0;background:var(--surface);color:var(--text-2);font:600 12px inherit;padding:8px 12px;cursor:pointer}
+  .seg button.on{background:var(--accent);color:#fff}
+  .meter{height:8px;border-radius:99px;background:var(--border);overflow:hidden;margin:10px 0 6px}
+  .meter i{display:block;height:100%;background:var(--accent);border-radius:99px}
+  p{color:var(--text-2);margin:0 0 12px}
+  ul{margin:0 0 14px;padding-left:20px;color:var(--text-2)}
+  li{margin-bottom:6px}
+  a{color:var(--accent)}
+  .note{font-size:12px;color:var(--text-3);margin:8px 0 0}
+  textarea,input[type=text],input[type=email]{width:100%;font:14px inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:10px 12px}
+  textarea{min-height:84px;resize:vertical}
+  .foot{border-top:1px solid var(--border);margin-top:30px;padding-top:14px;font-size:12px;color:var(--text-3)}
+  .foot a{margin-right:12px;text-decoration:none}
 </style>
 </head>
 <body>
+<div class="top"><div class="in"><a class="back" href="javascript:history.back()" aria-label="Back">&#8592;</a><b>Notifications</b></div></div>
 <div class="wrap">
-  <h1>Notifications</h1>
-  <p>This file is created and empty on purpose. Step one of the restructure only makes the folders and the names, so nothing that works today is touched. The content arrives in a later step.</p>
-  <p><a href="../../index.html">Back to Eyemail</a></p>
+<h1>Notifications</h1>
+<p class="sub">Mail alerts on this device, a test, and the last result.</p>
+
+<h2>Mail alerts</h2>
+<div class="card">
+  <div class="row">
+    <div class="t"><b>Alerts on this device</b><span>A short notice when a mail arrives, with the app closed too</span></div>
+    <div class="seg" id="segAlerts"><button data-v="on">On</button><button data-v="off">Off</button></div>
+  </div>
+  <div class="row">
+    <div class="t"><b>Send a test</b><span>Proves the path from the server to this device</span></div>
+    <button class="btn" id="bTest">Send test</button>
+  </div>
+  <div class="row">
+    <div class="t"><b>Last alert</b><span>What the server recorded the last time it tried</span></div>
+    <span class="v" id="vLast">nothing yet</span>
+  </div>
+</div>
+<p class="note" id="note"></p>
+<script>
+  const key = "eyemail_prefs";
+  const read = () => { try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch (_) { return {}; } };
+  const write = (p) => { try { localStorage.setItem(key, JSON.stringify(p)); } catch (_) {} };
+  function paint() {
+    const p = read();
+    document.querySelectorAll("#segAlerts button").forEach((b) =>
+      b.classList.toggle("on", (b.dataset.v === "on") === (p.notifications !== false)));
+  }
+  document.querySelectorAll("#segAlerts button").forEach((b) => b.addEventListener("click", () => {
+    const p = read(); p.notifications = b.dataset.v === "on"; write(p); paint();
+    document.getElementById("note").textContent = p.notifications
+      ? "Alerts are on for this browser. Allow notifications when the browser asks."
+      : "Alerts are off. Nothing will be sent to this device.";
+  }));
+  document.getElementById("bTest").addEventListener("click", () => {
+    document.getElementById("note").textContent = "Open this page from your mailbox to send a test, so the server knows which account to send it to.";
+  });
+  paint();
+</script>
+
+<div class="foot">
+  <a href="account.html">Account</a><a href="appearance.html">Appearance</a><a href="mail.html">Mail</a>
+  <a href="notifications.html">Notifications</a><a href="storage.html">Storage</a><a href="about.html">About</a>
+  <a href="terms.html">Terms</a><a href="privacy.html">Privacy</a>
+</div>
 </div>
 </body>
 </html>

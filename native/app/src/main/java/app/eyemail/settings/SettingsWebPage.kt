@@ -73,11 +73,24 @@ fun SettingsWebPage(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT,
                     )
-                    // No JavaScript: these are pages of text, and a page that cannot run
-                    // code cannot run anything else either.
-                    settings.javaScriptEnabled = false
-                    settings.domStorageEnabled = false
-                    webViewClient = WebViewClient()
+                    // The pages keep your choices on the device, which needs a little
+                    // script. They are our own pages on our own address, and the loader
+                    // refuses to leave that address.
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    settings.allowFileAccess = false
+                    settings.allowContentAccess = false
+                    webViewClient = object : WebViewClient() {
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView?,
+                            request: android.webkit.WebResourceRequest?,
+                        ): Boolean {
+                            val target = request?.url?.toString().orEmpty()
+                            // Stay on eyemail.in. Anything else opens nowhere, rather than
+                            // loading an unknown page inside the app.
+                            return !target.startsWith("https://eyemail.in/")
+                        }
+                    }
                     loadUrl(url)
                 }
             },
