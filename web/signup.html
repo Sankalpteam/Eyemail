@@ -170,7 +170,7 @@
         <div class="field">
           <label for="username">Your Eyemail address</label>
           <div class="domain">
-            <input id="username" type="text" required placeholder="yourname" autocomplete="off" style="text-transform:lowercase" />
+            <input id="username" type="text" required placeholder="yourname" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" style="text-transform:lowercase" />
             <span>@eyemail.in</span>
           </div>
           <p id="usernameHint" class="hint">3-30 characters: letters, numbers, dots, underscores.</p>
@@ -181,7 +181,7 @@
         </div>
         <div class="field">
           <label for="password">Password</label>
-          <input id="password" type="password" required minlength="6" placeholder="Minimum 6 characters" autocomplete="new-password" />
+          <input id="password" type="password" required minlength="6" placeholder="Minimum 6 characters" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" />
         </div>
         <button id="submitBtn" type="submit" class="btn">Create Eyemail account</button>
       </form>

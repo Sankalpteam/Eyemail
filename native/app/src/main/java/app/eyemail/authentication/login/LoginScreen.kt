@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -80,6 +81,8 @@ fun LoginScreen(
 
             Spacer(Modifier.height(24.dp))
 
+            val passwordFocus = androidx.compose.ui.focus.rememberFocusRequester()
+
             EyField(
                 label = "Eyemail address",
                 value = state.email,
@@ -88,12 +91,14 @@ fun LoginScreen(
                 hint = "Type the name only and we add @${BuildConfig.DOMAIN_NAME}.",
                 keyboardType = KeyboardType.Email,
                 enabled = !state.busy,
+                onNext = { passwordFocus.requestFocus() },
             )
 
             Spacer(Modifier.height(14.dp))
 
             EyField(
                 label = "Password",
+                modifier = Modifier.focusRequester(passwordFocus),
                 value = state.password,
                 onValueChange = viewModel::onPassword,
                 placeholder = "Enter your password",

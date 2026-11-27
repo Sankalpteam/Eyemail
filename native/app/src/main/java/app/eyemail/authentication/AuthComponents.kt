@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -119,6 +120,7 @@ fun EyField(
     enabled: Boolean = true,
     labelAction: (@Composable () -> Unit)? = null,
     onImeAction: (() -> Unit)? = null,
+    onNext: (() -> Unit)? = null,
 ) {
     var revealed by remember { mutableStateOf(false) }
     Column(modifier = modifier.fillMaxWidth()) {
@@ -146,10 +148,22 @@ fun EyField(
             } else {
                 VisualTransformation.None
             },
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = imeAction,
+                // An address or a password is typed as it is. Auto capitalising the first
+                // letter of a password is a silent way to be told the password is wrong.
+                capitalization = if (keyboardType == KeyboardType.Email || isPassword) {
+                    KeyboardCapitalization.None
+                } else {
+                    KeyboardCapitalization.Sentences
+                },
+                autoCorrectEnabled = keyboardType != KeyboardType.Email && !isPassword,
+            ),
             keyboardActions = KeyboardActions(
                 onDone = { onImeAction?.invoke() },
                 onGo = { onImeAction?.invoke() },
+                onNext = { onNext?.invoke() },
             ),
             trailingIcon = if (isPassword) {
                 {

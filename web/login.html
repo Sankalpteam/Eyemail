@@ -164,14 +164,14 @@
       <form id="loginForm">
         <div class="field">
           <label for="emailInput">Eyemail address</label>
-          <input id="emailInput" type="text" required placeholder="yourname@eyemail.in" autocomplete="username" style="text-transform:lowercase" />
+          <input id="emailInput" type="email" required placeholder="yourname@eyemail.in" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email" style="text-transform:lowercase" />
         </div>
         <div class="field">
           <div class="row-between">
             <label for="passwordInput">Password</label>
             <a href="forgot-password.html">Forgot password?</a>
           </div>
-          <input id="passwordInput" type="password" required placeholder="Enter your password" autocomplete="current-password" />
+          <input id="passwordInput" type="password" required placeholder="Enter your password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" />
         </div>
         <button id="loginBtn" type="submit" class="btn">Sign in</button>
       </form>
