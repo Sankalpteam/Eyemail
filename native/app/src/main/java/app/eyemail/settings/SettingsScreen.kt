@@ -60,11 +60,7 @@ fun SettingsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    // The web page currently open, if any. Null shows the list.
-    var webPage by androidx.compose.runtime.remember {
-        androidx.compose.runtime.mutableStateOf<Pair<String, String>?>(null)
-    }
-    val openWeb: (String, String) -> Unit = { url, title -> webPage = url to title }
+
 
     Box(modifier = Modifier.fillMaxSize().background(Ey.Bg)) {
     Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
@@ -140,13 +136,7 @@ fun SettingsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    // The page is the web's, loaded fresh, so the phone and
-                                    // the site can never show different text.
-                                    openWeb(app.eyemail.settings.web.SettingsWeb.forSection(
-                                        section.name.lowercase()
-                                    ), section.label)
-                                }
+                                .clickable { viewModel.open(section) }
                                 .padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -201,6 +191,16 @@ fun SettingsScreen(
                 return@Column
             }
 
+            val openSection = state.open
+            if (openSection != null) {
+                SettingsWebPage(
+                    url = SettingsWeb.forSection(openSection.name.lowercase()),
+                    title = openSection.label,
+                    onBack = { viewModel.closeSection() },
+                )
+                return@Column
+            }
+
             when (state.section) {
                 SettingsState.Section.Account -> AccountSection(
                     state = state.account,
@@ -247,15 +247,6 @@ fun SettingsScreen(
         }
     }
 
-        // The page sits over the list, so the list keeps its scroll position underneath.
-        val page = webPage
-        if (page != null) {
-            app.eyemail.settings.web.SettingsWebScreen(
-                url = page.first,
-                title = page.second,
-                onBack = { webPage = null },
-            )
-        }
     }
 }
 

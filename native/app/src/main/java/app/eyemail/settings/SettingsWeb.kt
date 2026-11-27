@@ -1,4 +1,4 @@
-package app.eyemail.settings.web
+package app.eyemail.settings
 
 /**
  * The addresses of the settings pages.
