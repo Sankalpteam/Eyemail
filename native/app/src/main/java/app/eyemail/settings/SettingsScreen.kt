@@ -132,20 +132,13 @@ fun SettingsScreen(
         // A page is drawn on its own, never inside the scrolling list: a web view inside a
         // scrolling column gets no height of its own and shows nothing.
         val legalPage = webLegal
-        val sectionPage = state.open
-        if (legalPage != null || sectionPage != null) {
+        if (legalPage != null) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            SettingsWebPage(
-                url = if (legalPage != null) {
-                    legalPage.first + "?inapp=1"
-                } else {
-                    SettingsWeb.forSection(sectionPage!!.name.lowercase()) + "?inapp=1"
-                },
-                title = legalPage?.second ?: sectionPage!!.label,
-                onBack = {
-                    if (legalPage != null) webLegal = null else viewModel.closeSection()
-                },
-            )
+                SettingsWebPage(
+                    url = legalPage.first + "?inapp=1",
+                    title = legalPage.second,
+                    onBack = { webLegal = null },
+                )
             }
             return@Column
         }
