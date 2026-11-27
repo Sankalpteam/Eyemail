@@ -113,7 +113,8 @@ fun LabelsScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        val shown = if (selectedLabel == null) mails else mails.filter { it.labels.contains(selectedLabel) }
+        val labelled = mails.filter { it.folder != "trash" }
+        val shown = if (selectedLabel == null) labelled else labelled.filter { it.labels.contains(selectedLabel) }
         MailList(
             mails = shown,
             emptyText = if (selectedLabel == null) "Pick a label, or add one above." else "No mail with that label.",

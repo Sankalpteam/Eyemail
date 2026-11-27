@@ -67,8 +67,14 @@ class HomeViewModel : ViewModel() {
                 val size = _state.value.pageSize
                 val mails = when (folder) {
                     "starred" -> MailRepository.listStarred(uid(), token(), size)
-                    // Labels is not a folder in the database: it filters the inbox.
-                    "labels" -> MailRepository.list(uid(), token(), "inbox", size)
+                    // A label can sit on any mail, so this looks at every folder.
+                    "labels" -> listOf("inbox", "sent", "drafts", "spam", "trash")
+                        .flatMap { each ->
+                            runCatching { MailRepository.list(uid(), token(), each, size) }
+                                .getOrDefault(emptyList())
+                        }
+                        .distinctBy { it.id }
+                        .sortedByDescending { it.createdAt }
                     "domain" -> emptyList()
                     else -> MailRepository.list(uid(), token(), folder, size)
                 }
