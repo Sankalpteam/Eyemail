@@ -60,6 +60,11 @@ fun SettingsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    // A legal page opened from the list. Null shows the list.
+    var webLegal by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf<Pair<String, String>?>(null)
+    }
+
 
 
     Box(modifier = Modifier.fillMaxSize().background(Ey.Bg)) {
@@ -180,6 +185,52 @@ fun SettingsScreen(
                         }
                     }
                 }
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    "LEGAL",
+                    fontSize = 10.sp,
+                    letterSpacing = 0.6.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Ey.Text2,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 6.dp),
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Ey.Surface, RoundedCornerShape(14.dp)),
+                ) {
+                    listOf(
+                        "Terms of Use" to app.eyemail.settings.terms_of_use.TermsOfUsePage.URL,
+                        "Privacy Policy" to app.eyemail.settings.privacy_policy.PrivacyPolicyPage.URL,
+                        "Security" to app.eyemail.settings.security.SecurityPage.URL,
+                        "Data and Privacy" to app.eyemail.settings.data_and_privacy.DataAndPrivacyPage.URL,
+                    ).forEachIndexed { index, (name, url) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { webLegal = url to name }
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                name,
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Ey.Text,
+                                modifier = Modifier.weight(1f),
+                            )
+                            androidx.compose.material3.Icon(
+                                imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = Ey.Text3,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+                        if (index != 3) {
+                            Box(Modifier.fillMaxWidth().height(1.dp).background(Ey.Border))
+                        }
+                    }
+                }
                 Spacer(Modifier.height(18.dp))
                 Text(
                     "POWERED BY INDO WORKSPACE",
@@ -187,6 +238,16 @@ fun SettingsScreen(
                     letterSpacing = 1.1.sp,
                     color = Ey.Text3,
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                )
+                return@Column
+            }
+
+            val legal = webLegal
+            if (legal != null) {
+                app.eyemail.settings.common.SettingsWebPage(
+                    url = legal.first,
+                    title = legal.second,
+                    onBack = { webLegal = null },
                 )
                 return@Column
             }

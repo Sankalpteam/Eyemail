@@ -17,9 +17,8 @@ object SettingsWeb {
     const val STORAGE = "${BASE}storage.html"
     const val ABOUT = "${BASE}about.html"
 
-    // The four legal pages carry their own address in their own folder, so nothing is
-    // repeated here: terms/TermsPage.kt, privacy/PrivacyPage.kt, security/SecurityPage.kt,
-    // dataprivacy/DataPrivacyPage.kt.
+    // The four legal pages carry their own address in their own folder, named exactly as
+    // the page is: terms_of_use, privacy_policy, security, data_and_privacy.
 
     /** The page for a settings section, by its name in the list. */
     fun forSection(section: String): String = when (section) {
