@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  An empty icon, on purpose.
+
+  Android always draws its own launch screen first, and it can only show an icon. If that
+  icon is visible, the person sees the mark twice: once from the system, once from our own
+  splash a moment later. So the system one draws nothing but the background colour, and the
+  app's own splash is the only screen with the mark, the name and the company line on it.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M0,0h108v108h-108z" />
+</vector>

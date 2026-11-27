@@ -40,6 +40,8 @@ import app.eyemail.authentication.signup.SignUpScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         // The splash reads the theme, so it is installed before anything is drawn.
+        // Nothing is held back: the moment the first frame is ready, Android swaps its own
+        // launch screen for ours, so the person never sees an empty screen in between.
         installSplashScreen()
         super.onCreate(savedInstanceState)
         AuthSessionStore.init(this)
@@ -67,7 +69,10 @@ class MainActivity : ComponentActivity() {
                         androidx.compose.runtime.mutableStateOf(true)
                     }
                     androidx.compose.runtime.LaunchedEffect(Unit) {
-                        kotlinx.coroutines.delay(900)
+                        // Long enough to read the name and the company line, short enough
+                        // that nobody waits. It is the only splash they see, because the
+                        // system one is drawn blank.
+                        kotlinx.coroutines.delay(750)
                         showSplash = false
                     }
 
