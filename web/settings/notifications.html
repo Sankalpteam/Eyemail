@@ -49,9 +49,14 @@
   textarea{min-height:84px;resize:vertical}
   .foot{border-top:1px solid var(--border);margin-top:30px;padding-top:14px;font-size:12px;color:var(--text-3)}
   .foot a{margin-right:12px;text-decoration:none}
+  /* Opened inside the app: the phone draws the header and the arrow, so this page does not. */
+  body.inapp .top{display:none}
 </style>
 </head>
 <body>
+<script>
+  if (location.search.indexOf("inapp=1") !== -1) document.body.classList.add("inapp");
+</script>
 <div class="top"><div class="in"><a class="back" href="javascript:history.back()" aria-label="Back">&#8592;</a><b>Notifications</b></div></div>
 <div class="wrap">
 <h1>Notifications</h1>

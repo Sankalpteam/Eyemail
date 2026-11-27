@@ -82,12 +82,16 @@ fun SettingsScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val open = state.open
-            if (open != null) {
+            val legalOpen = webLegal
+            val showing = open?.label ?: legalOpen?.second
+            if (showing != null) {
                 // An arrow, not the word back, and it returns to the list where it was.
                 androidx.compose.foundation.layout.Box(
                     modifier = Modifier
                         .size(34.dp)
-                        .clickable { viewModel.closeSection() },
+                        .clickable {
+                            if (state.open != null) viewModel.closeSection() else webLegal = null
+                        },
                     contentAlignment = Alignment.Center,
                 ) {
                     androidx.compose.material3.Icon(
@@ -98,7 +102,7 @@ fun SettingsScreen(
                     )
                 }
                 Spacer(Modifier.width(6.dp))
-                Text(open.label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Ey.Text)
+                Text(showing, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Ey.Text)
             } else {
                 Text("Settings", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Ey.Text)
             }
@@ -250,7 +254,7 @@ fun SettingsScreen(
             val legal = webLegal
             if (legal != null) {
                 SettingsWebPage(
-                    url = legal.first,
+                    url = legal.first + "?inapp=1",
                     title = legal.second,
                     onBack = { webLegal = null },
                 )
@@ -260,7 +264,7 @@ fun SettingsScreen(
             val openSection = state.open
             if (openSection != null) {
                 SettingsWebPage(
-                    url = SettingsWeb.forSection(openSection.name.lowercase()),
+                    url = SettingsWeb.forSection(openSection.name.lowercase()) + "?inapp=1",
                     title = openSection.label,
                     onBack = { viewModel.closeSection() },
                 )
