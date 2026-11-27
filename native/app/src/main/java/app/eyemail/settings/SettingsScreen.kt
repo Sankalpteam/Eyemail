@@ -343,18 +343,6 @@ private fun sectionRowSummary(section: SettingsState.Section, state: SettingsSta
 // thing too many.
 // ---------------------------------------------------------------------------------------
 
-private object SettingsWeb {
-    private const val BASE = "https://sankalpteam.github.io/Eyemail/web/settings/"
-
-    fun forSection(section: String): String = when (section) {
-        "account" -> "${BASE}account.html"
-        "appearance" -> "${BASE}appearance.html"
-        "mail" -> "${BASE}mail.html"
-        "notifications" -> "${BASE}notifications.html"
-        "storage" -> "${BASE}storage.html"
-        "about" -> "${BASE}about.html"
-        else -> BASE
-    }
 }
 
 /**
