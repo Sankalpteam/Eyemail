@@ -49,6 +49,17 @@ class SettingsViewModel(
         loadProfile()
     }
 
+    /** Open one section on its own screen, over the list. */
+    fun open(section: SettingsState.Section) {
+        _state.update { it.copy(open = section, section = section) }
+        if (section == SettingsState.Section.Notifications) refreshNotifications()
+    }
+
+    /** Back arrow: the list is still where it was, so only the section closes. */
+    fun closeSection() {
+        _state.update { it.copy(open = null) }
+    }
+
     fun select(section: SettingsState.Section) {
         _state.update { it.copy(section = section) }
         if (section == SettingsState.Section.Notifications) refreshNotifications()

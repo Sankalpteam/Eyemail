@@ -10,6 +10,8 @@ import app.eyemail.settings.storage.StorageState
 /** The six sections of the settings screen, each with the values it edits. */
 data class SettingsState(
     val section: Section = Section.Account,
+    /** Null shows the list. A section here shows that section's own screen. */
+    val open: Section? = null,
     val account: AccountState = AccountState(),
     val appearance: AppearanceState = AppearanceState(),
     val mail: MailState = MailState(),
