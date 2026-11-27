@@ -81,7 +81,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            val passwordFocus = androidx.compose.ui.focus.rememberFocusRequester()
+            val passwordFocus = androidx.compose.runtime.remember { androidx.compose.ui.focus.FocusRequester() }
 
             EyField(
                 label = "Eyemail address",
