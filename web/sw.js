@@ -5,7 +5,7 @@
    3. stay out of the way of everything else: the mail itself always comes from the
       network, never from a cache, because a stale mailbox is worse than no mailbox */
 
-const VERSION = "eyemail-v2";
+const VERSION = "eyemail-v3";
 const SHELL = [
   "./app.html",
   "./index.html",

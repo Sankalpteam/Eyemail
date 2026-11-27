@@ -19,7 +19,7 @@
   body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 "Plus Jakarta Sans",system-ui,-apple-system,sans-serif}
   .top{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0}
   .top .in{max-width:760px;margin:0 auto;padding:13px 18px;display:flex;align-items:center;gap:8px}
-  .top a.back{color:var(--text);text-decoration:none;font-size:20px;line-height:1;padding:2px 6px 2px 0}
+  .top a.back{color:var(--text);text-decoration:none;display:inline-flex;align-items:center;padding:2px 8px 2px 0}
   .top b{font-size:15px;letter-spacing:-.01em}
   .wrap{max-width:760px;margin:0 auto;padding:22px 18px 70px}
   h1{font-size:22px;line-height:1.25;letter-spacing:-.02em;margin:0 0 4px}
@@ -57,7 +57,7 @@
 <script>
   if (location.search.indexOf("inapp=1") !== -1) document.body.classList.add("inapp");
 </script>
-<div class="top"><div class="in"><a class="back" href="javascript:history.back()" aria-label="Back">&#8592;</a><b>Notifications</b></div></div>
+<div class="top"><div class="in"><a class="back" href="javascript:history.back()" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg></a><b>Notifications</b></div></div>
 <div class="wrap">
 <h1>Notifications</h1>
 <p class="sub">Mail alerts on this device, a test, and the last result.</p>
