@@ -37,7 +37,7 @@ import app.eyemail.Ey
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun SettingsWebScreen(
+fun SettingsWebPage(
     url: String,
     title: String,
     onBack: () -> Unit,
