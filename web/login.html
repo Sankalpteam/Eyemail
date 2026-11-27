@@ -164,14 +164,14 @@
       <form id="loginForm">
         <div class="field">
           <label for="emailInput">Eyemail address</label>
-          <input id="emailInput" type="email" required placeholder="yourname@eyemail.in" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email" style="text-transform:lowercase" />
+          <input id="emailInput" type="email" autofocus required placeholder="yourname@eyemail.in" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email" style="text-transform:lowercase" />
         </div>
         <div class="field">
           <div class="row-between">
             <label for="passwordInput">Password</label>
             <a href="forgot-password.html">Forgot password?</a>
           </div>
-          <input id="passwordInput" type="password" required placeholder="Enter your password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" />
+          <input id="passwordInput" type="password" minlength="6" required placeholder="Enter your password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" />
         </div>
         <button id="loginBtn" type="submit" class="btn">Sign in</button>
       </form>
@@ -183,8 +183,8 @@
 </div>
 
 <script type="module">
-  import { auth, DOMAIN_NAME } from "./firebase-config.js";
-  import { signInWithEmailAndPassword, signInWithCustomToken, onAuthStateChanged }
+  import { auth, DOMAIN_NAME, BACKEND_URL } from "./firebase-config.js";
+  import { signInWithEmailAndPassword, signInWithCustomToken, onAuthStateChanged, signOut }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const loginForm = document.getElementById("loginForm");
@@ -243,11 +243,36 @@
     if (!raw.includes("@")) raw = `${raw}@${DOMAIN_NAME}`;
     const password = document.getElementById("passwordInput").value;
 
+    if (raw.includes("@") && !raw.endsWith(`@${DOMAIN_NAME}`)) {
+      showAlert(`That is not an Eyemail address. Sign in with your @${DOMAIN_NAME} one.`);
+      return;
+    }
+    if (password.length < 6) {
+      showAlert("Passwords are at least 6 characters.");
+      return;
+    }
+
     loginBtn.disabled = true;
     loginBtn.textContent = "Signing in...";
 
     try {
-      await signInWithEmailAndPassword(auth, raw, password);
+      const cred = await signInWithEmailAndPassword(auth, raw, password);
+      // The password was right. Now check a mailbox is actually behind it.
+      try {
+        const token = await cred.user.getIdToken();
+        const res = await fetch(`${BACKEND_URL}/api/user/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.status === 404) {
+          await signOut(auth);
+          showAlert("This sign in has no mailbox behind it. Create the mailbox again, or sign in with another address.");
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Sign in";
+          return;
+        }
+      } catch (_) {
+        // The check itself failed; let the mailbox decide rather than locking anyone out.
+      }
       window.location.href = "app.html";
     } catch (err) {
       showAlert(err.code === "auth/too-many-requests"

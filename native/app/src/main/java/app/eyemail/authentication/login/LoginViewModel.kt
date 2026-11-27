@@ -46,6 +46,23 @@ class LoginViewModel : ViewModel() {
                     "${current.email.trim().lowercase()}@${BuildConfig.DOMAIN_NAME}"
                 }
                 val session = EyemailAuthService.signIn(address, current.password)
+
+                // Signing in proves the password. It does not prove the mailbox exists.
+                // Ask the server before letting anyone in, so a login without a mailbox
+                // is told here, where they can act, instead of inside an empty inbox.
+                val hasMailbox = runCatching { EyemailAuthService.mailboxExists(session.idToken) }
+                    .getOrDefault(true)
+                if (!hasMailbox) {
+                    _state.update {
+                        it.copy(
+                            busy = false,
+                            error = "This sign in has no mailbox behind it. Create the mailbox " +
+                                "again, or sign in with another address.",
+                        )
+                    }
+                    return@launch
+                }
+
                 AuthSessionStore.save(session)
                 _state.update { it.copy(busy = false) }
                 _signedIn.value = true

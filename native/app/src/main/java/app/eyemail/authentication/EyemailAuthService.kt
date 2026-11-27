@@ -125,6 +125,24 @@ object EyemailAuthService {
         )
     }
 
+    /** Does this login have a mailbox behind it? Asked before entering the mailbox. */
+    suspend fun mailboxExists(idToken: String): Boolean = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url("${BuildConfig.BACKEND_URL}/api/user/profile")
+            .header("Authorization", "Bearer $idToken")
+            .get()
+            .build()
+        client.newCall(request).execute().use { response ->
+            when (response.code) {
+                200 -> true
+                404 -> false
+                // Anything else is the server being unsure, not a missing mailbox. Do not
+                // lock a person out because a server was waking up.
+                else -> true
+            }
+        }
+    }
+
     suspend fun checkUsername(username: String): Boolean = withContext(Dispatchers.IO) {
         val request = Request.Builder()
             .url("${BuildConfig.BACKEND_URL}/api/check-username/$username")
