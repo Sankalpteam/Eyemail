@@ -358,29 +358,7 @@ private fun SettingsWebPage(
 ) {
     var failed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     var attempt by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(0) }
-    Column(modifier = Modifier.fillMaxSize().background(Ey.Bg).statusBarsPadding()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Ey.Surface)
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier = Modifier.size(34.dp).clickable { onBack() },
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back to settings",
-                    tint = Ey.Text,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-            Spacer(Modifier.width(6.dp))
-            Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Ey.Text)
-        }
-
+    Box(modifier = Modifier.fillMaxSize().background(Ey.Bg)) {
         if (failed) {
             // A page that cannot be reached is ours to explain, not the browser's.
             Column(
