@@ -113,6 +113,9 @@
     text-transform:uppercase;color:var(--text-3)}
   .pwr b{color:var(--text-2);font-weight:600}
   .foot{margin-top:22px; font-size:12.8px; color:var(--text-3); text-align:center}
+  .linkbtn{background:none;border:0;padding:0 2px;cursor:pointer;color:var(--accent);
+    font:600 12px/1 inherit;white-space:nowrap}
+  .linkbtn:hover{text-decoration:underline}
   .foot a{color:var(--accent); font-weight:700; text-decoration:none}
   .foot a:hover{text-decoration:underline}
   .step{display:flex; align-items:center; gap:8px; margin-bottom:18px}
@@ -171,7 +174,10 @@
             <label for="passwordInput">Password</label>
             <a href="forgot-password.html">Forgot password?</a>
           </div>
-          <input id="passwordInput" type="password" minlength="6" required placeholder="Enter your password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" />
+          <div class="row-between" style="align-items:center;gap:8px">
+            <input id="passwordInput" type="password" minlength="6" required placeholder="Enter your password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" style="flex:1" />
+            <button type="button" id="revealBtn" class="linkbtn" aria-label="Show password">Show</button>
+          </div>
         </div>
         <button id="loginBtn" type="submit" class="btn">Sign in</button>
       </form>
@@ -190,6 +196,15 @@
   const loginForm = document.getElementById("loginForm");
   const alertBox = document.getElementById("alertBox");
   const loginBtn = document.getElementById("loginBtn");
+
+  document.getElementById("revealBtn").addEventListener("click", () => {
+    const input = document.getElementById("passwordInput");
+    const btn = document.getElementById("revealBtn");
+    const showing = input.type === "text";
+    input.type = showing ? "password" : "text";
+    btn.textContent = showing ? "Show" : "Hide";
+    btn.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+  });
 
   function showAlert(msg) {
     alertBox.textContent = msg;
