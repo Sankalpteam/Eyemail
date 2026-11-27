@@ -83,7 +83,20 @@ class LoginViewModel : ViewModel() {
                 _state.update { it.copy(busy = false) }
                 _signedIn.value = true
             } catch (e: Exception) {
-                _state.update { it.copy(busy = false, error = e.message ?: "Could not sign in.") }
+                val raw = e.message.orEmpty()
+                val readable = when {
+                    raw.contains("Unable to resolve host") ||
+                        raw.contains("Failed to connect") ||
+                        raw.contains("timeout", ignoreCase = true) ||
+                        raw.contains("SocketTimeout") ||
+                        e is java.net.UnknownHostException ||
+                        e is java.net.SocketTimeoutException ||
+                        e is java.io.IOException ->
+                        "No internet connection. Check your network and try again."
+                    raw.isBlank() -> "Could not sign in. Try again in a moment."
+                    else -> raw
+                }
+                _state.update { it.copy(busy = false, error = readable) }
             }
         }
     }

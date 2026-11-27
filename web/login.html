@@ -209,6 +209,8 @@
   function showAlert(msg) {
     alertBox.textContent = msg;
     alertBox.className = "alert err";
+    // The keyboard can cover it on a phone, so make sure the message is seen.
+    try { alertBox.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (_) {}
   }
 
   // A #t=<custom token> link still opens the mailbox directly. The hash never
@@ -319,9 +321,14 @@
       window.location.href = "app.html";
     } catch (err) {
       checkingSignIn = false;
-      showAlert(err.code === "auth/too-many-requests"
-        ? "Too many attempts. Please wait a minute and try again."
-        : "Invalid Eyemail address or password.");
+      const offline = err.code === "auth/network-request-failed";
+      showAlert(
+        offline
+          ? "No internet connection. Check your network and try again."
+          : err.code === "auth/too-many-requests"
+            ? "Too many attempts. Please wait a minute and try again."
+            : "Invalid Eyemail address or password."
+      );
       loginBtn.disabled = false;
       loginBtn.textContent = "Sign in";
     }
