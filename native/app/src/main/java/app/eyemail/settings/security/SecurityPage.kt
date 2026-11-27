@@ -1,7 +1,5 @@
 package app.eyemail.settings.security
 
-import androidx.compose.runtime.Composable
-import app.eyemail.settings.common.SettingsWebPage
 
 /**
  * Security. One folder, one file, the same name as the page, on both sides.
@@ -13,8 +11,4 @@ object SecurityPage {
     const val TITLE = "Security"
     const val URL = "https://eyemail.in/settings/security/"
 
-    @Composable
-    fun Show(onBack: () -> Unit) {
-        SettingsWebPage(url = URL, title = TITLE, onBack = onBack)
-    }
 }

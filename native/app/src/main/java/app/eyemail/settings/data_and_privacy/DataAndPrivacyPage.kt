@@ -1,7 +1,5 @@
 package app.eyemail.settings.data_and_privacy
 
-import androidx.compose.runtime.Composable
-import app.eyemail.settings.common.SettingsWebPage
 
 /**
  * Data and Privacy. One folder, one file, the same name as the page, on both sides.
@@ -13,8 +11,4 @@ object DataAndPrivacyPage {
     const val TITLE = "Data and Privacy"
     const val URL = "https://eyemail.in/settings/data-and-privacy/"
 
-    @Composable
-    fun Show(onBack: () -> Unit) {
-        SettingsWebPage(url = URL, title = TITLE, onBack = onBack)
-    }
 }

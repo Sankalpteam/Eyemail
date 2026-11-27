@@ -1,7 +1,5 @@
 package app.eyemail.settings.terms_of_use
 
-import androidx.compose.runtime.Composable
-import app.eyemail.settings.common.SettingsWebPage
 
 /**
  * Terms of Use. One folder, one file, the same name as the page, on both sides.
@@ -13,8 +11,4 @@ object TermsOfUsePage {
     const val TITLE = "Terms of Use"
     const val URL = "https://eyemail.in/settings/terms-of-use/"
 
-    @Composable
-    fun Show(onBack: () -> Unit) {
-        SettingsWebPage(url = URL, title = TITLE, onBack = onBack)
-    }
 }

@@ -244,7 +244,7 @@ fun SettingsScreen(
 
             val legal = webLegal
             if (legal != null) {
-                app.eyemail.settings.common.SettingsWebPage(
+                SettingsWebPage(
                     url = legal.first,
                     title = legal.second,
                     onBack = { webLegal = null },
@@ -254,8 +254,8 @@ fun SettingsScreen(
 
             val openSection = state.open
             if (openSection != null) {
-                app.eyemail.settings.common.SettingsWebPage(
-                    url = app.eyemail.settings.common.SettingsWeb.forSection(openSection.name.lowercase()),
+                SettingsWebPage(
+                    url = SettingsWeb.forSection(openSection.name.lowercase()),
                     title = openSection.label,
                     onBack = { viewModel.closeSection() },
                 )
@@ -332,4 +332,96 @@ private fun sectionRowSummary(section: SettingsState.Section, state: SettingsSta
         String.format("%.1f MB used", used)
     }
     SettingsState.Section.About -> state.about.version
+}
+
+// ---------------------------------------------------------------------------------------
+// The page loader and the addresses it needs. They live here because this is the only
+// screen that opens a settings page, and a folder of two files used by one screen is one
+// thing too many.
+// ---------------------------------------------------------------------------------------
+
+private object SettingsWeb {
+    private const val BASE = "https://eyemail.in/settings/"
+
+    fun forSection(section: String): String = when (section) {
+        "account" -> "${BASE}account.html"
+        "appearance" -> "${BASE}appearance.html"
+        "mail" -> "${BASE}mail.html"
+        "notifications" -> "${BASE}notifications.html"
+        "storage" -> "${BASE}storage.html"
+        "about" -> "${BASE}about.html"
+        else -> BASE
+    }
+}
+
+/**
+ * One settings page, loaded from the web.
+ *
+ * Nothing is bundled, so the text on the phone is always the text on the site. The arrow
+ * goes back to the list, and the page itself keeps its own scroll position while it is open.
+ */
+@SuppressLint("SetJavaScriptEnabled")
+@Composable
+private fun SettingsWebPage(
+    url: String,
+    title: String,
+    onBack: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize().background(Ey.Bg).statusBarsPadding()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Ey.Surface)
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier.size(34.dp).clickable { onBack() },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back to settings",
+                    tint = Ey.Text,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Spacer(Modifier.width(6.dp))
+            Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Ey.Text)
+        }
+
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { context ->
+                WebView(context).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    )
+                    // The pages keep your choices on the device, which needs a little
+                    // script. They are our own pages on our own address, and the loader
+                    // refuses to leave that address.
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    settings.allowFileAccess = false
+                    settings.allowContentAccess = false
+                    webViewClient = object : WebViewClient() {
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView?,
+                            request: android.webkit.WebResourceRequest?,
+                        ): Boolean {
+                            val target = request?.url?.toString().orEmpty()
+                            // Stay on eyemail.in. Anything else opens nowhere, rather than
+                            // loading an unknown page inside the app.
+                            return !target.startsWith("https://eyemail.in/")
+                        }
+                    }
+                    loadUrl(url)
+                }
+            },
+            update = { view ->
+                if (view.url != url) view.loadUrl(url)
+            },
+        )
+    }
 }

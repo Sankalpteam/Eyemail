@@ -1,7 +1,5 @@
 package app.eyemail.settings.privacy_policy
 
-import androidx.compose.runtime.Composable
-import app.eyemail.settings.common.SettingsWebPage
 
 /**
  * Privacy Policy. One folder, one file, the same name as the page, on both sides.
@@ -13,8 +11,4 @@ object PrivacyPolicyPage {
     const val TITLE = "Privacy Policy"
     const val URL = "https://eyemail.in/settings/privacy-policy/"
 
-    @Composable
-    fun Show(onBack: () -> Unit) {
-        SettingsWebPage(url = URL, title = TITLE, onBack = onBack)
-    }
 }
