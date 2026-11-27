@@ -390,8 +390,7 @@ private fun SettingsWebPage(
                     },
                 )
             }
-            return@Column
-        }
+        } else {
 
         androidx.compose.runtime.key(attempt) {
         AndroidView(
@@ -446,6 +445,7 @@ private fun SettingsWebPage(
                 if (view.url != url) view.loadUrl(url)
             },
         )
+        }
         }
     }
 }
