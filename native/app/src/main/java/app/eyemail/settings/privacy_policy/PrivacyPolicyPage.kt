@@ -9,6 +9,6 @@ package app.eyemail.settings.privacy_policy
  */
 object PrivacyPolicyPage {
     const val TITLE = "Privacy Policy"
-    const val URL = "https://eyemail.in/settings/privacy-policy/"
+    const val URL = "https://sankalpteam.github.io/Eyemail/settings/privacy-policy/"
 
 }

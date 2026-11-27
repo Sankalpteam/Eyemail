@@ -9,6 +9,6 @@ package app.eyemail.settings.data_and_privacy
  */
 object DataAndPrivacyPage {
     const val TITLE = "Data and Privacy"
-    const val URL = "https://eyemail.in/settings/data-and-privacy/"
+    const val URL = "https://sankalpteam.github.io/Eyemail/settings/data-and-privacy/"
 
 }

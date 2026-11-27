@@ -9,6 +9,6 @@ package app.eyemail.settings.security
  */
 object SecurityPage {
     const val TITLE = "Security"
-    const val URL = "https://eyemail.in/settings/security/"
+    const val URL = "https://sankalpteam.github.io/Eyemail/settings/security/"
 
 }

@@ -9,6 +9,6 @@ package app.eyemail.settings.terms_of_use
  */
 object TermsOfUsePage {
     const val TITLE = "Terms of Use"
-    const val URL = "https://eyemail.in/settings/terms-of-use/"
+    const val URL = "https://sankalpteam.github.io/Eyemail/settings/terms-of-use/"
 
 }

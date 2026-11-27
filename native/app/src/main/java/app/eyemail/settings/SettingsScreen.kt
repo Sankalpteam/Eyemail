@@ -351,7 +351,7 @@ private fun sectionRowSummary(section: SettingsState.Section, state: SettingsSta
 // ---------------------------------------------------------------------------------------
 
 private object SettingsWeb {
-    private const val BASE = "https://eyemail.in/settings/"
+    private const val BASE = "https://sankalpteam.github.io/Eyemail/settings/"
 
     fun forSection(section: String): String = when (section) {
         "account" -> "${BASE}account.html"
@@ -377,6 +377,8 @@ private fun SettingsWebPage(
     title: String,
     onBack: () -> Unit,
 ) {
+    var failed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var attempt by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(0) }
     Column(modifier = Modifier.fillMaxSize().background(Ey.Bg).statusBarsPadding()) {
         Row(
             modifier = Modifier
@@ -400,6 +402,41 @@ private fun SettingsWebPage(
             Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Ey.Text)
         }
 
+        if (failed) {
+            // A page that cannot be reached is ours to explain, not the browser's.
+            Column(
+                modifier = Modifier.fillMaxSize().padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Spacer(Modifier.height(36.dp))
+                Text(
+                    "This page could not be reached",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Ey.Text,
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Check your internet connection, then try again.",
+                    fontSize = 12.5.sp,
+                    color = Ey.Text2,
+                )
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    "Try again",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Ey.Accent,
+                    modifier = Modifier.clickable {
+                        failed = false
+                        attempt += 1
+                    },
+                )
+            }
+            return@Column
+        }
+
+        androidx.compose.runtime.key(attempt) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
@@ -416,6 +453,15 @@ private fun SettingsWebPage(
                     settings.allowFileAccess = false
                     settings.allowContentAccess = false
                     webViewClient = object : WebViewClient() {
+                        override fun onReceivedError(
+                            view: WebView?,
+                            request: android.webkit.WebResourceRequest?,
+                            error: android.webkit.WebResourceError?,
+                        ) {
+                            // Only a failure of the page itself matters; a picture or a font
+                            // failing is not worth a whole screen.
+                            if (request?.isForMainFrame == true) failed = true
+                        }
                         override fun shouldOverrideUrlLoading(
                             view: WebView?,
                             request: android.webkit.WebResourceRequest?,
@@ -433,5 +479,6 @@ private fun SettingsWebPage(
                 if (view.url != url) view.loadUrl(url)
             },
         )
+        }
     }
 }
