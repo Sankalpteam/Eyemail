@@ -79,6 +79,22 @@ class LoginViewModel : ViewModel() {
                     return@launch
                 }
 
+                if (session.idToken.isBlank() || session.refreshToken.isBlank()) {
+                    _state.update {
+                        it.copy(
+                            busy = false,
+                            error = "The sign in did not come back complete. Try again in a moment.",
+                        )
+                    }
+                    return@launch
+                }
+
+                if (!AuthSessionStore.isReady()) {
+                    _state.update {
+                        it.copy(busy = false, error = "The app could not store the sign in. Restart and try again.")
+                    }
+                    return@launch
+                }
                 AuthSessionStore.save(session)
                 _state.update { it.copy(busy = false) }
                 _signedIn.value = true

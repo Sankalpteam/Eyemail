@@ -24,6 +24,9 @@ object AuthSessionStore {
         }
     }
 
+    /** False when the store was never set up, so a caller can tell instead of guessing. */
+    fun isReady(): Boolean = prefs != null
+
     fun save(session: EyemailAuthService.Session) {
         prefs?.edit()
             ?.putString(KEY_EMAIL, session.email)

@@ -321,6 +321,12 @@
       window.location.href = "app.html";
     } catch (err) {
       checkingSignIn = false;
+      // Hide the password again after a failure, so it is not left readable on screen.
+      const pw = document.getElementById("passwordInput");
+      if (pw.type === "text") {
+        pw.type = "password";
+        document.getElementById("revealBtn").textContent = "Show";
+      }
       const offline = err.code === "auth/network-request-failed";
       showAlert(
         offline
