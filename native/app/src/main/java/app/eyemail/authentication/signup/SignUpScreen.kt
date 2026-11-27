@@ -73,7 +73,7 @@ fun SignUpScreen(
         ) {
             app.eyemail.authentication.PageHeader(title = page.second, onBack = { openPage = null })
             androidx.compose.foundation.layout.Box(
-                modifier = androidx.compose.ui.Modifier.weight(1f).fillMaxWidth(),
+                modifier = androidx.compose.ui.Modifier.weight(1f),
             ) {
                 app.eyemail.settings.WebPageView(
                     url = page.first + "?inapp=1",
