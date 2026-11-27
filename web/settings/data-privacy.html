@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="How Eyemail protects your password, your session and your mail, and what we do not claim." />
-<link rel="canonical" href="https://eyemail.in/legal/security.html" />
+<meta name="description" content="How to see, export, correct or delete your Eyemail data, and who to write to." />
+<link rel="canonical" href="https://eyemail.in/settings/data-privacy.html" />
 <link rel="icon" type="image/png" sizes="32x32" href="../../branding/app-icons/eyemail-32.png" />
 <link rel="icon" type="image/svg+xml" href="../../branding/app-icons/eyemail-icon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<title>Security — Eyemail</title>
+<title>Data and Privacy — Eyemail</title>
 <style>
   :root{--bg:#eef1f4;--surface:#fff;--text:#101a2b;--text-2:#4a5a6a;--text-3:#8494a3;--accent:#1857b8;--border:#e2e8ee}
   @media (prefers-color-scheme: dark){:root{--bg:#0d141d;--surface:#131c26;--text:#eaf0f5;--text-2:#a4b4c2;--text-3:#6f8290;--accent:#6fa8ff;--border:#22303d}}
@@ -41,45 +41,44 @@
 <body>
 <div class="top"><div class="in"><b>Eyemail</b><a href="../../index.html">eyemail.in</a></div></div>
 <div class="wrap">
-<h1>Security</h1>
+<h1>Data and Privacy</h1>
 <p class="date">Last updated 27 November 2026</p>
 
-<p>What we actually do to protect a mailbox, and what we do not claim. This page describes the product as it is today, not a promise about the future.</p>
+<p>Your data is yours. This page is the one place that says how to see it, take it, correct it or remove it, and who to write to.</p>
 
-<h2>The password</h2>
-<ul>
-  <li>Your password is held by Firebase Authentication, not in our own database.</li>
-  <li>We never display it, and no screen of ours can read it.</li>
-  <li>The app tells your keyboard not to capitalise or autocorrect it, so what you type is what is checked.</li>
-</ul>
+<div class="card">
+  <h3>See it</h3>
+  <p>Settings, then Account, shows your name, your address, your recovery address and the space you use. Every message you hold is in the mailbox, under its folder.</p>
+</div>
 
-<h2>The session</h2>
-<ul>
-  <li>Signing in gives a token that expires in about an hour, and the app renews it in the background.</li>
-  <li>Sign out of all devices is one button, and it clears the tokens on every phone and browser.</li>
-  <li>While you are signed out, the Android app blocks screenshots and hides its recents thumbnail, so a typed password cannot be captured from the task switcher.</li>
-</ul>
+<div class="card">
+  <h3>Take it with you</h3>
+  <p>Ask us and we will give you a file of your mail and your profile. Write to <a href="mailto:support@eyemail.in">support@eyemail.in</a> from your Eyemail address, with the subject Export, and we will reply with the file.</p>
+</div>
 
-<h2>Your mail</h2>
-<ul>
-  <li>Mail is read from the server, one page at a time, with your token.</li>
-  <li>The service worker never caches a message body, so mail is not left on a shared computer.</li>
-  <li>Deleting a message for good is done by the server, which also returns the space, so a browser rule cannot half do it.</li>
-</ul>
+<div class="card">
+  <h3>Correct it</h3>
+  <p>Name and signature you change yourself in Settings. Your recovery address you change in Settings with a code sent to the new address. Your address itself cannot be renamed, because it is your account id.</p>
+</div>
 
-<h2>Our side</h2>
-<ul>
-  <li>Keys and service credentials live only in the server environment, never in the code and never in the app.</li>
-  <li>The app holds only the public Firebase key, which is meant to be public.</li>
-  <li>Sign in, signup, password reset and sending are rate limited per person, so a script cannot guess a password or flood a mailbox.</li>
-  <li>The legal pages carry a policy that blocks plugins, framing and base changes, and they send no referrer, so a sign in link cannot leak its token to another site.</li>
-</ul>
+<div class="card">
+  <h3>Delete it</h3>
+  <p>Settings, then Account, then Delete my account. It removes the mailbox, its mail, the login and the notification tokens, and it cannot be undone. Single messages you delete yourself, and Trash empties after 30 days on its own.</p>
+</div>
 
-<h2>What we do not claim</h2>
-<p>No service can say it is impossible to break into. We do not claim that, and we will not. What we claim is that the protections above are in place and are checked, and that when we find a fault we fix it and say so.</p>
+<div class="card">
+  <h3>Turn off notifications</h3>
+  <p>Settings, then Mail alerts, turns them off, and the device token is removed so no further alert is sent to that phone.</p>
+</div>
 
-<h2>If something goes wrong</h2>
-<p>Write to <a href="mailto:support@eyemail.in">support@eyemail.in</a>. If we ever suffer a breach that affects your data, we will tell you what happened and what to do, without waiting to be asked.</p>
+<h2>How fast we answer</h2>
+<p>We answer a data request within 30 days, and usually much sooner. We may ask you to write from the mailbox itself, so that we know the request is yours and not someone else's.</p>
+
+<h2>If you are not satisfied</h2>
+<p>Tell us first, at <a href="mailto:support@eyemail.in">support@eyemail.in</a>, and give us a chance to put it right. If the answer does not satisfy you, you may complain to the Data Protection Board of India under the Digital Personal Data Protection Act, 2023.</p>
+
+<h2>What this page does not cover</h2>
+<p>It does not repeat the full list of data we hold, which is on the <a href="privacy.html">Privacy Policy</a> page, or the protections in place, which are on the <a href="security.html">Security</a> page. The rules for using the service are in the <a href="terms.html">Terms of Use</a>.</p>
 
 <div class="foot">
   <a href="terms.html">Terms of Use</a>
