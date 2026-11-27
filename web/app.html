@@ -1767,6 +1767,8 @@
   }
 
   function openCompose(to = "", subject = "", body = "", title = "New message", cc = "", bcc = "") {
+    // A new mail must not overwrite the draft that was open before it.
+    if (title !== "Draft") draftDocId = null;
     composeAlert.classList.add("hidden");
     document.getElementById("composeTitle").textContent = title;
     document.getElementById("composeTo").value = to;
@@ -1776,8 +1778,8 @@
     document.getElementById("ccRow").classList.toggle("hidden", !showCc);
     document.getElementById("bccRow").classList.toggle("hidden", !showCc);
     document.getElementById("composeSubject").value = subject;
-    const sig = prefs.signature ? `\n\n${prefs.signature}` : "";
-    document.getElementById("composeBody").value = body + sig;
+    // The signature is added when the mail is sent, never written into the box.
+    document.getElementById("composeBody").value = body;
     composeModal.classList.remove("hidden");
     fillContacts();
     document.getElementById("composeTo").focus();
@@ -1894,7 +1896,13 @@
     openCompose("", subj, quoted, "Forward");
   });
 
-  document.getElementById("closeComposeBtn").addEventListener("click", () => composeModal.classList.add("hidden"));
+  document.getElementById("closeComposeBtn").addEventListener("click", async () => {
+    // The X must not throw away what was written. Same rule as Cancel.
+    await saveDraftToMailbox();
+    composeModal.classList.add("hidden");
+    document.getElementById("draftState").textContent = "";
+    draftDocId = null;
+  });
   document.getElementById("cancelComposeBtn").addEventListener("click", async () => {
     // Closing the composer keeps the draft in Drafts, it does not throw it away.
     await saveDraftToMailbox();
@@ -1941,10 +1949,16 @@
         if (cancelled) return;
       }
 
+      const typed = document.getElementById("composeBody").value.trim();
+      const signature = (prefs.signature || "").trim();
+      const withSignature = signature && !typed.includes(signature)
+        ? `${typed}\n\n${signature}`
+        : typed;
+
       await sendMail(
         document.getElementById("composeTo").value.trim(),
         document.getElementById("composeSubject").value.trim(),
-        document.getElementById("composeBody").value.trim(),
+        withSignature,
         parseAddrs(document.getElementById("composeCc").value),
         parseAddrs(document.getElementById("composeBcc").value)
       );
@@ -2326,7 +2340,8 @@
       const res = await fetch(`${BACKEND_URL}/api/auth/sign-out-all`, {
         method: "POST", headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error((await res.json()).detail || "Could not sign out the other devices.");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || `Could not sign out the other devices (HTTP ${res.status}).`);
       await signOut(auth);
       window.location.href = "login.html";
     } catch (err) {
