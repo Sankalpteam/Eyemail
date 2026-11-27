@@ -210,9 +210,13 @@
     try { history.replaceState(null, "", location.pathname); } catch (_) {}
   }
 
+  // While a sign in is being checked, the listener must keep out of the way: it fires the
+  // moment Firebase has a user, which is before we know whether a mailbox exists.
+  let checkingSignIn = false;
+
   // Already signed in, and no link to open: the mailbox is where they belong.
   onAuthStateChanged(auth, (user) => {
-    if (!user) return;
+    if (!user || checkingSignIn) return;
     if (readToken()) return;          // the link below handles its own sign in
     window.location.href = "app.html";
   });
@@ -223,10 +227,26 @@
     scrubToken();
     loginBtn.disabled = true;
     loginBtn.textContent = "Opening your mailbox...";
+    checkingSignIn = true;
     try {
-      await signInWithCustomToken(auth, token);
+      const cred = await signInWithCustomToken(auth, token);
+      try {
+        const idToken = await cred.user.getIdToken();
+        const res = await fetch(`${BACKEND_URL}/api/user/profile`, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        if (res.status === 404) {
+          checkingSignIn = false;
+          await signOut(auth);
+          showAlert("This link points at a login with no mailbox. Create the mailbox again.");
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Sign in";
+          return;
+        }
+      } catch (_) {}
       window.location.href = "app.html";
     } catch (err) {
+      checkingSignIn = false;
       showAlert(err.code === "auth/invalid-custom-token"
         ? "That sign-in link has expired. Sign in with your password instead."
         : "Could not open the mailbox with that link.");
@@ -254,6 +274,7 @@
 
     loginBtn.disabled = true;
     loginBtn.textContent = "Signing in...";
+    checkingSignIn = true;
 
     try {
       const cred = await signInWithEmailAndPassword(auth, raw, password);
@@ -264,6 +285,7 @@
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.status === 404) {
+          checkingSignIn = false;
           await signOut(auth);
           showAlert("This sign in has no mailbox behind it. Create the mailbox again, or sign in with another address.");
           loginBtn.disabled = false;
@@ -275,6 +297,7 @@
       }
       window.location.href = "app.html";
     } catch (err) {
+      checkingSignIn = false;
       showAlert(err.code === "auth/too-many-requests"
         ? "Too many attempts. Please wait a minute and try again."
         : "Invalid Eyemail address or password.");

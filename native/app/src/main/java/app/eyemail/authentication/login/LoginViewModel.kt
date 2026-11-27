@@ -33,6 +33,11 @@ class LoginViewModel : ViewModel() {
         _state.update { it.copy(password = "", busy = false, error = "") }
     }
 
+    /** Clear the form for a different account, after a refusal. */
+    fun startOver() {
+        _state.update { LoginState() }
+    }
+
     fun signIn() {
         val current = _state.value
         if (!current.canSubmit) return
