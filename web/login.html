@@ -232,14 +232,23 @@
       agreeBox.checked;
     loginBtn.disabled = !ready;
   }
-  ["emailInput", "passwordInput"].forEach((id) =>
-    document.getElementById(id).addEventListener("input", loginReady));
+  ["emailInput", "passwordInput"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", loginReady);
+    document.getElementById(id).addEventListener("change", loginReady);
+  });
   agreeBox.addEventListener("change", () => {
     try {
       if (agreeBox.checked) localStorage.setItem(AGREE_KEY, "1");
       else localStorage.removeItem(AGREE_KEY);
     } catch (_) {}
     loginReady();
+  // Autofill can fill every field without firing a single event. Look again for a moment.
+  let autofillWatch = 0;
+  const autofillTimer = setInterval(() => {
+    loginReady();
+    if (++autofillWatch > 12) clearInterval(autofillTimer);
+  }, 500);
+  document.addEventListener("visibilitychange", loginReady);
   });
   loginReady();
 

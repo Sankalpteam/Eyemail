@@ -40,12 +40,15 @@ class LoginViewModel : ViewModel() {
 
     /** Coming back to this screen always starts from a clean form. */
     fun reset() {
-        _state.update { it.copy(password = "", busy = false, error = "") }
+        _state.update {
+            it.copy(password = "", busy = false, error = "", agreed = AuthSessionStore.termsAgreed())
+        }
     }
 
     /** Clear the form for a different account, after a refusal. */
     fun startOver() {
-        _state.update { LoginState() }
+        // The device already agreed to the terms, so a clean form keeps that tick.
+        _state.update { LoginState(agreed = AuthSessionStore.termsAgreed()) }
     }
 
     fun signIn() {

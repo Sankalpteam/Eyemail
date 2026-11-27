@@ -239,10 +239,19 @@
       agreeBox.checked;
     submitBtn.disabled = !ready;
   }
-  ["fullName", "username", "recoveryEmail", "password"].forEach((id) =>
-    document.getElementById(id).addEventListener("input", signupReady));
+  ["fullName", "username", "recoveryEmail", "password"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", signupReady);
+    document.getElementById(id).addEventListener("change", signupReady);
+  });
   agreeBox.addEventListener("change", signupReady);
   signupReady();
+  // Autofill can fill every field without firing a single event. Look again for a moment.
+  let autofillWatch = 0;
+  const autofillTimer = setInterval(() => {
+    signupReady();
+    if (++autofillWatch > 12) clearInterval(autofillTimer);
+  }, 500);
+  document.addEventListener("visibilitychange", signupReady);
 
   function showAlert(msg, isError = true) {
     alertBox.textContent = msg;
