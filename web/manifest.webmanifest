@@ -3,14 +3,38 @@
   "short_name": "Eyemail",
   "description": "Business mail on your own domain, free on the free plan.",
   "start_url": "./app.html",
-  "serviceworker": { "src": "./sw.js", "scope": "./" },
+  "serviceworker": {
+    "src": "./sw.js",
+    "scope": "./"
+  },
   "scope": "./",
   "display": "standalone",
   "background_color": "#eef1f4",
   "theme_color": "#1857b8",
   "icons": [
-    { "src": "../branding/app-icons/eyemail-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "../branding/app-icons/eyemail-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "../branding/app-icons/eyemail-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "../branding/app-icons/eyemail-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../branding/app-icons/eyemail-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../branding/app-icons/eyemail-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../branding/app-icons/eyemail-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
   ]
 }

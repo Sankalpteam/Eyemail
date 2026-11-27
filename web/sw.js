@@ -5,7 +5,7 @@
    3. stay out of the way of everything else: the mail itself always comes from the
       network, never from a cache, because a stale mailbox is worse than no mailbox */
 
-const VERSION = "eyemail-v1";
+const VERSION = "eyemail-v2";
 const SHELL = [
   "./app.html",
   "./index.html",
@@ -13,6 +13,8 @@ const SHELL = [
   "./manifest.webmanifest",
   "../branding/app-icons/eyemail-192.png",
   "../branding/app-icons/eyemail-32.png",
+  "../branding/app-icons/eyemail-icon.svg",
+  "./favicon.ico",
 ];
 
 self.addEventListener("install", (event) => {

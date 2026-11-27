@@ -52,6 +52,21 @@ def draw(size, rounded=True):
     return img
 
 
+def make_extra(out_dir):
+    """The maskable icon and the favicon, both made from the same master."""
+    from PIL import Image
+    master = Image.open(out_dir / "eyemail-1024-square.png").convert("RGBA")
+
+    size, safe = 512, int(512 * 0.62)
+    maskable = Image.new("RGBA", (size, size), (24, 87, 184, 255))
+    logo = master.resize((safe, safe), Image.LANCZOS)
+    maskable.paste(logo, ((size - safe) // 2, (size - safe) // 2), logo)
+    maskable.save(out_dir / "eyemail-512-maskable.png")
+
+    master.resize((48, 48), Image.LANCZOS).save(out_dir / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
+    print("wrote eyemail-512-maskable.png and favicon.ico")
+
+
 def main():
     os.makedirs(WEB_DIR, exist_ok=True)
     for name, size in WEB_SIZES.items():
