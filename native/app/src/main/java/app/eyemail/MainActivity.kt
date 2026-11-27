@@ -61,7 +61,21 @@ class MainActivity : ComponentActivity() {
         setContent {
             EyemailTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = Ey.Bg) {
-                    EyemailApp()
+                    // The system splash can only show the icon, so the branded one is drawn
+                    // here for a moment: mark, product name, and the company line.
+                    var showSplash by androidx.compose.runtime.remember {
+                        androidx.compose.runtime.mutableStateOf(true)
+                    }
+                    androidx.compose.runtime.LaunchedEffect(Unit) {
+                        kotlinx.coroutines.delay(900)
+                        showSplash = false
+                    }
+
+                    if (showSplash) {
+                        app.eyemail.splash.SplashScreen()
+                    } else {
+                        EyemailApp()
+                    }
                 }
             }
         }
