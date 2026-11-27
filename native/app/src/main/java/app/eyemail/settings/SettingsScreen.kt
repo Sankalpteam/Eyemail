@@ -129,6 +129,27 @@ fun SettingsScreen(
         val scroll = rememberScrollState()
         LaunchedEffect(state.section) { scroll.scrollTo(0) }
 
+        // A page is drawn on its own, never inside the scrolling list: a web view inside a
+        // scrolling column gets no height of its own and shows nothing.
+        val legalPage = webLegal
+        val sectionPage = state.open
+        if (legalPage != null || sectionPage != null) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            SettingsWebPage(
+                url = if (legalPage != null) {
+                    legalPage.first + "?inapp=1"
+                } else {
+                    SettingsWeb.forSection(sectionPage!!.name.lowercase()) + "?inapp=1"
+                },
+                title = legalPage?.second ?: sectionPage!!.label,
+                onBack = {
+                    if (legalPage != null) webLegal = null else viewModel.closeSection()
+                },
+            )
+            }
+            return@Column
+        }
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -250,29 +271,6 @@ fun SettingsScreen(
                 )
                 return@Column
             }
-
-            val legal = webLegal
-            if (legal != null) {
-                SettingsWebPage(
-                    url = legal.first + "?inapp=1",
-                    title = legal.second,
-                    onBack = { webLegal = null },
-                )
-                return@Column
-            }
-
-            val openSection = state.open
-            if (openSection != null) {
-                SettingsWebPage(
-                    url = SettingsWeb.forSection(openSection.name.lowercase()) + "?inapp=1",
-                    title = openSection.label,
-                    onBack = { viewModel.closeSection() },
-                )
-                return@Column
-            }
-
-            // A page is open: draw nothing else, so no option can flash before it appears.
-            if (state.open != null) return@Column
 
             when (state.section) {
                 SettingsState.Section.Account -> AccountSection(
