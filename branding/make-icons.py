@@ -57,10 +57,12 @@ def make_extra(out_dir):
     from PIL import Image
     master = Image.open(out_dir / "eyemail-1024-square.png").convert("RGBA")
 
-    size, safe = 512, int(512 * 0.62)
+    # Full bleed: the master already carries its blue background, so scaling it to the
+    # whole canvas leaves no seam. Android crops the shape, the logo stays inside the
+    # safe zone on its own.
+    size = 512
     maskable = Image.new("RGBA", (size, size), (24, 87, 184, 255))
-    logo = master.resize((safe, safe), Image.LANCZOS)
-    maskable.paste(logo, ((size - safe) // 2, (size - safe) // 2), logo)
+    maskable.alpha_composite(master.resize((size, size), Image.LANCZOS))
     maskable.save(out_dir / "eyemail-512-maskable.png")
 
     master.resize((48, 48), Image.LANCZOS).save(out_dir / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
