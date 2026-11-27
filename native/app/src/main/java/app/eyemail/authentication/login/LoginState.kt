@@ -6,7 +6,8 @@ data class LoginState(
     val password: String = "",
     val busy: Boolean = false,
     val error: String = "",
+    val agreed: Boolean = false,
 ) {
     val canSubmit: Boolean
-        get() = !busy && email.isNotBlank() && password.isNotEmpty()
+        get() = !busy && email.isNotBlank() && password.isNotEmpty() && agreed
 }

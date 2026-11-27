@@ -132,6 +132,12 @@ fun SignUpScreen(
                 Alert(state.error, isError = true)
                 Spacer(Modifier.height(12.dp))
 
+                app.eyemail.authentication.TermsBox(
+                    checked = state.agreed,
+                    onChange = viewModel::onAgree,
+                )
+                Spacer(Modifier.height(8.dp))
+
                 PrimaryButton(
                     text = if (state.busy) "Creating your account..." else "Create account",
                     loading = state.busy,

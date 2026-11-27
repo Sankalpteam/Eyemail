@@ -37,6 +37,13 @@ object AuthSessionStore {
             ?.apply()
     }
 
+    /** The terms were accepted on this device, so sign in does not ask again. */
+    fun termsAgreed(): Boolean = prefs?.getBoolean("termsAgreed", false) ?: false
+
+    fun setTermsAgreed(value: Boolean) {
+        prefs?.edit()?.putBoolean("termsAgreed", value)?.apply()
+    }
+
     fun token(): String? = prefs?.getString(KEY_TOKEN, null)
 
     fun email(): String? = prefs?.getString(KEY_EMAIL, null)

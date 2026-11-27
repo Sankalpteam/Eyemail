@@ -139,6 +139,14 @@ fun LoginScreen(
             Spacer(Modifier.height(14.dp))
             Alert(state.error, isError = true)
 
+            Spacer(Modifier.height(6.dp))
+
+            // The box sits right above the button, so the last thing to do is visible.
+            app.eyemail.authentication.TermsBox(
+                checked = state.agreed,
+                onChange = viewModel::onAgree,
+            )
+
             Spacer(Modifier.height(10.dp))
 
             PrimaryButton(

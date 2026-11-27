@@ -48,6 +48,9 @@ class SignUpViewModel : ViewModel() {
     fun backToForm() = _state.update { it.copy(step = SignUpState.Step.Form, otp = "", error = "") }
 
     /** Step one: the server creates the login, then we sign in for a token. */
+    /** The terms box, which is never ticked for the person. */
+    fun onAgree(value: Boolean) = _state.update { it.copy(agreed = value, error = "") }
+
     fun createAccount() {
         val current = _state.value
         if (!current.canCreate) return

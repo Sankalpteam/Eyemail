@@ -23,6 +23,16 @@ class LoginViewModel : ViewModel() {
 
     fun onPassword(value: String) = _state.update { it.copy(password = value, error = "") }
 
+    /** The terms box. Remembered on this device, so the next sign in starts ticked. */
+    fun onAgree(value: Boolean) {
+        AuthSessionStore.setTermsAgreed(value)
+        _state.update { it.copy(agreed = value, error = "") }
+    }
+
+    init {
+        _state.update { it.copy(agreed = AuthSessionStore.termsAgreed()) }
+    }
+
     /** The screen calls this once it has navigated, so the event is used only once. */
     fun consumeSignedIn() {
         _signedIn.value = false
