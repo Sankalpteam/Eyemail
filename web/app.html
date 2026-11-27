@@ -951,7 +951,10 @@
 
   const PREFS_KEY = "eyemail_prefs";
   const prefs = Object.assign(
-    { theme: "light", density: "comfortable", signature: "", displayName: "" },
+    {
+      theme: "light", density: "comfortable", signature: "", displayName: "",
+      notifications: false, pushOn: false, confirmDelete: true, undoSeconds: 0,
+    },
     JSON.parse(localStorage.getItem(PREFS_KEY) || "{}")
   );
   function savePrefs() { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }
@@ -2166,6 +2169,7 @@
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(body),
       });
+      if (saved.ok) { prefs.pushOn = true; savePrefs(); }
       return saved.ok;
     } catch (_) {
       return false;
@@ -2189,6 +2193,8 @@
         }),
       });
       await sub.unsubscribe();
+      prefs.pushOn = false;
+      savePrefs();
     } catch (_) {}
   }
 
@@ -2261,6 +2267,9 @@
     const fresh = mails.filter((m) => m.folder === "inbox" && !m.read && !announced.has(m.id));
     mails.forEach((m) => announced.add(m.id));
     if (firstLoad) { firstLoad = false; return; }
+    // With a push subscription the service worker already tells the person, even when
+    // the tab is closed. Announcing here as well would show the same mail twice.
+    if (prefs.pushOn) return;
     if (!prefs.notifications || !notifySupported() || Notification.permission !== "granted") return;
     if (!document.hidden) return;                  // the person is looking at the list already
     fresh.slice(0, 3).forEach((m) => {
