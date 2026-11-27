@@ -43,6 +43,17 @@ class LoginViewModel : ViewModel() {
         if (!current.canSubmit) return
         _state.update { it.copy(busy = true, error = "") }
 
+        val typed = current.email.trim().lowercase()
+        if (typed.contains("@") && !typed.endsWith("@${BuildConfig.DOMAIN_NAME}")) {
+            _state.update {
+                it.copy(
+                    busy = false,
+                    error = "That is not an Eyemail address. Sign in with your @${BuildConfig.DOMAIN_NAME} one.",
+                )
+            }
+            return
+        }
+
         viewModelScope.launch {
             try {
                 val address = if (current.email.contains("@")) {

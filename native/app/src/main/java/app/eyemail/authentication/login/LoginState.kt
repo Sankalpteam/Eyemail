@@ -8,5 +8,5 @@ data class LoginState(
     val error: String = "",
 ) {
     val canSubmit: Boolean
-        get() = !busy && email.isNotBlank() && password.length >= 6
+        get() = !busy && email.isNotBlank() && password.isNotEmpty()
 }
