@@ -111,5 +111,23 @@
   <a href="terms-of-use/">Terms</a><a href="privacy-policy/">Privacy</a>
 </div>
 </div>
+
+<script>
+  // The arrow must go back to the page the person came from, not always to Settings.
+  // A direct visit has no history to go back to, so each page names where it falls back to.
+  (function () {
+    var a = document.querySelector("a.back");
+    if (!a) return;
+    a.addEventListener("click", function (e) {
+      try {
+        var ref = document.referrer ? new URL(document.referrer) : null;
+        if (ref && ref.origin === location.origin && history.length > 1) {
+          e.preventDefault();
+          history.back();
+        }
+      } catch (_) {}
+    });
+  })();
+</script>
 </body>
 </html>
