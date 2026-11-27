@@ -1494,6 +1494,8 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || `Could not empty Trash (HTTP ${res.status}).`);
       toast(`Deleted ${data.deleted} message${data.deleted === 1 ? "" : "s"}`);
+      // The space came back, so the meter must show it without a reload.
+      loadProfile(currentUser);
     } catch (err) {
       toast(err.message);
     } finally {
