@@ -146,15 +146,16 @@ fun SettingsScreen(
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     section.label.uppercase(),
-                                    fontSize = 9.5.sp,
+                                    fontSize = 10.sp,
                                     letterSpacing = 0.6.sp,
-                                    color = Ey.Text3,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Ey.Text2,
                                 )
                             }
                             Text(
                                 sectionRowSummary(section, state),
-                                fontSize = 11.5.sp,
-                                color = Ey.Text3,
+                                fontSize = 12.sp,
+                                color = Ey.Text2,
                                 maxLines = 1,
                             )
                             Spacer(Modifier.width(6.dp))
