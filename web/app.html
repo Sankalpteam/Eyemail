@@ -2146,6 +2146,16 @@
     settingsModal.classList.remove("hidden"); showSettingsList();
   });
   document.getElementById("closeSettingsBtn").addEventListener("click", () => settingsModal.classList.add("hidden"));
+
+  // A settings page sends the person back here with ?settings=1, so the window they came
+  // from is open again, on the list, instead of a mailbox with the window shut.
+  if (new URLSearchParams(location.search).get("settings") === "1") {
+    setTimeout(() => {
+      settingsModal.classList.remove("hidden");
+      showSettingsList();
+      try { history.replaceState(null, "", location.pathname); } catch (_) {}
+    }, 0);
+  }
   // Every open starts at the list, so the last section is never left on screen.
   document.querySelectorAll('[data-open-settings], #openSettingsBtn, #quotaFixBtn').forEach((b) =>
     b.addEventListener("click", () => setTimeout(showSettingsList, 0)));
