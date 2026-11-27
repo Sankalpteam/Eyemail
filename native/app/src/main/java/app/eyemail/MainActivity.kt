@@ -1,6 +1,7 @@
 package app.eyemail
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import kotlinx.coroutines.launch
 import androidx.activity.ComponentActivity
@@ -59,6 +60,20 @@ class MainActivity : ComponentActivity() {
                 app.eyemail.push.PushRegistrar.ensureRegistered(this@MainActivity, reason = "resume")
             }
         })
+        // No screenshots and no recents thumbnail while the person is signed out, so a
+        // password on screen cannot end up in the gallery or the task switcher. The flag is
+        // lifted as soon as there is a session, because mail should still be shareable.
+        val guard = WindowManager.LayoutParams.FLAG_SECURE
+        if (AuthSessionStore.token().isNullOrBlank()) {
+            window.addFlags(guard)
+        }
+        lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+            override fun onResume(owner: androidx.lifecycle.LifecycleOwner) {
+                val signedOut = AuthSessionStore.token().isNullOrBlank()
+                if (signedOut) window.addFlags(guard) else window.clearFlags(guard)
+            }
+        })
+
         enableEdgeToEdge()
         setContent {
             EyemailTheme {
