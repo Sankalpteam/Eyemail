@@ -289,6 +289,8 @@
     box-shadow:var(--shadow-lg);overflow:hidden;max-height:86vh;display:flex;flex-direction:column}
   .modal-card .mh{display:flex;align-items:center;padding:12px 16px;background:var(--surface-3);font-size:13px;font-weight:700}
   .modal-card .mh button{margin-left:auto;background:none;border:0;color:var(--text-3);font-size:16px;cursor:pointer}
+  .modal-card .mh #setBackBtn{margin-left:0;margin-right:8px;color:var(--text)}
+  .modal-card .mh #setTitle{font-size:13px;font-weight:700}
   .modal-body{padding:16px;overflow-y:auto}
   /* One fixed frame, so switching section never resizes the window */
   .modal-card.settings{width:min(760px,100%);height:min(620px,88vh);display:flex;flex-direction:column}
@@ -299,6 +301,16 @@
     font:600 12.5px/1.2 inherit;color:var(--text-2)}
   .setnav button:hover{background:var(--surface-3)}
   .setnav button.on{background:var(--accent-soft);color:var(--accent)}
+  .setrows{display:flex;flex-direction:column;min-height:0;flex:1;overflow-y:auto}
+  .setrow{display:flex;align-items:center;gap:10px;width:100%;border:0;border-bottom:1px solid var(--border);
+    background:var(--surface);padding:14px 16px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+  .setrow:hover{background:var(--surface-3)}
+  .setrow-t{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+  .setrow-t b{font-size:13.5px;font-weight:600;color:var(--text)}
+  .setrow-t i{font-style:normal;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)}
+  .setrow-s{font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%}
+  .setrow-a{color:var(--text-3);font-size:18px;line-height:1}
+  .setback{border:0;background:none;cursor:pointer;padding:6px 8px 6px 0;font-size:18px;line-height:1;color:var(--text)}
   .setpanes{padding:18px 20px;overflow-y:auto;min-height:0;flex:1}
   .setpane h3{margin:0 0 14px;font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:var(--text-3);
     font-family:"Azeret Mono",monospace;font-weight:500}
@@ -734,19 +746,43 @@
 <!-- settings modal -->
 <div class="modal hidden" id="settingsModal">
   <div class="modal-card settings">
-    <div class="mh">Settings<button id="closeSettingsBtn" type="button">&times;</button></div>
+    <div class="mh"><button class="setback hidden" id="setBackBtn" type="button" aria-label="Back to settings">&#8592;</button><span id="setTitle">Settings</span><button id="closeSettingsBtn" type="button">&times;</button></div>
     <div class="settings-body">
-      <nav class="setnav" id="setNav">
-        <button type="button" data-sec="account" class="on">Account</button>
-        <button type="button" data-sec="appearance">Appearance</button>
-        <button type="button" data-sec="mail">Mail</button>
-        <button type="button" data-sec="notifications">Notifications</button>
-        <button type="button" data-sec="storage">Storage</button>
-        <button type="button" data-sec="about">About</button>
-      </nav>
+      <div class="setrows" id="setRows">
+        <button type="button" class="setrow" data-open="account">
+          <span class="setrow-t"><b>Name, address and password</b><i>Account</i></span>
+          <span class="setrow-s" id="rowSumAccount"></span>
+          <span class="setrow-a">&#8250;</span>
+        </button>
+        <button type="button" class="setrow" data-open="appearance">
+          <span class="setrow-t"><b>Theme and row height</b><i>Appearance</i></span>
+          <span class="setrow-s" id="rowSumAppearance"></span>
+          <span class="setrow-a">&#8250;</span>
+        </button>
+        <button type="button" class="setrow" data-open="mail">
+          <span class="setrow-t"><b>Signature, undo and delete</b><i>Mail</i></span>
+          <span class="setrow-s" id="rowSumMail"></span>
+          <span class="setrow-a">&#8250;</span>
+        </button>
+        <button type="button" class="setrow" data-open="notifications">
+          <span class="setrow-t"><b>Mail alerts on this browser</b><i>Notifications</i></span>
+          <span class="setrow-s" id="rowSumNotifications"></span>
+          <span class="setrow-a">&#8250;</span>
+        </button>
+        <button type="button" class="setrow" data-open="storage">
+          <span class="setrow-t"><b>Space used and free</b><i>Storage</i></span>
+          <span class="setrow-s" id="rowSumStorage"></span>
+          <span class="setrow-a">&#8250;</span>
+        </button>
+        <button type="button" class="setrow" data-open="about">
+          <span class="setrow-t"><b>Version, build and the company</b><i>About</i></span>
+          <span class="setrow-s" id="rowSumAbout"></span>
+          <span class="setrow-a">&#8250;</span>
+        </button>
+      </div>
 
       <div class="setpanes">
-        <section class="setpane" data-pane="account">
+        <section class="setpane hidden" data-pane="account">
           <h3>Account</h3>
           <div class="setting">
             <div><b>Display name</b><span>Shown on mail you send</span></div>
@@ -1484,10 +1520,9 @@
   document.querySelectorAll("[data-bulk]").forEach((b) => b.addEventListener("click", () => bulk(b.dataset.bulk)));
 
   document.getElementById("quotaFixBtn").addEventListener("click", () => {
+    // Straight to Storage, since that is the section the banner is about.
     settingsModal.classList.remove("hidden");
-    document.querySelectorAll("#setNav button").forEach((x) => x.classList.toggle("on", x.dataset.sec === "storage"));
-    document.querySelectorAll(".setpane").forEach((p) => p.classList.toggle("hidden", p.dataset.pane !== "storage"));
-    renderNotifyState();
+    openSettingsSection("storage");
   });
 
   document.getElementById("emptyTrashBtn").addEventListener("click", async () => {
@@ -2090,9 +2125,12 @@
   const settingsModal = document.getElementById("settingsModal");
   document.getElementById("openSettingsBtn").addEventListener("click", () => {
     renderNotifyState();
-    settingsModal.classList.remove("hidden");
+    settingsModal.classList.remove("hidden"); showSettingsList();
   });
   document.getElementById("closeSettingsBtn").addEventListener("click", () => settingsModal.classList.add("hidden"));
+  // Every open starts at the list, so the last section is never left on screen.
+  document.querySelectorAll('[data-open-settings], #openSettingsBtn, #quotaFixBtn').forEach((b) =>
+    b.addEventListener("click", () => setTimeout(showSettingsList, 0)));
 
   // Clicking the empty space around a window closes it, like the x button.
   // mousedown, not click, so a drag that starts inside does not close it.
@@ -2105,9 +2143,42 @@
     });
   document.getElementById("userChip").addEventListener("click", (e) => {
     if (e.target.closest("#logoutBtn")) return;
-    settingsModal.classList.remove("hidden");
+    settingsModal.classList.remove("hidden"); showSettingsList();
   });
   // section switching
+  function showSettingsList() {
+    document.getElementById("setRows").classList.remove("hidden");
+    document.querySelectorAll(".setpane").forEach((p) => p.classList.add("hidden"));
+    document.getElementById("setBackBtn").classList.add("hidden");
+    document.getElementById("setTitle").textContent = "Settings";
+    refreshSettingRowSummaries();
+  }
+
+  function openSettingsSection(name) {
+    document.getElementById("setRows").classList.add("hidden");
+    document.querySelectorAll(".setpane").forEach((p) => p.classList.toggle("hidden", p.dataset.pane !== name));
+    document.getElementById("setBackBtn").classList.remove("hidden");
+    const row = document.querySelector(`.setrow[data-open="${name}"]`);
+    document.getElementById("setTitle").textContent = row ? row.querySelector("i").textContent : "Settings";
+    if (name === "notifications" && typeof renderNotifyState === "function") renderNotifyState();
+  }
+
+  // One fact per row, so nothing has to be opened to know what is inside.
+  function refreshSettingRowSummaries() {
+    const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    set("rowSumAccount", document.getElementById("settingAddress")?.textContent || "");
+    set("rowSumAppearance", prefs.theme || "light");
+    set("rowSumMail", (prefs.signature || "").trim() ? "signature set" : "no signature");
+    set("rowSumNotifications", prefs.pushOn ? "on" : (prefs.notifications ? "on" : "off"));
+    const mb = (storageUsed / (1024 * 1024));
+    set("rowSumStorage", mb >= 0.1 ? `${mb.toFixed(1)} MB used` : "empty");
+    set("rowSumAbout", "Eyemail");
+  }
+
+  document.querySelectorAll(".setrow").forEach((row) =>
+    row.addEventListener("click", () => openSettingsSection(row.dataset.open)));
+  document.getElementById("setBackBtn").addEventListener("click", showSettingsList);
+
   document.querySelectorAll("#setNav button").forEach((b) => b.addEventListener("click", () => {
     document.querySelectorAll("#setNav button").forEach((x) => x.classList.toggle("on", x === b));
     document.querySelectorAll(".setpane").forEach((p) => p.classList.toggle("hidden", p.dataset.pane !== b.dataset.sec));
