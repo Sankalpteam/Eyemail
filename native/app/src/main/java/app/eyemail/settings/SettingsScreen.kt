@@ -351,7 +351,7 @@ private fun sectionRowSummary(section: SettingsState.Section, state: SettingsSta
 // ---------------------------------------------------------------------------------------
 
 private object SettingsWeb {
-    private const val BASE = "https://sankalpteam.github.io/Eyemail/settings/"
+    private const val BASE = "https://sankalpteam.github.io/Eyemail/web/settings/"
 
     fun forSection(section: String): String = when (section) {
         "account" -> "${BASE}account.html"
@@ -453,6 +453,14 @@ private fun SettingsWebPage(
                     settings.allowFileAccess = false
                     settings.allowContentAccess = false
                     webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView?, address: String?) {
+                            // The phone draws the header, so the page's own copy is removed
+                            // once it has loaded. Doing it here cannot be skipped by a cache.
+                            view?.evaluateJavascript(
+                                "(function(){var t=document.querySelector('.top');if(t){t.remove();}var b=document.body;if(b){b.style.paddingTop='0px';}})();",
+                                null,
+                            )
+                        }
                         override fun onReceivedError(
                             view: WebView?,
                             request: android.webkit.WebResourceRequest?,

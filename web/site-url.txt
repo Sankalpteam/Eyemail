@@ -1,6 +1,6 @@
 The address the site is served from today.
 
-    https://sankalpteam.github.io/Eyemail/
+    https://sankalpteam.github.io/Eyemail/web/
 
 This file exists because the address appears in four kinds of place: the canonical link on
 every settings page, the sitemap, robots.txt, and the four addresses inside the Android app.
