@@ -81,10 +81,18 @@ fun LoginScreen(
 
             Spacer(Modifier.height(24.dp))
 
+            val emailFocus = androidx.compose.runtime.remember { androidx.compose.ui.focus.FocusRequester() }
             val passwordFocus = androidx.compose.runtime.remember { androidx.compose.ui.focus.FocusRequester() }
+
+            // The cursor is in the address field when the screen opens, so the keyboard is
+            // ready and nobody has to tap twice to start typing.
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                runCatching { emailFocus.requestFocus() }
+            }
 
             EyField(
                 label = "Eyemail address",
+                modifier = Modifier.focusRequester(emailFocus),
                 value = state.email,
                 onValueChange = viewModel::onEmail,
                 placeholder = "yourname@eyemail.in",
@@ -102,6 +110,11 @@ fun LoginScreen(
                 value = state.password,
                 onValueChange = viewModel::onPassword,
                 placeholder = "Enter your password",
+                hint = if (state.password.isNotEmpty() && state.password.length < 6) {
+                    "Passwords are at least 6 characters."
+                } else {
+                    null
+                },
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done,
                 onImeAction = viewModel::signIn,
