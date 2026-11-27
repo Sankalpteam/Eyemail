@@ -53,7 +53,13 @@ class LoginViewModel : ViewModel() {
 
     fun signIn() {
         val current = _state.value
-        if (!current.canSubmit) return
+        if (current.busy) return
+        if (current.email.isBlank() || current.password.isEmpty()) return
+        if (!current.agreed) {
+            // The button explains itself, but the keyboard's Done does not, so say it here.
+            _state.update { it.copy(error = "Tick the box to agree to the Terms of Use and the Privacy Policy.") }
+            return
+        }
         _state.update { it.copy(busy = true, error = "") }
 
         val typed = current.email.trim().lowercase()

@@ -283,6 +283,11 @@
   });
 
   form.addEventListener("submit", async (e) => {
+    if (!agreeBox.checked) {
+      e.preventDefault();
+      showAlert("Tick the box to agree to the Terms of Use and the Privacy Policy.");
+      return;
+    }
     e.preventDefault();
     alertBox.className = "alert err hidden";
 

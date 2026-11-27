@@ -325,6 +325,11 @@
     e.preventDefault();
     alertBox.className = "alert err hidden";
 
+    if (!agreeBox.checked) {
+      showAlert("Tick the box to agree to the Terms of Use and the Privacy Policy.");
+      return;
+    }
+
     let raw = document.getElementById("emailInput").value.trim().toLowerCase();
     if (!raw.includes("@")) raw = `${raw}@${DOMAIN_NAME}`;
     const password = document.getElementById("passwordInput").value;

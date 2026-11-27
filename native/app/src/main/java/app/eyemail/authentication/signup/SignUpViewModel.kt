@@ -52,6 +52,12 @@ class SignUpViewModel : ViewModel() {
     fun onAgree(value: Boolean) = _state.update { it.copy(agreed = value, error = "") }
 
     fun createAccount() {
+        if (!_state.value.agreed) {
+            _state.update {
+                it.copy(error = "Tick the box to agree to the Terms of Use and the Privacy Policy.")
+            }
+            return
+        }
         val current = _state.value
         if (!current.canCreate) return
         _state.update { it.copy(busy = true, error = "") }
