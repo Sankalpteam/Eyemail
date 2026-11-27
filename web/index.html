@@ -134,6 +134,16 @@
 
   .pwrline{margin:22px 0 0;font:500 11.5px/1 "Azeret Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
   .pwrline b{color:var(--text-2);font-weight:600}
+  .legal{border-top:1px solid var(--border);margin-top:44px;padding:34px 0 8px}
+  .legal h2{font-size:20px;letter-spacing:-.01em;margin:0 0 6px}
+  .legal-sub{color:var(--text-2);font-size:13.5px;margin:0 0 18px;max-width:52ch}
+  .legal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .legal-grid a{display:block;text-decoration:none;background:var(--surface);border:1px solid var(--border);
+    border-radius:14px;padding:14px 16px;transition:border-color .15s,background .15s}
+  .legal-grid a:hover{border-color:var(--accent);background:var(--surface-3)}
+  .legal-grid b{display:block;font-size:13.5px;color:var(--text);margin-bottom:3px}
+  .legal-grid span{display:block;font-size:12px;color:var(--text-3);line-height:1.45}
+  @media (max-width:560px){.legal-grid{grid-template-columns:1fr}}
   footer{border-top:1px solid var(--border);margin-top:40px;padding:22px 0 40px}
   .foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:12px;color:var(--text-3)}
   .foot .pwr{color:var(--text-3)}
@@ -318,6 +328,32 @@
 
 </main>
 
+
+<section class="legal">
+  <div class="wrap">
+    <h2>Before you sign up</h2>
+    <p class="legal-sub">The four pages that say how Eyemail works, in plain words. Read them now, or any time from Settings.</p>
+    <div class="legal-grid">
+      <a href="settings/terms-of-use/">
+        <b>Terms of Use</b>
+        <span>What you get, what you may not send, how it ends</span>
+      </a>
+      <a href="settings/privacy-policy/">
+        <b>Privacy Policy</b>
+        <span>What we hold, why, and who else processes it</span>
+      </a>
+      <a href="settings/security/">
+        <b>Security</b>
+        <span>How your password, session and mail are protected</span>
+      </a>
+      <a href="settings/data-and-privacy/">
+        <b>Data and Privacy</b>
+        <span>See, export, correct or delete your data</span>
+      </a>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="wrap foot">
     <span>Eyemail · business mail on eyemail.in</span>
@@ -325,6 +361,12 @@
     <span class="r">
       <a href="login.html">Sign in</a>
       <a href="signup.html">Create account</a>
+    </span>
+    <span class="r" style="flex-basis:100%;margin-top:10px">
+      <a href="settings/terms-of-use/">Terms</a>
+      <a href="settings/privacy-policy/">Privacy</a>
+      <a href="settings/security/">Security</a>
+      <a href="settings/data-and-privacy/">Data and Privacy</a>
     </span>
   </div>
 </footer>
