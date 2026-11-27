@@ -338,11 +338,6 @@
       showAlert(`That is not an Eyemail address. Sign in with your @${DOMAIN_NAME} one.`);
       return;
     }
-    if (password.length < 6) {
-      showAlert("Passwords are at least 6 characters.");
-      return;
-    }
-
     loginBtn.disabled = true;
     loginBtn.textContent = "Signing in...";
     checkingSignIn = true;
@@ -362,8 +357,8 @@
           checkingSignIn = false;
           await signOut(auth);
           showAlert("This sign in has no mailbox behind it. Create the mailbox again, or sign in with another address.");
-          loginBtn.disabled = false;
           loginBtn.textContent = "Sign in";
+          loginReady();
           return;
         }
       } catch (_) {
@@ -386,8 +381,8 @@
             ? "Too many attempts. Please wait a minute and try again."
             : "Invalid Eyemail address or password."
       );
-      loginBtn.disabled = false;
       loginBtn.textContent = "Sign in";
+      loginReady();
     }
   });
 </script>

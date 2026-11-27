@@ -326,8 +326,8 @@
     } catch (err) {
       showAlert(err.message || "Signup failed", true);
     } finally {
-      submitBtn.disabled = false;
       submitBtn.textContent = "Create Eyemail account";
+      signupReady();
     }
   });
 
