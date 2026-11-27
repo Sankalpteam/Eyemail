@@ -18,6 +18,7 @@ data class HomeState(
     val canLoadMore: Boolean = false,
     val searching: Boolean = false,
     val pushRegistered: Boolean = false,
+    val mailboxMissing: Boolean = false,
 ) {
     val selecting: Boolean get() = selected.isNotEmpty()
 

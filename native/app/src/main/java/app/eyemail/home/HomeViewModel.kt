@@ -114,10 +114,18 @@ class HomeViewModel : ViewModel() {
                     it.copy(
                         storageUsed = profile.optLong("storageUsedBytes", 0),
                         storageLimit = profile.optLong("storageLimitBytes", 1L shl 30),
+                        mailboxMissing = false,
                     )
                 }
-            } catch (_: Exception) {
-                // The meter is not worth an error line on its own.
+            } catch (e: Exception) {
+                val message = e.message.orEmpty()
+                // A login with no mailbox behind it is not an empty inbox, and saying
+                // nothing would leave the person staring at a blank list.
+                if (message.contains("Profile not found", ignoreCase = true) ||
+                    message.contains("404")
+                ) {
+                    _state.update { it.copy(mailboxMissing = true) }
+                }
             }
         }
     }

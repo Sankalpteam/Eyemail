@@ -420,6 +420,23 @@ fun HomeScreen(
                     )
                 }
 
+                if (state.mailboxMissing) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Ey.DangerSoft)
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                    ) {
+                        Text(
+                            "This sign in has no mailbox behind it. The account may have been deleted. " +
+                                "Sign out and create the mailbox again, or sign in with another address.",
+                            fontSize = 11.5.sp,
+                            lineHeight = 16.sp,
+                            color = Ey.Danger,
+                        )
+                    }
+                }
+
                 if (state.error.isNotBlank()) {
                     Box(
                         modifier = Modifier

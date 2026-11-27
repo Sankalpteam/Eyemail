@@ -1049,6 +1049,15 @@
     try {
       const token = await user.getIdToken();
       const res = await fetch(`${BACKEND_URL}/api/user/profile`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.status === 404) {
+        // Signed in, but no mailbox behind the login. Say so instead of an empty list.
+        const box = document.getElementById("emailList");
+        if (box) {
+          box.innerHTML = `<div class="empty">This sign in has no mailbox behind it. ` +
+            `The account may have been deleted. Sign out and create the mailbox again.</div>`;
+        }
+        return;
+      }
       if (!res.ok) return;
       const data = await res.json().catch(() => ({}));
       profile = data.profile || {};

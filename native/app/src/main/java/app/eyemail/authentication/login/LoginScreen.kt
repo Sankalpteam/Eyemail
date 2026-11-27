@@ -96,7 +96,12 @@ fun LoginScreen(
                 value = state.email,
                 onValueChange = viewModel::onEmail,
                 placeholder = "yourname@eyemail.in",
-                hint = "Type the name only and we add @${BuildConfig.DOMAIN_NAME}.",
+                hint = when {
+                    state.email.contains("@") && !state.email.lowercase()
+                        .endsWith("@${BuildConfig.DOMAIN_NAME}") ->
+                        "That is not an Eyemail address. Sign in with your @${BuildConfig.DOMAIN_NAME} one."
+                    else -> "Type the name only and we add @${BuildConfig.DOMAIN_NAME}."
+                },
                 keyboardType = KeyboardType.Email,
                 enabled = !state.busy,
                 onNext = { passwordFocus.requestFocus() },
