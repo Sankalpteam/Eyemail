@@ -193,8 +193,8 @@ fun SettingsScreen(
 
             val openSection = state.open
             if (openSection != null) {
-                SettingsWebPage(
-                    url = SettingsWeb.forSection(openSection.name.lowercase()),
+                app.eyemail.settings.common.SettingsWebPage(
+                    url = app.eyemail.settings.common.SettingsWeb.forSection(openSection.name.lowercase()),
                     title = openSection.label,
                     onBack = { viewModel.closeSection() },
                 )

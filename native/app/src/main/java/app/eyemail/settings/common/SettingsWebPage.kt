@@ -1,4 +1,4 @@
-package app.eyemail.settings
+package app.eyemail.settings.common
 
 import android.annotation.SuppressLint
 import android.view.ViewGroup
