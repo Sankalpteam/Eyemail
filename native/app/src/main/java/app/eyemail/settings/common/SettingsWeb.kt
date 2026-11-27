@@ -17,10 +17,11 @@ object SettingsWeb {
     const val STORAGE = "${BASE}storage.html"
     const val ABOUT = "${BASE}about.html"
 
-    const val TERMS = "${BASE}terms.html"
-    const val PRIVACY = "${BASE}privacy.html"
-    const val SECURITY = "${BASE}security.html"
-    const val DATA_PRIVACY = "${BASE}data-privacy.html"
+    // Each page has its own folder, and the folder address serves it.
+    const val TERMS = "${BASE}terms/"
+    const val PRIVACY = "${BASE}privacy/"
+    const val SECURITY = "${BASE}security/"
+    const val DATA_PRIVACY = "${BASE}data-privacy/"
 
     /** The page for a settings section, by its name in the list. */
     fun forSection(section: String): String = when (section) {
