@@ -1,6 +1,7 @@
 package app.eyemail.authentication.login
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,11 +69,20 @@ fun LoginScreen(
 
     val page = openPage
     if (page != null) {
-        app.eyemail.settings.WebPageView(
-            url = page.first + "?inapp=1",
-            title = page.second,
-            onBack = { openPage = null },
-        )
+        androidx.compose.foundation.layout.Column(
+            modifier = androidx.compose.ui.Modifier.fillMaxSize().background(app.eyemail.Ey.Bg),
+        ) {
+            app.eyemail.authentication.PageHeader(title = page.second, onBack = { openPage = null })
+            androidx.compose.foundation.layout.Box(
+                modifier = androidx.compose.ui.Modifier.weight(1f).fillMaxWidth(),
+            ) {
+                app.eyemail.settings.WebPageView(
+                    url = page.first + "?inapp=1",
+                    title = page.second,
+                    onBack = { openPage = null },
+                )
+            }
+        }
         return
     }
 
