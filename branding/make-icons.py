@@ -52,6 +52,35 @@ def draw(size, rounded=True):
     return img
 
 
+def make_round_and_opaque(out_dir, android_mipmaps):
+    """Two rules that are easy to lose on a regeneration.
+
+    1. The round launcher icon must be a circle, not a copy of the square one, or a
+       launcher that asks for the round icon shows a rounded square.
+    2. The apple touch icon must have no transparency, because iOS paints a transparent
+       icon on black.
+    """
+    from PIL import Image, ImageDraw
+    master = Image.open(out_dir / "eyemail-1024-square.png").convert("RGBA")
+
+    flat = Image.new("RGBA", master.size, (24, 87, 184, 255))
+    flat.alpha_composite(master)
+    flat.resize((180, 180), Image.LANCZOS).convert("RGB").save(out_dir / "eyemail-180.png")
+
+    for density, size in {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}.items():
+        big = size * 4
+        circle = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+        ImageDraw.Draw(circle).ellipse((0, 0, big - 1, big - 1), fill=(24, 87, 184, 255))
+        circle.alpha_composite(master.resize((big, big), Image.LANCZOS))
+        mask = Image.new("L", (big, big), 0)
+        ImageDraw.Draw(mask).ellipse((0, 0, big - 1, big - 1), fill=255)
+        circle.putalpha(mask)
+        circle.resize((size, size), Image.LANCZOS).save(
+            android_mipmaps / f"mipmap-{density}" / "ic_launcher_round.png"
+        )
+    print("round launcher icons and an opaque apple icon written")
+
+
 def make_extra(out_dir):
     """The maskable icon and the favicon, both made from the same master."""
     from PIL import Image
