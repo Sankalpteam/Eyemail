@@ -271,6 +271,9 @@ fun SettingsScreen(
                 return@Column
             }
 
+            // A page is open: draw nothing else, so no option can flash before it appears.
+            if (state.open != null) return@Column
+
             when (state.section) {
                 SettingsState.Section.Account -> AccountSection(
                     state = state.account,

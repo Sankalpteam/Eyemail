@@ -780,9 +780,7 @@
           <span class="setrow-s" id="rowSumAbout"></span>
           <span class="setrow-a">&#8250;</span>
         </button>
-      </div>
 
-      <div class="setrows" style="flex:0 0 auto;border-top:1px solid var(--border)">
         <a class="setrow" href="settings/terms-of-use/">
           <span class="setrow-t"><b>Terms of Use</b><i>Legal</i></span>
           <span class="setrow-a">&#8250;</span>
@@ -2167,11 +2165,19 @@
   });
   // section switching
   function showSettingsList() {
-    document.getElementById("setRows").classList.remove("hidden");
+    const rows = document.getElementById("setRows");
+    rows.classList.remove("hidden");
+    rows.style.display = "";
     document.querySelectorAll(".setpane").forEach((p) => p.classList.add("hidden"));
     document.getElementById("setTitle").textContent = "Settings";
     refreshSettingRowSummaries();
   }
+
+  // A page opened from this list can come back through the browser's own history, and the
+  // list must be whole when it does, not the last thing that was on screen.
+  window.addEventListener("pageshow", () => {
+    if (!settingsModal.classList.contains("hidden")) showSettingsList();
+  });
 
   function openSettingsSection(name) {
     document.getElementById("setRows").classList.add("hidden");
