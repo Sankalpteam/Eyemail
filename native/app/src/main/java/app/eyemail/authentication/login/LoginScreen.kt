@@ -139,14 +139,6 @@ fun LoginScreen(
             Spacer(Modifier.height(14.dp))
             Alert(state.error, isError = true)
 
-            if (state.error.isNotBlank()) {
-                // The address and password are still there, so fixing a typo is one tap.
-                // This clears them for a different account, which is the other thing a
-                // person does after a refusal.
-                TextButton(onClick = viewModel::startOver) {
-                    Text("Use a different address", fontSize = 12.5.sp, color = Ey.Accent)
-                }
-            }
             Spacer(Modifier.height(10.dp))
 
             PrimaryButton(
@@ -155,6 +147,14 @@ fun LoginScreen(
                 enabled = state.canSubmit,
                 onClick = viewModel::signIn,
             )
+
+            if (state.error.isNotBlank()) {
+                // Under the button, so a refusal does not push the form around, and the
+                // way out is still one tap for a different account.
+                TextButton(onClick = viewModel::startOver) {
+                    Text("Use a different address", fontSize = 12.5.sp, color = Ey.Accent)
+                }
+            }
 
             Spacer(Modifier.height(18.dp))
 
