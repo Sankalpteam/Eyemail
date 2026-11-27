@@ -343,8 +343,6 @@ private fun sectionRowSummary(section: SettingsState.Section, state: SettingsSta
 // thing too many.
 // ---------------------------------------------------------------------------------------
 
-}
-
 /**
  * One settings page, loaded from the web.
  *
@@ -456,9 +454,11 @@ private fun SettingsWebPage(
                             request: android.webkit.WebResourceRequest?,
                         ): Boolean {
                             val target = request?.url?.toString().orEmpty()
-                            // Stay on eyemail.in. Anything else opens nowhere, rather than
-                            // loading an unknown page inside the app.
-                            return !target.startsWith("https://eyemail.in/")
+                            // Stay on our own pages. Anything else opens nowhere, rather
+                            // than loading an unknown page inside the app.
+                            val ours = target.startsWith("https://eyemail.in/") ||
+                                target.startsWith("https://sankalpteam.github.io/Eyemail/")
+                            return !ours
                         }
                     }
                     loadUrl(url)
