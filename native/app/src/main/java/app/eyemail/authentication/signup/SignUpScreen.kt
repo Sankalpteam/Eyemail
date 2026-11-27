@@ -46,6 +46,11 @@ fun SignUpScreen(
     viewModel: SignUpViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    // A legal page opened from the box. Null shows the form.
+    var openPage by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf<Pair<String, String>?>(null)
+    }
     val signedIn by viewModel.signedIn.collectAsStateWithLifecycle()
 
     LaunchedEffect(signedIn) {
@@ -57,6 +62,16 @@ fun SignUpScreen(
 
     LaunchedEffect(Unit) {
         viewModel.reset()
+    }
+
+    val page = openPage
+    if (page != null) {
+        app.eyemail.settings.WebPageView(
+            url = page.first + "?inapp=1",
+            title = page.second,
+            onBack = { openPage = null },
+        )
+        return
     }
 
     Column(
@@ -135,6 +150,8 @@ fun SignUpScreen(
                 app.eyemail.authentication.TermsBox(
                     checked = state.agreed,
                     onChange = viewModel::onAgree,
+                    onOpenTerms = { openPage = app.eyemail.settings.terms_of_use.TermsOfUsePage.URL to "Terms of Use" },
+                    onOpenPrivacy = { openPage = app.eyemail.settings.privacy_policy.PrivacyPolicyPage.URL to "Privacy Policy" },
                 )
                 Spacer(Modifier.height(8.dp))
 

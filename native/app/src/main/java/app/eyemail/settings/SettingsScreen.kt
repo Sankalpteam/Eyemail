@@ -134,7 +134,7 @@ fun SettingsScreen(
         val legalPage = webLegal
         if (legalPage != null) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                SettingsWebPage(
+                WebPageView(
                     url = legalPage.first + "?inapp=1",
                     title = legalPage.second,
                     onBack = { webLegal = null },
@@ -351,7 +351,7 @@ private fun sectionRowSummary(section: SettingsState.Section, state: SettingsSta
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-private fun SettingsWebPage(
+internal fun WebPageView(
     url: String,
     title: String,
     onBack: () -> Unit,
