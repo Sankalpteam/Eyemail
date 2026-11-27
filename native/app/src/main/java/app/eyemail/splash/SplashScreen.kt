@@ -17,7 +17,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.eyemail.Ey
-import app.eyemail.authentication.EyemailMark
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 
 /**
  * The screen the app opens on.
@@ -43,21 +46,45 @@ fun SplashScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            EyemailMark(size = 84)
-            Spacer(Modifier.height(16.dp))
+            // The same size the system splash draws its icon, so the hand over from the
+            // system screen to this one looks like one screen, not two.
+            // Flat blue, the same colour as the launcher icon the system splash shows,
+            // so the two screens read as one.
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .background(Color(0xFF1857B8), RoundedCornerShape(33.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Canvas(modifier = Modifier.size(64.dp)) {
+                    val w = size.width
+                    val h = size.height
+                    drawRoundRect(
+                        color = Color.White,
+                        topLeft = androidx.compose.ui.geometry.Offset(w * 0.06f, h * 0.22f),
+                        size = androidx.compose.ui.geometry.Size(w * 0.88f, h * 0.56f),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.06f),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = w * 0.075f),
+                    )
+                    val path = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(w * 0.10f, h * 0.26f)
+                        lineTo(w * 0.50f, h * 0.55f)
+                        lineTo(w * 0.90f, h * 0.26f)
+                    }
+                    drawPath(path, Color.White, style = androidx.compose.ui.graphics.drawscope.Stroke(
+                        width = w * 0.075f,
+                        cap = androidx.compose.ui.graphics.StrokeCap.Round,
+                        join = androidx.compose.ui.graphics.StrokeJoin.Round,
+                    ))
+                }
+            }
+            Spacer(Modifier.height(18.dp))
             Text(
                 "Eyemail",
-                fontSize = 24.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = (-0.4).sp,
                 color = Ey.Text,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "Business mail on your own domain",
-                fontSize = 12.5.sp,
-                color = Ey.Text2,
                 textAlign = TextAlign.Center,
             )
         }
@@ -67,7 +94,7 @@ fun SplashScreen(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(bottom = 120.dp),
+                .padding(bottom = 96.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
