@@ -747,7 +747,7 @@
 <!-- settings modal -->
 <div class="modal hidden" id="settingsModal">
   <div class="modal-card settings">
-    <div class="mh"><button class="setback hidden" id="setBackBtn" type="button" aria-label="Back to settings">&#8592;</button><span id="setTitle">Settings</span><button id="closeSettingsBtn" type="button">&times;</button></div>
+    <div class="mh"><button class="setback" id="setBackBtn" type="button" aria-label="Back">&#8592;</button><span id="setTitle">Settings</span><button id="closeSettingsBtn" type="button" aria-label="Close">&times;</button></div>
     <div class="settings-body">
       <div class="setrows" id="setRows">
         <button type="button" class="setrow" data-open="account">
@@ -2169,7 +2169,6 @@
   function showSettingsList() {
     document.getElementById("setRows").classList.remove("hidden");
     document.querySelectorAll(".setpane").forEach((p) => p.classList.add("hidden"));
-    document.getElementById("setBackBtn").classList.add("hidden");
     document.getElementById("setTitle").textContent = "Settings";
     refreshSettingRowSummaries();
   }
@@ -2177,7 +2176,6 @@
   function openSettingsSection(name) {
     document.getElementById("setRows").classList.add("hidden");
     document.querySelectorAll(".setpane").forEach((p) => p.classList.toggle("hidden", p.dataset.pane !== name));
-    document.getElementById("setBackBtn").classList.remove("hidden");
     const row = document.querySelector(`.setrow[data-open="${name}"]`);
     document.getElementById("setTitle").textContent = row ? row.querySelector("i").textContent : "Settings";
     if (name === "notifications" && typeof renderNotifyState === "function") renderNotifyState();
@@ -2197,7 +2195,11 @@
 
   document.querySelectorAll(".setrow").forEach((row) =>
     row.addEventListener("click", () => openSettingsSection(row.dataset.open)));
-  document.getElementById("setBackBtn").addEventListener("click", showSettingsList);
+  document.getElementById("setBackBtn").addEventListener("click", () => {
+    const inSection = document.getElementById("setRows").classList.contains("hidden");
+    if (inSection) showSettingsList();
+    else settingsModal.classList.add("hidden");
+  });
 
   document.querySelectorAll("#setNav button").forEach((b) => b.addEventListener("click", () => {
     document.querySelectorAll("#setNav button").forEach((x) => x.classList.toggle("on", x === b));
