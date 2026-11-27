@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -116,39 +118,46 @@ fun SettingsScreen(
                 .verticalScroll(scroll),
         ) {
             if (state.open == null) {
-                // The list. Every section is a row, found by scrolling, and a tap opens it.
-                Spacer(Modifier.height(8.dp))
-                SettingsState.Section.entries.forEach { section ->
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            section.label.uppercase(),
-                            fontSize = 10.sp,
-                            letterSpacing = 1.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Ey.Text3,
-                            modifier = Modifier.padding(start = 18.dp, top = 14.dp, bottom = 6.dp),
-                        )
+                // One card, six rows, exactly the shape the web shows: a title, a small
+                // label under it, one fact on the right, and an arrow. No grey band per
+                // section, and no row taller than its own text.
+                Spacer(Modifier.height(12.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .background(Ey.Surface, RoundedCornerShape(14.dp)),
+                ) {
+                    SettingsState.Section.entries.forEachIndexed { index, section ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Ey.Surface)
                                 .clickable { viewModel.open(section) }
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(
-                                sectionRowTitle(section),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Ey.Text,
-                                modifier = Modifier.weight(1f),
-                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    sectionRowTitle(section),
+                                    fontSize = 13.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Ey.Text,
+                                )
+                                Spacer(Modifier.height(2.dp))
+                                Text(
+                                    section.label.uppercase(),
+                                    fontSize = 9.5.sp,
+                                    letterSpacing = 0.6.sp,
+                                    color = Ey.Text3,
+                                )
+                            }
                             Text(
                                 sectionRowSummary(section, state),
                                 fontSize = 11.5.sp,
                                 color = Ey.Text3,
+                                maxLines = 1,
                             )
-                            Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.width(6.dp))
                             androidx.compose.material3.Icon(
                                 imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                 contentDescription = null,
@@ -156,9 +165,17 @@ fun SettingsScreen(
                                 modifier = Modifier.size(18.dp),
                             )
                         }
+                        if (index != SettingsState.Section.entries.lastIndex) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .background(Ey.Border),
+                            )
+                        }
                     }
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(18.dp))
                 Text(
                     "POWERED BY INDO WORKSPACE",
                     fontSize = 9.5.sp,
