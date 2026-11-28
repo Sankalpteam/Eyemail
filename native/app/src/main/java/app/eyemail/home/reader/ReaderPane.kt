@@ -220,11 +220,29 @@ fun ReaderPane(
                 if (body.text.isBlank()) {
                     Text(mail.snippet, fontSize = 13.5.sp, lineHeight = 22.sp, color = Ey.Text2)
                 } else {
-                    Text(
-                        body,
-                        fontSize = 13.5.sp,
-                        lineHeight = 22.sp,
-                        color = Ey.Text,
+                    // A link in a mail must open, otherwise it is only blue words.
+                    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+                    androidx.compose.foundation.text.ClickableText(
+                        text = body,
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontSize = 13.5.sp,
+                            lineHeight = 22.sp,
+                            color = Ey.Text,
+                        ),
+                        onClick = { offset ->
+                            body.getStringAnnotations("url", offset, offset).firstOrNull()
+                                ?.item
+                                ?.let { url ->
+                                    // Only what a browser or a mail app can take, never a
+                                    // made up scheme from a stranger.
+                                    val safe = url.trim()
+                                    if (safe.startsWith("http://") || safe.startsWith("https://") ||
+                                        safe.startsWith("mailto:")
+                                    ) {
+                                        runCatching { uriHandler.openUri(safe) }
+                                    }
+                                }
+                        },
                     )
                 }
             }

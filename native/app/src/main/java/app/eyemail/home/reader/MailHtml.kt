@@ -121,9 +121,11 @@ internal object MailHtml {
             if (at >= 0) {
                 result = buildAnnotatedString {
                     append(result.subSequence(0, at))
+                    pushStringAnnotation("url", links[i].second)
                     withStyle(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)) {
                         append(label)
                     }
+                    pop()
                     append(result.subSequence(at + marker.length, result.length))
                 }
             }
