@@ -16,7 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.eyemail.Ey
-import app.eyemail.settings.SettingsStore
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -35,8 +34,9 @@ fun TrashScreen(
     canLoadMore: Boolean = false,
     onLoadMore: () -> Unit = {},
 ) {
-    // Ask before deleting forever is a setting; when it is off, Empty trash goes at once.
-    val mustAsk = SettingsStore.confirmDelete()
+    // Emptying trash cannot be undone, so it always asks. The setting is about trashing a
+    // single mail, which can be taken back; it must not remove the last question before a
+    // permanent delete.
     var asking by remember { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -74,7 +74,7 @@ fun TrashScreen(
                         fontWeight = FontWeight.Bold,
                         color = Ey.Danger,
                         modifier = Modifier
-                            .clickable { if (mustAsk) asking = true else onEmptyTrash() }
+                            .clickable { asking = true }
                             .padding(horizontal = 8.dp, vertical = 6.dp),
                     )
                 }

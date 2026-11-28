@@ -1547,8 +1547,9 @@
     const btn = document.getElementById("emptyTrashBtn");
     const count = allEmails.filter((m) => m.folder === "trash").length;
     if (!count) { toast("Trash is already empty"); return; }
-    if (prefs.confirmDelete !== false &&
-        !window.confirm(`Delete all ${count} messages in Trash forever? This cannot be undone.`)) return;
+    // Always asked: emptying trash cannot be undone, and the setting is about trashing a
+    // single mail, which can.
+    if (!window.confirm(`Delete all ${count} messages in Trash forever? This cannot be undone.`)) return;
 
     btn.disabled = true;
     btn.textContent = "Emptying...";
