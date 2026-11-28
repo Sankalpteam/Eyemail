@@ -129,6 +129,9 @@ fun SignUpScreen(
                     onValueChange = viewModel::onUsername,
                     placeholder = "yourname",
                     hint = "Your address will be ${state.username.ifBlank { "yourname" }}@${BuildConfig.DOMAIN_NAME}",
+                    // An address is lower case. The web already says so; the phone's keyboard
+                    // kept capitalising the first letter and the field kept undoing it.
+                    capitalize = false,
                     enabled = !state.busy,
                 )
                 Spacer(Modifier.height(14.dp))

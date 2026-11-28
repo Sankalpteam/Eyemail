@@ -117,6 +117,7 @@ fun EyField(
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
     isPassword: Boolean = false,
+    capitalize: Boolean = true,
     enabled: Boolean = true,
     labelAction: (@Composable () -> Unit)? = null,
     onImeAction: (() -> Unit)? = null,
@@ -153,7 +154,7 @@ fun EyField(
                 imeAction = imeAction,
                 // An address or a password is typed as it is. Auto capitalising the first
                 // letter of a password is a silent way to be told the password is wrong.
-                capitalization = if (keyboardType == KeyboardType.Email || isPassword) {
+                capitalization = if (keyboardType == KeyboardType.Email || isPassword || !capitalize) {
                     KeyboardCapitalization.None
                 } else {
                     KeyboardCapitalization.Sentences
