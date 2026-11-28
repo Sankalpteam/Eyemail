@@ -44,7 +44,7 @@ import app.eyemail.authentication.PrimaryButton
 @Composable
 fun LoginScreen(
     onSignup: () -> Unit,
-    onForgot: () -> Unit,
+    onForgot: (String) -> Unit,
     onSignedIn: () -> Unit,
     viewModel: LoginViewModel = viewModel(),
 ) {
@@ -148,11 +148,8 @@ fun LoginScreen(
                 value = state.password,
                 onValueChange = viewModel::onPassword,
                 placeholder = "Enter your password",
-                hint = if (state.password.isNotEmpty() && state.password.length < 6) {
-                    "Passwords are at least 6 characters."
-                } else {
-                    null
-                },
+                // No length rule here: a password that exists is tried, whatever its length.
+                hint = null,
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done,
                 onImeAction = viewModel::signIn,
@@ -164,7 +161,7 @@ fun LoginScreen(
                         fontSize = 12.5.sp,
                         color = Ey.Accent,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.clickable(enabled = !state.busy, onClick = onForgot),
+                        modifier = Modifier.clickable(enabled = !state.busy, onClick = { onForgot(state.email) }),
                     )
                 },
             )

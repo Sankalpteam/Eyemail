@@ -20,6 +20,13 @@ class ForgotPasswordViewModel : ViewModel() {
         _state.value = ForgotPasswordState()
     }
 
+    /** The address typed on the sign in screen, so it is not asked twice. */
+    fun prefill(value: String) {
+        val clean = value.trim()
+        if (clean.isBlank()) return
+        _state.update { it.copy(email = clean) }
+    }
+
     fun onEmail(value: String) = _state.update { it.copy(email = value, error = "", done = "") }
 
     fun send() {

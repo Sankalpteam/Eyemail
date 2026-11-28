@@ -38,6 +38,7 @@ import app.eyemail.authentication.PrimaryButton
  */
 @Composable
 fun ForgotPasswordScreen(
+    initialEmail: String = "",
     onBack: () -> Unit,
     viewModel: ForgotPasswordViewModel = viewModel(),
 ) {
@@ -45,6 +46,7 @@ fun ForgotPasswordScreen(
 
     LaunchedEffect(Unit) {
         viewModel.reset()
+        viewModel.prefill(initialEmail)
     }
 
     Column(

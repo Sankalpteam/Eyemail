@@ -112,6 +112,7 @@ private fun EyemailApp() {
         mutableStateOf(if (AuthSessionStore.isSignedIn()) Screen.SignedIn else Screen.Login)
     }
     var sessionEmail by rememberSaveable { mutableStateOf("") }
+    var forgotEmail by rememberSaveable { mutableStateOf("") }
 
     // The back gesture steps inside the app and never drops the person out of it.
     BackHandler(enabled = screen == Screen.SignUp || screen == Screen.Forgot || screen == Screen.Settings) {
@@ -121,7 +122,11 @@ private fun EyemailApp() {
     when (screen) {
         Screen.Login -> LoginScreen(
             onSignup = { screen = Screen.SignUp },
-            onForgot = { screen = Screen.Forgot },
+            onForgot = { typed ->
+                // The address already typed is carried over, so reset does not ask twice.
+                forgotEmail = typed
+                screen = Screen.Forgot
+            },
             onSignedIn = {
                 sessionEmail = AuthSessionStore.email().orEmpty()
                 app.eyemail.push.PushRegistrar.ensureRegistered(
@@ -144,7 +149,10 @@ private fun EyemailApp() {
             },
         )
 
-        Screen.Forgot -> ForgotPasswordScreen(onBack = { screen = Screen.Login })
+        Screen.Forgot -> ForgotPasswordScreen(
+            initialEmail = forgotEmail,
+            onBack = { screen = Screen.Login },
+        )
 
         Screen.Settings -> SettingsScreen(
             onBack = { screen = Screen.SignedIn },
