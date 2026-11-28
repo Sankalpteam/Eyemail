@@ -72,7 +72,14 @@ object AuthSessionStore {
 
     fun isSignedIn(): Boolean = !token().isNullOrBlank()
 
+    /** Forget the signed in account. What the device agreed to stays. */
     fun clear() {
-        prefs?.edit()?.clear()?.apply()
+        prefs?.edit()
+            ?.remove(KEY_EMAIL)
+            ?.remove(KEY_UID)
+            ?.remove(KEY_TOKEN)
+            ?.remove(KEY_REFRESH)
+            ?.remove(KEY_EXPIRES)
+            ?.apply()
     }
 }
