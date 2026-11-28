@@ -19,7 +19,7 @@ data class SignUpState(
     enum class Step { Form, Code }
 
     val canCreate: Boolean
-        get() = !busy && name.isNotBlank() && username.isNotBlank() &&
+        get() = !busy && name.isNotBlank() && username.trim().length >= 3 &&
             recovery.contains("@") && password.length >= 6 && agreed
 
     val canVerify: Boolean

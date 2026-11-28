@@ -175,7 +175,7 @@
         <div class="field">
           <label for="username">Your Eyemail address</label>
           <div class="domain">
-            <input id="username" type="text" required placeholder="yourname" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" style="text-transform:lowercase" />
+            <input id="username" type="text" required minlength="3" maxlength="30" pattern="[A-Za-z0-9._]{3,30}" title="3 to 30 letters, numbers, dots or underscores" placeholder="yourname" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" style="text-transform:lowercase" />
             <span>@eyemail.in</span>
           </div>
           <p id="usernameHint" class="hint">3-30 characters: letters, numbers, dots, underscores.</p>
@@ -215,7 +215,7 @@
 
 <script type="module">
   import { auth, BACKEND_URL, DOMAIN_NAME } from "./firebase-config.js";
-  import { signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const form = document.getElementById("signupForm");
   const otpForm = document.getElementById("otpForm");
@@ -316,8 +316,15 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, name, recovery_email: recovery, password })
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.detail || "Could not create the account.");
+      const data = await readJson(res, "Could not create the account.");
+      if (!res.ok) {
+        const detail = String(data.detail || "");
+        throw new Error(
+          /exists|taken|already/i.test(detail)
+            ? "That address already has a sign-in. Sign in with it, or pick a different address."
+            : detail || "Could not create the account."
+        );
+      }
 
       pending = { email: data.email, password, name, recovery };
 
@@ -397,14 +404,32 @@
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Could not resend the code.");
-      showAlert(`New code sent to ${data.maskedRecoveryEmail}.`, false);
+      const masked = (data.maskedRecoveryEmail || "").trim();
+      showAlert(masked ? `New code sent to ${masked}.` : "A new code has been sent.", false);
+
+      // One code, then a minute: pressing again at once only earns a rate limit.
+      const btn = document.getElementById("resendBtn");
+      let wait = 60;
+      btn.disabled = true;
+      btn.textContent = `Resend in ${wait}s`;
+      const tick = setInterval(() => {
+        wait -= 1;
+        if (wait <= 0) {
+          clearInterval(tick);
+          btn.textContent = "Resend code";
+          btn.disabled = false;
+        } else {
+          btn.textContent = `Resend in ${wait}s`;
+        }
+      }, 1000);
     } catch (err) {
       showAlert(err.message, true);
     }
   });
 
   document.getElementById("backBtn").addEventListener("click", async () => {
-    try { await signOut(auth); } catch (_) {}
+    // The sign in made for this half finished account is kept: signing out here meant the
+    // same address could never be tried again, because the account already existed.
     pending = null;
     alertBox.className = "alert err hidden";
     otpForm.classList.add("hidden");
