@@ -995,6 +995,7 @@
   let currentUser = null;
   let allEmails = [];
   let currentFolder = "inbox";
+  let searchError = "";
   let currentLabel = null;
   let selectedEmailId = null;
   let searchQuery = "";
@@ -1260,6 +1261,7 @@
   async function runSearch(text) {
     if (!text) {
       searchResults = null;
+      searchError = "";
       renderList();
       return;
     }
@@ -1270,8 +1272,14 @@
       const snap = await getDocs(wide);
       if (mine !== searchRun) return;   // a newer search has started; this one is stale
       searchResults = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      searchError = "";
     } catch (_) {
-      if (mine === searchRun) searchResults = [];
+      // A failed search is not an empty one: saying "Nothing here" to a person whose
+      // connection dropped is a lie they would act on.
+      if (mine === searchRun) {
+        searchResults = [];
+        searchError = "Could not search. Check your connection and try again.";
+      }
     }
     renderList();
   }
@@ -1317,7 +1325,9 @@
     document.getElementById("mailCount").textContent = `${list.length} message${list.length === 1 ? "" : "s"}`;
 
     if (!list.length) {
-      emailListEl.innerHTML = `<div class="empty">Nothing here.<br/><span style="font-size:11.5px">Try a different folder, filter, or search.</span></div>`;
+      emailListEl.innerHTML = searchError
+        ? `<div class="empty">${escapeHtml(searchError)}</div>`
+        : `<div class="empty">Nothing here.<br/><span style="font-size:11.5px">Try a different folder, filter, or search.</span></div>`;
       updateBulkBar();
       syncSelectAll();
       if (maybeExtendPage(0)) return;
@@ -2630,6 +2640,9 @@
   let searchTimer = null;
   document.getElementById("searchInput").addEventListener("input", (e) => {
     searchQuery = e.target.value.trim();
+    // A tick made before the search would act on mail the search has hidden, the same
+    // reason the folder switch clears the ticks.
+    selected.clear();
     clearTimeout(searchTimer);
     // One search per pause, not one per keystroke.
     searchTimer = setTimeout(() => runSearch(searchQuery), 300);
