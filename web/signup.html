@@ -253,6 +253,17 @@
   }, 500);
   document.addEventListener("visibilitychange", signupReady);
 
+  // A reply is not always JSON: a proxy error page arrives as HTML, and json() then throws
+  // a parse error that says nothing useful to a person.
+  async function readJson(response, fallback) {
+    const raw = await response.text();
+    try {
+      return JSON.parse(raw);
+    } catch (_) {
+      return { detail: fallback };
+    }
+  }
+
   function showAlert(msg, isError = true) {
     alertBox.textContent = msg;
     alertBox.className = `alert ${isError ? "err" : "ok"}`;
@@ -348,7 +359,7 @@
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ otp: document.getElementById("otpInput").value.trim() })
       });
-      const vData = await v.json();
+      const vData = await readJson(v, "The server did not answer properly. Try again.");
       if (!v.ok) throw new Error(vData.detail || "That code is not correct.");
 
       const reg = await fetch(`${BACKEND_URL}/api/auth/register-mailbox`, {
@@ -356,8 +367,15 @@
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ username: pending.email.split("@")[0], name: pending.name, recovery_email: pending.recovery })
       });
-      const regData = await reg.json();
-      if (!reg.ok) throw new Error(regData.detail || "Could not create the mailbox.");
+      const regData = await readJson(reg, "The server did not answer properly. Try again.");
+      if (!reg.ok) {
+        // The code was accepted but the mailbox was not created, so the code is spent.
+        // Say what to do next instead of leaving the person pressing verify for ever.
+        throw new Error(
+          (regData.detail || "Could not create the mailbox.") +
+          " Press Change details and try a different address."
+        );
+      }
 
       window.location.href = "app.html";
     } catch (err) {

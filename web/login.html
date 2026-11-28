@@ -305,8 +305,8 @@
           checkingSignIn = false;
           await signOut(auth);
           showAlert("This link points at a login with no mailbox. Create the mailbox again.");
-          loginBtn.disabled = false;
           loginBtn.textContent = "Sign in";
+          loginReady();
           return;
         }
       } catch (_) {}
@@ -316,8 +316,8 @@
       showAlert(err.code === "auth/invalid-custom-token"
         ? "That sign-in link has expired. Sign in with your password instead."
         : "Could not open the mailbox with that link.");
-      loginBtn.disabled = false;
       loginBtn.textContent = "Sign in";
+      loginReady();
     }
   })();
 
