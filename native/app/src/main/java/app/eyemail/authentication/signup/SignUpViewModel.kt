@@ -32,7 +32,11 @@ class SignUpViewModel : ViewModel() {
 
     fun onUsername(value: String) = _state.update {
         it.copy(
-            username = value.lowercase().filter { c -> c.isLetterOrDigit() || c == '.' || c == '_' },
+            // Lower case, only the characters an address may hold, and never longer than the
+            // server allows, so the field cannot send something it will refuse.
+            username = value.lowercase()
+                .filter { c -> c.isLetterOrDigit() || c == '.' || c == '_' }
+                .take(30),
             error = "",
         )
     }
