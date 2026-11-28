@@ -68,7 +68,8 @@ object SessionKeeper {
             val key = BuildConfig.FIREBASE_API_KEY.trim()
             require(key.isNotBlank()) { "no Firebase key in this build" }
 
-            val body = "grant_type=refresh_token&refresh_token=$refreshToken"
+            val encoded = java.net.URLEncoder.encode(refreshToken, "UTF-8")
+            val body = "grant_type=refresh_token&refresh_token=$encoded"
                 .toRequestBody("application/x-www-form-urlencoded".toMediaType())
             val request = Request.Builder()
                 .url("https://securetoken.googleapis.com/v1/token?key=$key")
@@ -81,6 +82,12 @@ object SessionKeeper {
                     val detail = runCatching { JSONObject(raw).optString("error_description") }
                         .getOrNull()
                         ?.takeIf { it.isNotBlank() }
+                    // The server refused the refresh token itself, which means it is dead:
+                    // forget the session so the app asks for a sign in instead of failing
+                    // every request for ever.
+                    if (response.code == 400 || response.code == 401) {
+                        AuthSessionStore.clear()
+                    }
                     throw IllegalStateException(detail ?: "session renewal failed (HTTP ${response.code})")
                 }
                 val json = JSONObject(raw)
