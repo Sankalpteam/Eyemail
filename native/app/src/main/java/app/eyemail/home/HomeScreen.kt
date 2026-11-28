@@ -438,13 +438,30 @@ fun HomeScreen(
                 }
 
                 if (state.error.isNotBlank()) {
-                    Box(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Ey.DangerSoft)
                             .padding(horizontal = 14.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(state.error, fontSize = 11.5.sp, color = Ey.Danger)
+                        Text(
+                            state.error,
+                            fontSize = 11.5.sp,
+                            color = Ey.Danger,
+                            modifier = Modifier.weight(1f),
+                        )
+                        // "Sign in again." with no way to sign in is a dead end, so the line
+                        // carries the door out of it.
+                        if (state.error.startsWith("Sign in again")) {
+                            Text(
+                                "Sign in",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Ey.Danger,
+                                modifier = Modifier.clickable { onSignOut() },
+                            )
+                        }
                     }
                 }
 
