@@ -179,7 +179,7 @@
         <div class="field">
           <div class="row-between">
             <label for="passwordInput">Password</label>
-            <a href="forgot-password.html">Forgot password?</a>
+            <a id="forgotLink" href="forgot-password.html">Forgot password?</a>
           </div>
           <div class="row-between" style="align-items:center;gap:8px">
             <input id="passwordInput" type="password" required placeholder="Enter your password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" style="flex:1;width:auto" />
@@ -320,6 +320,14 @@
       loginBtn.textContent = "Sign in";
     }
   })();
+
+  // The address already typed is carried to the reset page, so it is not asked twice.
+  document.getElementById("forgotLink").addEventListener("click", (e) => {
+    const typed = document.getElementById("emailInput").value.trim().toLowerCase();
+    if (!typed) return;                       // nothing typed: leave the plain link
+    e.preventDefault();
+    location.href = `forgot-password.html?email=${encodeURIComponent(typed)}`;
+  });
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
