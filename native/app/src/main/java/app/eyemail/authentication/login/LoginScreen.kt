@@ -110,10 +110,17 @@ fun LoginScreen(
             val emailFocus = androidx.compose.runtime.remember { androidx.compose.ui.focus.FocusRequester() }
             val passwordFocus = androidx.compose.runtime.remember { androidx.compose.ui.focus.FocusRequester() }
 
-            // The cursor is in the address field when the screen opens, so the keyboard is
-            // ready and nobody has to tap twice to start typing.
+            // The cursor is in the address field when the screen first opens, so nobody has
+            // to tap twice to start. Only the first time: coming back from a page must not
+            // take the cursor away from the password.
+            var focusedOnce by androidx.compose.runtime.remember {
+                androidx.compose.runtime.mutableStateOf(false)
+            }
             androidx.compose.runtime.LaunchedEffect(Unit) {
-                runCatching { emailFocus.requestFocus() }
+                if (!focusedOnce) {
+                    focusedOnce = true
+                    runCatching { emailFocus.requestFocus() }
+                }
             }
 
             EyField(
