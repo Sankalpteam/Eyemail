@@ -151,7 +151,9 @@ object EyemailAuthService {
         client.newCall(request).execute().use { response ->
             val raw = response.body?.string().orEmpty()
             val json = runCatching { JSONObject(raw) }.getOrDefault(JSONObject())
-            json.optBoolean("available", false)
+            // Unknown is not "taken": the server decides at signup, and a blip here must not
+            // tell someone their own name is unavailable.
+            json.optBoolean("available", true)
         }
     }
 

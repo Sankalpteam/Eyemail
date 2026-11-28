@@ -104,9 +104,16 @@ class SignUpViewModel : ViewModel() {
                 )
                 // A fresh sign in, so the session carries a refresh token. Without it the
                 // new account would stop working an hour later, with no way to renew.
-                val session = runCatching {
-                    EyemailAuthService.signIn(current.pendingEmail, current.password)
-                }.getOrNull() ?: EyemailAuthService.Session(
+                var signedIn: EyemailAuthService.Session? = null
+                repeat(2) { attempt ->
+                    if (signedIn == null) {
+                        signedIn = runCatching {
+                            EyemailAuthService.signIn(current.pendingEmail, current.password)
+                        }.getOrNull()
+                        if (signedIn == null) kotlinx.coroutines.delay(700)
+                    }
+                }
+                val session = signedIn ?: EyemailAuthService.Session(
                     uid = EyemailAuthService.uidFromToken(current.pendingToken),
                     email = current.pendingEmail,
                     idToken = current.pendingToken,
