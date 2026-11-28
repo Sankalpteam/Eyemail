@@ -7,5 +7,5 @@ data class ForgotPasswordState(
     val done: String = "",
 ) {
     val canSubmit: Boolean
-        get() = !busy && email.isNotBlank()
+        get() = !busy && email.isNotBlank() && done.isBlank()
 }

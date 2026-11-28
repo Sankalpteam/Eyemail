@@ -94,6 +94,18 @@ fun ForgotPasswordScreen(
                 onClick = viewModel::send,
             )
 
+            if (state.done.isNotBlank()) {
+                // Sending again at once only earns a rate limit, so it waits to be asked.
+                TextButton(onClick = viewModel::allowResend) {
+                    Text(
+                        "Send another link",
+                        fontSize = 12.5.sp,
+                        color = Ey.Accent,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+
             Spacer(Modifier.height(14.dp))
 
             TextButton(onClick = onBack, enabled = !state.busy) {

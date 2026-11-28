@@ -27,6 +27,9 @@ class ForgotPasswordViewModel : ViewModel() {
         _state.update { it.copy(email = clean) }
     }
 
+    /** Clear the sent message so the button works again, on purpose. */
+    fun allowResend() = _state.update { it.copy(done = "", error = "") }
+
     fun onEmail(value: String) = _state.update { it.copy(email = value, error = "", done = "") }
 
     fun send() {
